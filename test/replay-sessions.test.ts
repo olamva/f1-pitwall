@@ -10,7 +10,7 @@ const session = (Name: string, EndDate: string, Path?: string) => ({
   Path,
 });
 
-test("ended sessions without an archive path are listed without a path, future sessions are not", async (t) => {
+test("ended sessions without an archive path are listed without a path, future sessions are not, even with a path", async (t) => {
   t.mock.timers.enable({
     apis: ["Date"],
     now: Date.parse("2026-09-26T14:00:00Z"),
@@ -24,7 +24,7 @@ test("ended sessions without an archive path are listed without a path, future s
             session("Practice 1", "2026-09-25T13:00:00", "2026/fp1/"),
             session("Qualifying", "2026-09-25T17:00:00", "2026/q/"),
             session("Sprint", "2026-09-26T17:30:00"),
-            session("Race", "2026-09-26T18:30:00"),
+            session("Race", "2026-09-26T18:30:00", "2026/r/"),
           ],
         },
       ],
