@@ -50,7 +50,8 @@ export async function seasonSessions(year: number): Promise<SessionRef[]> {
   return index.Meetings.flatMap((m: any) =>
     m.Sessions.filter(
       (s: any) =>
-        s.Path || Date.parse(local(s.EndDate, s.GmtOffset)) < Date.now(),
+        Date.parse(local(s.Path ? s.StartDate : s.EndDate, s.GmtOffset)) <
+        Date.now(),
     ).map((s: any) => ({
       path: s.Path ?? "",
       meeting: m.Name,
