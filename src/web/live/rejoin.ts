@@ -27,7 +27,10 @@ export const rejoin = (
   const me = rows.find((r) => r.number === number);
   if (!loss || !me || me.status === "PIT" || seconds(me) === Infinity)
     return null;
-  const gap = seconds(me) + loss;
+  const penalty = Number(
+    /^(\d+) s time penalty/i.exec(me.penalty ?? "")?.[1] ?? 0,
+  );
+  const gap = seconds(me) + loss + penalty;
   const at = rows.findIndex((r) => r !== me && seconds(r) > gap);
   const above = at < 0 ? rows : rows.slice(0, at);
   const ahead = above.findLast((r) => r !== me);
@@ -35,7 +38,7 @@ export const rejoin = (
   const lap = lapSeconds(anchor.lastLap);
   return {
     before: at < 0 ? rows.length : at,
-    label: `${me.tla} · pit · ${ahead ? `+${(gap - seconds(ahead)).toFixed(1)}` : "Leader"}`,
+    label: `${me.tla} · pit${penalty ? ` +${penalty}s` : ""} · ${ahead ? `+${(gap - seconds(ahead)).toFixed(1)}` : "Leader"}`,
     color: me.color,
     anchor: anchor.number,
     back: lap && (gap - seconds(anchor)) / lap,
