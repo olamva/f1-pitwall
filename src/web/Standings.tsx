@@ -3,6 +3,7 @@ import type { Championship } from "../shared/clinch.ts";
 import type { Season, SeasonStandings, StandingRow } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
+import { useConfetti } from "./confetti.ts";
 import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
@@ -110,6 +111,15 @@ export const Standings = ({ year, season }: StandingsProps) => {
   const [champ, setChamp] = useState<Championship>("drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
+  const crowned = (champ: Championship) =>
+    Number(year) < new Date().getUTCFullYear() ||
+    (season?.year === Number(year) && clinched(season, champ));
+  useConfetti(
+    data?.year === Number(year) &&
+      data.drivers.length > 0 &&
+      CHAMPS.some(crowned),
+    year,
+  );
   if (data?.year !== Number(year))
     return <Loading label="Loading standings…" error={error} />;
   if (!data.drivers.length)
@@ -119,9 +129,6 @@ export const Standings = ({ year, season }: StandingsProps) => {
       </p>
     );
   const teams = data.constructors.length > 0;
-  const crowned = (champ: Championship) =>
-    Number(year) < new Date().getUTCFullYear() ||
-    (season?.year === data.year && clinched(season, champ));
   const table = (champ: Championship) =>
     champ === "drivers" ? (
       <StandingsTable

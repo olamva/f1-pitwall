@@ -5,6 +5,7 @@ import {
   type RaceArchive,
   type SeasonStandings,
 } from "../shared/season.ts";
+import champions from "./champions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
 import { seconds, when } from "./season.ts";
 
@@ -136,6 +137,22 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
         ].reduce((sum, result) => sum + Number(result.points), 0),
       };
     });
+  const listed = Object.entries(champions);
+  const recent = await Promise.all(
+    years
+      .filter(
+        (year) =>
+          year > Number(listed.at(-1)![0]) &&
+          year < new Date().getUTCFullYear(),
+      )
+      .map(async (year) => {
+        const data = await get(`${year}/driverstandings/1.json`, DAY);
+        return data.StandingsTable.StandingsLists[0]?.DriverStandings[0]?.Driver
+          .driverId === id
+          ? [year]
+          : [];
+      }),
+  );
   return {
     id,
     name: `${info.givenName} ${info.familyName}`,
@@ -151,6 +168,12 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     wins: seasons.reduce((sum, season) => sum + season.wins, 0),
     podiums: seasons.reduce((sum, season) => sum + season.podiums, 0),
     poles: (seasons.at(-1)?.year ?? 0) < 1994 ? null : poles,
+    championships: [
+      ...listed
+        .filter(([, champion]) => champion === id)
+        .map(([year]) => Number(year)),
+      ...recent.flat(),
+    ].sort((a, b) => a - b),
     seasons,
   };
 }

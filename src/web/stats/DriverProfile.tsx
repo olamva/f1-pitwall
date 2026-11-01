@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import type {
   Classified,
   DriverProfile as Profile,
@@ -6,10 +6,12 @@ import type {
 } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
+import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
 import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
+import { clinched, driverTables, latest } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
 
 const SHORT: Record<string, string> = {
@@ -88,6 +90,35 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
   );
 };
 
+interface ChampionshipsProps {
+  years: number[];
+}
+
+const Championships = ({ years }: ChampionshipsProps) => (
+  <section className="bg-surface rounded-xl p-3 sm:p-4">
+    <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
+      Championships
+    </h3>
+    <div className="flex items-center gap-3">
+      <Trophy
+        aria-hidden
+        className="size-8 shrink-0 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
+      />
+      <p className="tabular font-f1 text-3xl font-bold">{years.length}</p>
+      <ol className="tabular flex flex-wrap gap-1">
+        {years.map((year) => (
+          <li
+            key={year}
+            className="font-f1 rounded-md bg-zinc-800/60 px-2 py-1 text-sm font-bold"
+          >
+            {year}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+);
+
 interface DriverProfileProps {
   id: string;
   season: Season;
@@ -97,6 +128,15 @@ interface DriverProfileProps {
 export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
   const { data, error } = useJson<Profile>(`/api/drivers/${id}`);
   const color = teamColor(data?.seasons[0]?.team ?? "");
+  const champion =
+    clinched(season, "drivers") && latest(driverTables(season))[0]?.id === id;
+  useConfetti(champion, id);
+  const titles = [
+    ...new Set([
+      ...(data?.championships ?? []),
+      ...(champion ? [season.year] : []),
+    ]),
+  ];
   return (
     <div className="space-y-4">
       <button
@@ -182,6 +222,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
               ))}
             </div>
           </section>
+          {titles.length > 0 && <Championships years={titles} />}
           <SeasonResults id={id} season={season} />
           <section className="bg-surface overflow-x-auto rounded-xl p-3 sm:p-4">
             <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
