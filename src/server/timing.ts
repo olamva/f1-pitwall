@@ -307,12 +307,16 @@ export function delays(session: Session, data: Json): Message[] {
 }
 
 export class History {
-  since = Date.now();
+  since: number;
   start?: number;
   private deltas: [t: number, json: string][] = [];
   private checkpoints: { i: number; t: number; state: string }[] = [];
   private state: State = {};
   private latest = -Infinity;
+
+  constructor(since = Date.now()) {
+    this.since = since;
+  }
 
   add(batch: Delta[]) {
     for (const d of batch) {

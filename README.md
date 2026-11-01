@@ -58,7 +58,7 @@ Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pu
 
 The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
-The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the user settings, the transcripts and the pace cache in that directory. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications and settings sync.
+The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the user settings, the transcripts and the pace cache in that directory. In production, the server also writes each live timing message of the current session to `$DATA_DIR/live`. After a restart, it reads these messages again, so that a TV delay starts at once. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications and settings sync.
 
 Keep the other settings in `/etc/f1/env` on the VM, with mode 0600:
 
