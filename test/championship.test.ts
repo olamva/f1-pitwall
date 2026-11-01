@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Round } from "../src/shared/season.ts";
-import { prediction, titleOpen } from "../src/web/live/prediction.ts";
+import { prediction, title } from "../src/web/live/prediction.ts";
 
 const finale: Round = {
   round: 24,
@@ -35,22 +35,28 @@ test("the title stays open while the current session can close the gap, and a sp
   const race = at("2026-12-06T17:00:00");
   const sprint = at("2026-12-05T16:00:00");
   assert.equal(
-    titleOpen({ ...race, ChampionshipPrediction: standings(100, 76) }, [
-      finale,
-    ]),
-    true,
+    title(
+      { ...race, ChampionshipPrediction: standings(100, 76) },
+      [finale],
+      "drivers",
+    ),
+    "open",
   );
   assert.equal(
-    titleOpen({ ...race, ChampionshipPrediction: standings(100, 70) }, [
-      finale,
-    ]),
-    false,
+    title(
+      { ...race, ChampionshipPrediction: standings(100, 70) },
+      [finale],
+      "drivers",
+    ),
+    "decided",
   );
   assert.equal(
-    titleOpen({ ...sprint, ChampionshipPrediction: standings(100, 70) }, [
-      finale,
-    ]),
-    true,
+    title(
+      { ...sprint, ChampionshipPrediction: standings(100, 70) },
+      [finale],
+      "drivers",
+    ),
+    "open",
   );
 });
 
@@ -58,16 +64,34 @@ test("the title check reads a session start west of Greenwich", () => {
   const sprint = at("2026-12-05T08:00:00", "-04:00:00");
   const race = at("2026-12-06T09:00:00", "-04:00:00");
   assert.equal(
-    titleOpen({ ...sprint, ChampionshipPrediction: standings(100, 70) }, [
-      finale,
-    ]),
-    true,
+    title(
+      { ...sprint, ChampionshipPrediction: standings(100, 70) },
+      [finale],
+      "drivers",
+    ),
+    "open",
   );
   assert.equal(
-    titleOpen({ ...race, ChampionshipPrediction: standings(100, 70) }, [
-      finale,
-    ]),
-    false,
+    title(
+      { ...race, ChampionshipPrediction: standings(100, 70) },
+      [finale],
+      "drivers",
+    ),
+    "decided",
+  );
+});
+
+test("the title is clinching when the predicted points put it out of reach", () => {
+  const race = at("2026-12-06T17:00:00");
+  const ChampionshipPrediction = {
+    Teams: {
+      McLaren: { CurrentPoints: 100, PredictedPoints: 125 },
+      Ferrari: { CurrentPoints: 90, PredictedPoints: 108 },
+    },
+  };
+  assert.equal(
+    title({ ...race, ChampionshipPrediction }, [finale], "constructors"),
+    "clinching",
   );
 });
 
