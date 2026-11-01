@@ -185,6 +185,16 @@ const Sectors = ({ sectors, qualifying }: SectorsProps) => (
   </span>
 );
 
+const Gap = ({ status, gap }: { status: string; gap: string }) =>
+  status ? (
+    <>
+      <span className="text-zinc-400 sm:hidden">{status}</span>
+      <span className="hidden sm:inline">{gap}</span>
+    </>
+  ) : (
+    gap
+  );
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -229,7 +239,7 @@ const TowerRow = ({
       </span>
     </td>
     <td className="px-1 py-1 sm:px-2">
-      <span className="flex w-max items-center gap-2">
+      <span className="flex w-max items-center gap-1 sm:gap-2">
         <TeamLogo team={row.team} className="hidden h-4 w-6 sm:block" />
         <span className="font-semibold" title={row.name}>
           {row.tla}
@@ -259,7 +269,10 @@ const TowerRow = ({
       </td>
     )}
     <td className="box-content w-[8ch] px-1 py-1 text-right sm:px-2">
-      {row.position === 1 && race && !relative ? "Leader" : row.gap}
+      <Gap
+        status={row.status}
+        gap={row.position === 1 && race && !relative ? "Leader" : row.gap}
+      />
     </td>
     {race && (
       <td className="box-content w-[calc(7ch+2rem)] px-1 py-1 text-right text-zinc-400 sm:px-2">
@@ -311,7 +324,9 @@ const TowerRow = ({
       </td>
     )}
     <TyreCells row={row} race={race} hide={hide} scale={scale} />
-    <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
+    <td className="hidden px-1 py-1 text-xs text-zinc-400 sm:table-cell sm:px-2">
+      {row.status}
+    </td>
   </tr>
 );
 
@@ -439,7 +454,7 @@ export const TimingTower = ({
             >
               Stop
             </th>
-            <th className="px-1 py-2 sm:px-2" />
+            <th className="hidden px-1 py-2 sm:table-cell sm:px-2" />
           </tr>
         </thead>
         <tbody>
