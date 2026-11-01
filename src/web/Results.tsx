@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
-import { useJson } from "./api.ts";
+import { useJson, type Loaded } from "./api.ts";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
@@ -41,16 +41,15 @@ const resultsPath = (year: string, part: Part, round: number) =>
 interface RacesProps {
   year: string;
   season: Season | null;
-  round: number;
+  archive: Loaded<RaceArchive>;
+  races: RaceArchive["races"];
+  race: RaceArchive["races"][number] | undefined;
   onRound: (round: number) => void;
 }
 
-const Races = ({ year, season, round, onRound }: RacesProps) => {
+const Races = ({ year, season, archive, races, race, onRound }: RacesProps) => {
   const [session, setSession] = useState<Kind>("race");
   const favourite = useFavourite();
-  const archive = useJson<RaceArchive>(`/api/results/${year}`);
-  const races = archive.data?.year === Number(year) ? archive.data.races : [];
-  const race = races.find((entry) => entry.round === round) ?? races[0];
   const choose = (nextRound: number) => {
     setSession("race");
     onRound(nextRound);
@@ -178,12 +177,29 @@ export const Results = ({ season }: ResultsProps) => {
     pathSegment("results", 3) === "standings" ? "Standings" : "Races",
   );
   const [round, setRound] = useState(Number(pathSegment("results", 3)));
-  const show = (nextYear: string, nextPart: Part, nextRound = 0) => {
+  const [name, setName] = useState<string>();
+  const archive = useJson<RaceArchive>(`/api/results/${year}`);
+  const races = archive.data?.year === Number(year) ? archive.data.races : [];
+  const race =
+    races.find((entry) => entry.name === name) ??
+    races.find((entry) => entry.round === round) ??
+    races[0];
+  const show = (
+    nextYear: string,
+    nextPart: Part,
+    nextRound = 0,
+    nextName?: string,
+  ) => {
     setYear(nextYear);
     setPart(nextPart);
     setRound(nextRound);
+    setName(nextName);
     history.replaceState(null, "", resultsPath(nextYear, nextPart, nextRound));
   };
+  useEffect(() => {
+    if (race && round && race.round !== round)
+      show(year, part, race.round, name);
+  }, [race]);
   const blob = useRef<(offset: number, held: boolean) => void>(null);
 
   return (
@@ -199,7 +215,9 @@ export const Results = ({ season }: ResultsProps) => {
         <select
           aria-label="Season"
           value={year}
-          onChange={(event) => show(event.target.value, part)}
+          onChange={(event) =>
+            show(event.target.value, part, race?.round ?? round, race?.name)
+          }
           className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-50"
         >
           {years.map((value) => (
@@ -227,7 +245,9 @@ export const Results = ({ season }: ResultsProps) => {
               key={year}
               year={year}
               season={season}
-              round={round}
+              archive={archive}
+              races={races}
+              race={race}
               onRound={(nextRound) => show(year, "Races", nextRound)}
             />
           )
