@@ -1,6 +1,8 @@
 import * as signalR from "@microsoft/signalr";
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
+import { DATA_DIR } from "./data.ts";
 import { F1_ORIGIN } from "./origin.ts";
 import { notify } from "./push.ts";
 import { play, read, type Line } from "./recording.ts";
@@ -45,6 +47,7 @@ export class Feed {
   private connection: signalR.HubConnection | null = null;
   private listeners = new Set<Listener>();
   private key: string | null;
+  private log: string | null = null;
 
   constructor(key: string | null) {
     this.key = key;
@@ -81,11 +84,14 @@ export class Feed {
     if (infoKey !== undefined && infoKey !== this.info) {
       this.info = infoKey;
       this.session = new Session();
-      this.history = new History();
+      this.history = new History(now);
       this.pending = [];
       this.lag = 0;
       this.listeners.forEach((fn) => fn(true));
+      if (this.log) writeFileSync(this.log, "");
     }
+    if (this.log)
+      appendFileSync(this.log, `${JSON.stringify([now, topic, data])}\n`);
     for (const e of this.events(topic, data, now))
       for (const x of this.session.apply(e))
         this.pending.push([x.topic, x.data, x.t]);
@@ -149,7 +155,21 @@ export class Feed {
     this.run();
   }
 
+  resume() {
+    if (!DATA_DIR || process.env.NODE_ENV !== "production") return this;
+    const log = `${DATA_DIR}/live/${this.key ?? "shared"}.jsonl`;
+    mkdirSync(`${DATA_DIR}/live`, { recursive: true });
+    if (existsSync(log))
+      for (const [t, topic, data] of read(log)) {
+        this.handle(topic, data, t);
+        this.flush();
+      }
+    this.log = log;
+    return this;
+  }
+
   start() {
+    this.resume();
     this.run();
     setInterval(() => this.flush(), FLUSH_MS);
     return this;
