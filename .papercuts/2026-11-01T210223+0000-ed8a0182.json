@@ -1,0 +1,14 @@
+{
+  "id": "ed8a0182",
+  "ts": "2026-11-01T21:02:23+00:00",
+  "text": "No Playwright in repo; scratch install must match cached browser revisions (1.64 for chromium 1248/webkit 2370), took 4 tries",
+  "tags": [
+    "testing",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a4d5627d",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-46f8c63a",
+  "branch": "t3/fix-live-standings-scroll"
+}
