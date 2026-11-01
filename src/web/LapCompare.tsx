@@ -119,8 +119,10 @@ const WHITE = "#e4e4e7";
 const GREY = "#71717a";
 
 const apart = (a: string, b: string) => {
-  if (a.toLowerCase() !== b.toLowerCase()) return b;
-  const rgb = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const [rgb, other] = [a, b].map((c) =>
+    [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)),
+  ) as [number[], number[]];
+  if (Math.hypot(...rgb.map((v, i) => v - other[i]!)) >= 100) return b;
   if (Math.max(...rgb) - Math.min(...rgb) >= 32) return WHITE;
   return `light-dark(#27272a, ${Math.min(...rgb) >= 192 ? GREY : WHITE})`;
 };
