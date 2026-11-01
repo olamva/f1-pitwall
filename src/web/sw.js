@@ -1,6 +1,6 @@
 import { matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { NavigationRoute, registerRoute } from "workbox-routing";
-import { StaleWhileRevalidate } from "workbox-strategies";
+import { NetworkFirst, StaleWhileRevalidate } from "workbox-strategies";
 
 registerRoute(
   new NavigationRoute(
@@ -16,8 +16,13 @@ registerRoute(
 );
 
 registerRoute(
+  ({ url }) => url.pathname === "/api/replay/sessions",
+  new NetworkFirst({ cacheName: "api" }),
+);
+
+registerRoute(
   ({ url }) =>
-    /^\/api\/(season|replay\/sessions|results\/|standings\/|drivers\/|facts\/|pace\/)/.test(
+    /^\/api\/(season|results\/|standings\/|drivers\/|facts\/|pace\/)/.test(
       url.pathname,
     ),
   new StaleWhileRevalidate({ cacheName: "api" }),

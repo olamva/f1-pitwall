@@ -456,7 +456,7 @@ interface CalendarProps {
 }
 
 export const Calendar = ({ season }: CalendarProps) => {
-  const sessions = useJson<SessionRef[]>("/api/replay/sessions");
+  const sessions = useJson<SessionRef[]>("/api/replay/sessions", 10 * 60_000);
   const [path, setPath] = useState(() => pathPart("calendar"));
   const pushed = useRef(false);
   const open = (s: SessionRef) => {
