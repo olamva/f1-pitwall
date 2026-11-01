@@ -152,6 +152,7 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
       </p>
     ));
   const gap = lapSeconds(b.time)! - lapSeconds(a.time)!;
+  const [slow, slowTrace] = gap > 0 ? [b, traceB] : [a, traceA];
   return (shown.current = (
     <div className="@container space-y-3">
       <p className="tabular text-sm text-zinc-300">
@@ -169,20 +170,43 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
         </span>
       </p>
       <div className="grid gap-4 @3xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-        <section>
-          <Heading>Speed (km/h)</Heading>
-          <LineChart
-            series={[a, b].map((d, i) => ({
-              id: d.number,
-              label: d.tla,
-              color: d.color,
-              points: (i ? traceB : traceA).speed.map(
-                (v, k) => [k * STEP, v] as [number, number],
-              ),
-            }))}
-            xLabel="Distance (m)"
-            endLabels={false}
-          />
+        <section className="space-y-4">
+          <div>
+            <Heading>Speed (km/h)</Heading>
+            <LineChart
+              series={[a, b].map((d, i) => ({
+                id: d.number,
+                label: d.tla,
+                color: d.color,
+                points: (i ? traceB : traceA).speed.map(
+                  (v, k) => [k * STEP, v] as [number, number],
+                ),
+              }))}
+              xLabel="Distance (m)"
+              endLabels={false}
+            />
+          </div>
+          <div>
+            <Heading>Gap to {slow.tla} (s)</Heading>
+            <LineChart
+              series={[a, b].map((d, i) => ({
+                id: d.number,
+                label: d.tla,
+                color: d.color,
+                points: slowTrace.time.map(
+                  (t, k) =>
+                    [k * STEP, t - (i ? traceB : traceA).time[k]!] as [
+                      number,
+                      number,
+                    ],
+                ),
+              }))}
+              xLabel="Distance (m)"
+              yFormat={(v) => `${v < 0 ? "−" : "+"}${Math.abs(v).toFixed(3)}`}
+              height={200}
+              endLabels={false}
+            />
+          </div>
         </section>
         <section>
           <Heading>Track dominance</Heading>
