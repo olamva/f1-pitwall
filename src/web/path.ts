@@ -30,3 +30,10 @@ export const openPath = (url: string) => {
 
 export const openDriver = (id: string) =>
   openPath(`/stats/drivers/${encodeURIComponent(id)}`);
+
+export const setSearchParam = (key: string, value: string | null) => {
+  const url = new URL(location.href);
+  if (value === null) url.searchParams.delete(key);
+  else url.searchParams.set(key, value);
+  history.replaceState(history.state, "", url);
+};
