@@ -1,0 +1,14 @@
+{
+  "id": "b638e237",
+  "ts": "2026-11-01T10:59:14+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call for a background or shown agent tab; evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "49d12736",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/normalize-compare-graph"
+}
