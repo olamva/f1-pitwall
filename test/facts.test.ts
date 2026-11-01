@@ -26,6 +26,7 @@ const responses: Record<string, unknown> = {
     row("2019", HAM, "1"),
     row("2020", HAM, "3"),
     row("2021", VER, "1"),
+    row("2022", LEC, "3"),
     row("2026", LEC, "15"),
   ]),
   [`${base}/grid/1/results.json?limit=100&offset=0`]: page([
@@ -50,7 +51,11 @@ test("circuit facts leave out the current season and laps without a time", async
     { text: "Most wins here: Lewis Hamilton (2)", sessions: ["race"] },
     { text: "Most poles here: Max Verstappen (2)", sessions: ["qualifying"] },
     {
-      text: "Pole sitter won 2 of 3 races here",
+      text: "Pole sitter won 2 of 4 races here",
+      sessions: ["qualifying", "race"],
+    },
+    {
+      text: "Most wins from outside pole here: P3 (2)",
       sessions: ["qualifying", "race"],
     },
     {
