@@ -72,7 +72,7 @@ export const Tabs = <T extends string>({
     let previous = performance.now();
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const animate = (now: number) => {
-      const elapsed = Math.max(1, now - previous);
+      const elapsed = Math.min(34, Math.max(1, now - previous));
       const left =
         drag.current?.x ??
         pull.current ??
@@ -105,6 +105,7 @@ export const Tabs = <T extends string>({
       }
       frame = requestAnimationFrame(animate);
     };
+    indicator.style.translate = `${x}px`;
     frame = requestAnimationFrame(animate);
     return () => {
       cancelAnimationFrame(frame);
