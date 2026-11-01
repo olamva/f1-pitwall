@@ -7,6 +7,7 @@ import {
 } from "../shared/season.ts";
 import champions from "./champions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
+import { provisional } from "./openf1.ts";
 import { seconds, when } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
@@ -78,16 +79,19 @@ export async function raceArchive(year: number): Promise<RaceArchive> {
 }
 
 export async function standings(year: number): Promise<SeasonStandings> {
-  const freshMs = year === new Date().getUTCFullYear() ? undefined : DAY;
-  const [drivers, constructors] = await Promise.all([
+  const current = year === new Date().getUTCFullYear();
+  const freshMs = current ? undefined : DAY;
+  const [drivers, constructors, last] = await Promise.all([
     get(`${year}/driverstandings.json?limit=100`, freshMs),
     get(`${year}/constructorstandings.json?limit=100`, freshMs),
+    current ? get(`${year}/last/results.json?limit=1`) : null,
   ]);
   const rows = (data: any, key: string): any[] =>
     data.StandingsTable.StandingsLists[0]?.[key] ?? [];
-  return {
+  const driverRows = rows(drivers, "DriverStandings");
+  const table: SeasonStandings = {
     year,
-    drivers: rows(drivers, "DriverStandings").map((row) => ({
+    drivers: driverRows.map((row) => ({
       id: row.Driver.driverId,
       name: `${row.Driver.givenName} ${row.Driver.familyName}`,
       team: row.Constructors.at(-1)?.constructorId ?? "",
@@ -102,6 +106,13 @@ export async function standings(year: number): Promise<SeasonStandings> {
       wins: Number(row.wins),
     })),
   };
+  if (!current) return table;
+  const race = last.RaceTable.Races[0];
+  return provisional(
+    table,
+    new Map(driverRows.map((row) => [row.Driver.code, row.Driver.driverId])),
+    race ? Date.parse(when(race)!) : 0,
+  ).catch(() => table);
 }
 
 export async function driverProfile(id: string): Promise<DriverProfile | null> {
