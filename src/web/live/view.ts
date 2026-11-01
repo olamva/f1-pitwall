@@ -218,7 +218,10 @@ export const messages = (state: Obj): Message[] =>
       utc: m.Utc,
       category: m.Category,
       flag: m.Flag ?? "",
-      text: m.Message,
+      text:
+        m.Flag && m.Message?.startsWith(`${m.Flag} `)
+          ? m.Message.slice(m.Flag.length + 1)
+          : m.Message,
       cars: m.RacingNumber
         ? [m.RacingNumber]
         : [

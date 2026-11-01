@@ -126,3 +126,24 @@ test("a message is about the car in RacingNumber, else about each car named in t
     [[], ["23"], ["16", "55"], ["44"]],
   );
 });
+
+test("a message drops the leading words that its flag badge shows", () => {
+  const texts = (...Messages: Json[]) =>
+    messages({ RaceControlMessages: { Messages } }).map((m) => m.text);
+  assert.deepEqual(
+    texts(
+      { Flag: "DOUBLE YELLOW", Message: "DOUBLE YELLOW IN TRACK SECTOR 1" },
+      { Flag: "CLEAR", Message: "TRACK CLEAR" },
+      { Flag: "BLUE", Message: "WAVED BLUE FLAG FOR CAR 44 (HAM)" },
+      { Flag: "CHEQUERED", Message: "CHEQUERED FLAG" },
+      { Message: "RACE START" },
+    ),
+    [
+      "RACE START",
+      "FLAG",
+      "WAVED BLUE FLAG FOR CAR 44 (HAM)",
+      "TRACK CLEAR",
+      "IN TRACK SECTOR 1",
+    ],
+  );
+});

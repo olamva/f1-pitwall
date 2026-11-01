@@ -1,0 +1,14 @@
+{
+  "id": "bf3432bc",
+  "ts": "2026-11-01T21:39:44+00:00",
+  "text": "T3 preview_snapshot times out after 15s on the live replay page (open and hidden tab)",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "d4930371",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/race-control-layout"
+}
