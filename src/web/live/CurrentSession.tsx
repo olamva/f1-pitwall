@@ -21,6 +21,7 @@ import { setDelay, useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
 import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
+import { setSearchParam } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
@@ -323,8 +324,7 @@ const Replay = ({ session, rounds, onClose }: ReplayProps) => {
     () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
     [race, laps.data, feed?.start],
   );
-  const share = (t: number) =>
-    history.replaceState(null, "", `?t=${Math.floor(t / 1000)}`);
+  const share = (t: number) => setSearchParam("t", `${Math.floor(t / 1000)}`);
   const seek = (t: number) => {
     share(t);
     setPlay((s) => ({ ...s, t, on: true }));

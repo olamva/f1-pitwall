@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Maximize, Minimize } from "lucide-react";
 import { TokenCallout } from "./TokenCallout.tsx";
+import { setSearchParam } from "../path.ts";
 
 export const MapFrame = ({
   banner,
@@ -12,7 +13,10 @@ export const MapFrame = ({
   children: (full: boolean) => React.ReactNode;
 }) => {
   const frame = useRef<HTMLDivElement>(null);
-  const [full, setFull] = useState(false);
+  const [full, setFull] = useState(
+    () => new URLSearchParams(location.search).get("map") === "full",
+  );
+  useEffect(() => setSearchParam("map", full ? "full" : null), [full]);
   useEffect(() => {
     const sync = () => setFull(document.fullscreenElement === frame.current);
     document.addEventListener("fullscreenchange", sync);
