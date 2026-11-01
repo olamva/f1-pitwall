@@ -161,8 +161,8 @@ const grid = (race: any) => Number(race.Results[0].grid);
 const lap = (race: any) => race.Results[0].FastestLap?.Time.time;
 const list = new Intl.ListFormat("en");
 
-const most = (label: string, races: any[]) => {
-  const counts = [...Map.groupBy(races, driver)];
+const most = (label: string, races: any[], key = driver) => {
+  const counts = [...Map.groupBy(races, key)];
   const top = Math.max(0, ...counts.map(([, group]) => group.length));
   const leaders = counts.filter(([, group]) => group.length === top);
   return top > 1
@@ -199,6 +199,15 @@ export async function circuitFacts(
     ...fact(
       wins.length > 0 &&
         `Pole sitter won ${wins.filter((race) => grid(race) === 1).length} of ${wins.length} races here`,
+      "qualifying",
+      "race",
+    ),
+    ...fact(
+      most(
+        "wins from outside pole",
+        wins.filter((race) => grid(race) > 1),
+        (race) => `P${grid(race)}`,
+      ),
       "qualifying",
       "race",
     ),
