@@ -16,7 +16,7 @@ import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
 import { LongRuns } from "./LongRuns.tsx";
 import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
-import { prediction, titleOpen } from "./prediction.ts";
+import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
@@ -141,6 +141,7 @@ export const Board = ({
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
   const [driver] = selected;
+  const table = standings(state, rounds);
   const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
   const at = rows.findIndex((r) => r.number === driver);
   const focus = (
@@ -252,9 +253,7 @@ export const Board = ({
             <LapCompare outline={outline} drivers={compare} />
           </Panel>
         )}
-        {race && titleOpen(state, rounds) && (
-          <Championship drivers={prediction(state)} />
-        )}
+        {race && contested(table) && <Championship standings={table} />}
         <LongRuns
           laps={laps}
           rows={rows}
