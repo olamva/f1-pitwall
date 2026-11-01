@@ -107,7 +107,18 @@ export const Championship = ({ standings }: ChampionshipProps) => {
   const items = standings.constructors.rows.length
     ? CHAMPS
     : CHAMPS.slice(0, 1);
-  const table = (c: Champ) => <Table champ={c} standing={standings[c]} />;
+  const table = (c: Champ) => (
+    <div className="grid">
+      {items.map((x) => (
+        <div
+          key={x}
+          className={`col-start-1 row-start-1 ${x === c ? "" : "invisible"}`}
+        >
+          <Table champ={x} standing={standings[x]} />
+        </div>
+      ))}
+    </div>
+  );
   return (
     <Panel title="Live championship" className="col-span-full">
       {items.length > 1 && (
@@ -127,6 +138,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
           items={items}
           value={items.length > 1 ? champ : "drivers"}
           onChange={setChamp}
+          keep={items}
           drive={blob}
           render={table}
         />
