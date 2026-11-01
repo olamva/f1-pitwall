@@ -50,3 +50,26 @@ test("the map ring sits the rest of the gap behind the car above the pit line", 
   assert.equal(pit?.anchor, "4");
   assert.equal(pit?.back, 8 / 90);
 });
+
+test("the pit line includes an unserved time penalty and drops it once served", () => {
+  const verdict =
+    "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 16 (LEC) - CAUSING A COLLISION";
+  const project = (...messages: string[]) => {
+    const state = {
+      ...race("1"),
+      RaceControlMessages: {
+        Messages: messages.map((Message) => ({ Message })),
+      },
+    };
+    const pit = rejoin(state, rows(state), "16", LOSS);
+    return pit?.label;
+  };
+  assert.equal(project(verdict), "LEC · pit +5s · +13.0");
+  assert.equal(
+    project(
+      verdict,
+      "FIA STEWARDS: PENALTY SERVED - 5 SECOND TIME PENALTY FOR CAR 16 (LEC) - CAUSING A COLLISION",
+    ),
+    "LEC · pit · +8.0",
+  );
+});
