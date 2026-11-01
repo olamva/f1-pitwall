@@ -200,9 +200,9 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                 [
                   ["Seasons", data.seasons.length],
                   ["Starts", data.starts],
-                  ["Wins", data.wins],
                   ["Podiums", data.podiums],
                   ["Poles", data.poles],
+                  ["Wins", data.wins],
                 ] as const
               ).map(([label, value]) => (
                 <div
@@ -212,7 +212,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                       ? "Qualifying data is incomplete for this driver."
                       : undefined
                   }
-                  className="rounded-lg bg-zinc-800/60 p-3"
+                  className="rounded-lg bg-zinc-800/60 p-3 last:max-sm:col-span-2"
                 >
                   <p className="text-xs text-zinc-400">{label}</p>
                   <p className="tabular font-f1 text-2xl font-bold">
