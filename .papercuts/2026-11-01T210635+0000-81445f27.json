@@ -1,0 +1,14 @@
+{
+  "id": "81445f27",
+  "ts": "2026-11-01T21:06:35+00:00",
+  "text": "Repo has no playwright dependency; pnpm add playwright-core picked a version whose browser build is not cached, so launch needs executablePath",
+  "tags": [
+    "testing",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "1844a3a5",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-94e5929a",
+  "branch": "t3/fix-ipad-track-map-sleep"
+}
