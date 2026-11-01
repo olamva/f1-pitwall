@@ -190,7 +190,7 @@ export const Board = ({
         </button>
       </Status>
       <div
-        className={`grid grid-rows-[auto_1fr] gap-4 md:grid-cols-2 ${layout.grid}`}
+        className={`grid grid-cols-1 grid-rows-[auto_1fr] gap-4 md:grid-cols-2 ${layout.grid}`}
       >
         <div className={`grid min-w-0 md:col-span-2 ${layout.tower}`}>
           <TimingTower

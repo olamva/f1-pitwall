@@ -109,14 +109,14 @@ export const RaceControl = ({
               </span>
             )}
           </span>
-          {m.flag && (
-            <span
-              className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}
-            >
-              {m.flag}
-            </span>
-          )}
           <span>
+            {m.flag && (
+              <span
+                className={`mr-1.5 inline-block rounded px-1.5 py-0.5 align-top text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}
+              >
+                {m.flag}
+              </span>
+            )}
             {highlight(m.text).map((t, j) =>
               t.tone === "car" ? (
                 <span
