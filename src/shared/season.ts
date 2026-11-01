@@ -124,6 +124,7 @@ export type DriverProfile = {
   wins: number;
   podiums: number;
   poles: number | null;
+  championships: number[];
   seasons: {
     year: number;
     team: string;

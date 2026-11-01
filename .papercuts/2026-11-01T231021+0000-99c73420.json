@@ -1,0 +1,14 @@
+{
+  "id": "99c73420",
+  "ts": "2026-11-01T23:10:21+00:00",
+  "text": "zsh treats $C:refs in a git push refspec as a :r history modifier and corrupts the ref; use ${C}",
+  "tags": [
+    "git",
+    "shell"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a4b14ca2",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-86152143",
+  "branch": "t3/champion-confetti-profile-card"
+}
