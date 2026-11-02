@@ -7,6 +7,7 @@ export interface PodiumEntry {
   color: string;
   value: string;
   detail?: string;
+  portrait?: string | null;
 }
 
 interface PodiumProps {
@@ -42,6 +43,13 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                 <Trophy
                   aria-hidden
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
+                />
+              )}
+              {e.portrait && (
+                <img
+                  src={e.portrait}
+                  alt=""
+                  className="mb-1 size-14 rounded-full bg-(--team)/40 object-cover object-top sm:size-16"
                 />
               )}
               <Name

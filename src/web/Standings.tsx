@@ -20,6 +20,7 @@ interface StandingsTableProps {
   rows: StandingRow[];
   crowned: boolean;
   onSelect?: (id: string) => void;
+  faces?: Map<string, string | null>;
 }
 
 const StandingsTable = ({
@@ -27,6 +28,7 @@ const StandingsTable = ({
   rows,
   crowned,
   onSelect,
+  faces,
 }: StandingsTableProps) => {
   const favourite = useFavourite();
   const lead = rows[0]?.points ?? 0;
@@ -46,6 +48,7 @@ const StandingsTable = ({
             detail: [i && `-${lead - row.points}`, row.wins && `${row.wins} 🏆`]
               .filter(Boolean)
               .join(" · "),
+            portrait: faces?.get(row.id),
           }))}
           crowned={crowned}
           onSelect={onSelect}
@@ -136,6 +139,11 @@ export const Standings = ({ year, season }: StandingsProps) => {
         rows={data.drivers}
         crowned={crowned("drivers")}
         onSelect={openDriver}
+        faces={
+          season?.year === Number(year)
+            ? new Map(season.drivers.map((d) => [d.id, d.portrait]))
+            : undefined
+        }
       />
     ) : (
       <StandingsTable

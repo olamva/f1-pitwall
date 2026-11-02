@@ -98,6 +98,31 @@ export async function provisional(
   };
 }
 
+const faces = new Map<number, Map<string, string>>();
+
+async function headshots(year: number): Promise<Map<string, string>> {
+  const sessions: any[] = (await get(`sessions?year=${year}`)).filter(
+    (s: any) => !s.is_cancelled && Date.parse(s.date_end) < Date.now(),
+  );
+  const entrants: any[][] = await Promise.all(
+    [...new Set([sessions[0], sessions.at(-1)])]
+      .filter(Boolean)
+      .map((s) => get(`drivers?session_key=${s.session_key}`)),
+  );
+  return new Map(
+    entrants
+      .flat()
+      .filter((e) => e.headshot_url)
+      .map((e) => [e.name_acronym, e.headshot_url.replace("/1col/", "/4col/")]),
+  );
+}
+
+export const portraits = (year: number): Promise<Map<string, string>> =>
+  headshots(year).then(
+    (found) => (faces.set(year, found), found),
+    () => faces.get(year) ?? new Map(),
+  );
+
 const outcome = (row: any, laps: number): [string, string] =>
   row.dsq
     ? ["D", "Disqualified"]
