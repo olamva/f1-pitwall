@@ -10,7 +10,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
-import { useFavourite } from "./favourite.ts";
+import { useFavourite, useFavouriteTeam } from "./favourite.ts";
 import { Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
@@ -18,7 +18,7 @@ import { clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
+import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 import { YEARS, YearSelect } from "./YearSelect.tsx";
 
 const CHAMPS = ["drivers", "constructors"] as const;
@@ -94,7 +94,9 @@ const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
             )}
             {(driver || big) && (
               <span className="relative flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400">
-                {driver?.code}
+                <span className="font-f1 font-bold tracking-normal">
+                  {driver?.code}
+                </span>
                 {big && (
                   <span className="light:bg-white light:shadow-sm inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-yellow-300 uppercase">
                     <Star aria-hidden="true" className="size-3 fill-current" />
@@ -108,11 +110,17 @@ const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
             >
               {row.name}
             </span>
-            {!team && (
-              <span className="relative block text-sm text-zinc-400">
-                {teams.get(row.team) ?? row.team}
-              </span>
-            )}
+            {!team &&
+              (logoSrc(row.team) ? (
+                <TeamLogo
+                  team={row.team}
+                  className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
+                />
+              ) : (
+                <span className="relative block text-sm text-zinc-400">
+                  {teams.get(row.team) ?? row.team}
+                </span>
+              ))}
             <span
               className={`tabular relative flex text-xs text-zinc-400 ${big ? "mt-8 gap-5 sm:gap-8" : "mt-4 gap-5"}`}
             >
@@ -162,13 +170,14 @@ export const Standings = ({ season }: StandingsProps) => {
   const [champ, setChamp] = useState<Championship>("drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const favourite = useFavourite()?.id;
+  const team = useFavouriteTeam();
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   const ready = data?.year === Number(year);
   const crowned = (champ: Championship) =>
-    Number(year) < new Date().getUTCFullYear() ||
-    (season.year === Number(year) && clinched(season, champ));
+    season.year === Number(year) && clinched(season, champ);
   useConfetti(
     ready && data.drivers.length > 0 && CHAMPS.some(crowned),
+    Number(year),
     `standings-${year}`,
   );
   const teams = ready && data.constructors.length > 0;
@@ -228,7 +237,7 @@ export const Standings = ({ season }: StandingsProps) => {
               rows={data.constructors}
               season={season}
               teams={names}
-              favourite={data.drivers.find((row) => row.id === favourite)?.team}
+              favourite={team ?? undefined}
             />
           )
         }

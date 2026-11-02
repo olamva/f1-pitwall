@@ -1,5 +1,5 @@
 import type { RaceArchive, Stint, Stints } from "../shared/season.ts";
-import { FAVOURITE_ROW } from "./favourite.ts";
+import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Compound, tyreColor } from "./Tyre.tsx";
 
@@ -56,6 +56,7 @@ interface StrategyProps {
 }
 
 export const Strategy = ({ rows, stints, favourite }: StrategyProps) => {
+  const teamRow = useTeamRow();
   const laps = Math.max(
     1,
     ...Object.values(stints)
@@ -86,7 +87,7 @@ export const Strategy = ({ rows, stints, favourite }: StrategyProps) => {
         {rows.map((result) => (
           <li
             key={result.driver}
-            className={`grid grid-cols-[5.5rem_minmax(0,1fr)] items-center rounded py-1.5 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
+            className={`grid grid-cols-[5.5rem_minmax(0,1fr)] items-center rounded py-1.5 ${result.driver === favourite ? FAVOURITE_ROW : teamRow(result.team)}`}
           >
             <span className="flex items-center">
               <span className="w-6 text-zinc-500">{result.positionText}</span>

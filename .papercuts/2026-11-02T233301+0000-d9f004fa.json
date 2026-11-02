@@ -1,0 +1,14 @@
+{
+  "id": "d9f004fa",
+  "ts": "2026-11-02T23:33:01+00:00",
+  "text": "T3 preview_snapshot times out at 15s; preview_open with open=true leaves the tab visible:false",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "20ea54df",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/driver-card-team-logos"
+}
