@@ -1,0 +1,14 @@
+{
+  "id": "27213a59",
+  "ts": "2026-11-02T21:35:07+00:00",
+  "text": "npx playwright-core cache (1.61.1) expects webkit-2311 but only webkit-2370 is installed; had to find 1.64.1 in the pnpm store",
+  "tags": [
+    "playwright",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c3bfaced",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-97bca7f8",
+  "branch": "t3/edge-back-swipe"
+}

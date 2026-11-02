@@ -13,6 +13,7 @@ import { navigate, pathSegment, standalone } from "./path.ts";
 import { PodiumRow, type Race } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
+import { useBack } from "./Swipe.tsx";
 import { SprintLogo } from "./SprintLogo.tsx";
 import { fresh, useSeen } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
@@ -287,6 +288,7 @@ export const Calendar = ({ season }: CalendarProps) => {
     if (race && race.round !== round) show(shown, race.round, name);
   }, [race]);
   const chosen = sessions.data?.find((s) => s.path === path);
+  useBack(race && !chosen ? back : undefined);
   if (!season.data || (path && !sessions.data))
     return (
       <Loading

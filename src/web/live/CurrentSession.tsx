@@ -24,7 +24,7 @@ import { setSearchParam } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
-import { useActive } from "../Swipe.tsx";
+import { useActive, useBack } from "../Swipe.tsx";
 import { Board } from "./Board.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
@@ -307,6 +307,7 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
   });
   const visible = useVisible();
   useAwake();
+  useBack(onClose);
   const q = `path=${encodeURIComponent(session.path)}`;
   const url = play.on !== false && visible ? streamUrl(q, play) : null;
   const [feed] = useFeed(url);

@@ -10,6 +10,7 @@ import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
 import { Headshot } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
+import { useBack } from "../Swipe.tsx";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
 import { clinched, driverTables, latest } from "./derive.ts";
@@ -136,6 +137,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
   const champion =
     clinched(season, "drivers") && latest(driverTables(season))[0]?.id === id;
   useConfetti(champion, id);
+  useBack(onBack);
   const titles = [
     ...new Set([
       ...(data?.championships ?? []),
