@@ -769,7 +769,8 @@ textarea {
   }
 }
 
-:root[data-tab="Countdown"]:has(.spotlight) header nav {
+:root[data-tab="Countdown"]:has(.spotlight) header nav,
+:root[data-champion] main .glass-tabs {
   @variant light {
     &::before {
       border-color: rgb(255 255 255 / 0.3);
@@ -796,7 +797,9 @@ textarea {
 .featured,
 section:has(> .spotlight),
 :root[data-tab="Countdown"]:has(.spotlight) header nav,
-:root[data-tab="Countdown"]:has(.spotlight) header > button {
+:root[data-tab="Countdown"]:has(.spotlight) header > button,
+:root[data-champion] main .glass-tabs,
+:root[data-champion] header > button {
   @variant light {
     color: #fff;
     --color-zinc-50: #fff;
@@ -1022,4 +1025,161 @@ html:has(dialog[open]) {
 .swipe[data-swiping] > main .fixed.inset-0 {
   left: calc(50% - 50vw);
   width: 100vw;
+}
+
+:root[data-champion] body {
+  background: transparent;
+}
+
+:root[data-champion] {
+  background:
+    radial-gradient(
+        ellipse 120% 50% at 30% 0%,
+        rgb(250 204 21 / 0.3),
+        transparent 70%
+      )
+      top / 100% var(--champion-end, 100svh) no-repeat,
+    linear-gradient(
+        170deg,
+        color-mix(in oklab, var(--champion) 50%, #09090b),
+        color-mix(in oklab, var(--champion) 18%, #09090b)
+      )
+      top / 100% var(--champion-end, 100svh) no-repeat,
+    var(--color-zinc-950);
+
+  @variant light {
+    background:
+      radial-gradient(
+          ellipse 120% 50% at 30% 0%,
+          rgb(250 204 21 / 0.3),
+          transparent 70%
+        )
+        top / 100% var(--champion-end, 100svh) no-repeat,
+      linear-gradient(
+          170deg,
+          color-mix(in oklab, var(--champion) 65%, black),
+          color-mix(in oklab, var(--champion) 35%, black)
+        )
+        top / 100% var(--champion-end, 100svh) no-repeat,
+      var(--color-zinc-950);
+  }
+}
+
+:root[data-champion] header > button img {
+  @variant light {
+    filter: brightness(0) invert(1);
+  }
+}
+
+.champion {
+  min-height: calc(100svh - var(--champion-top, 0px));
+  color: #fff;
+  --color-zinc-50: #fff;
+  --color-zinc-300: rgb(255 255 255 / 0.85);
+  --color-zinc-400: rgb(255 255 255 / 0.7);
+}
+
+.champion-backdrop {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: -1;
+  height: var(--champion-end, 100svh);
+  overflow: hidden;
+  color: #fff;
+  pointer-events: none;
+  mask: linear-gradient(black 55%, transparent);
+}
+
+.champion-rows {
+  position: absolute;
+  inset: -40% -60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  rotate: -10deg;
+  font-family: var(--font-f1);
+  white-space: nowrap;
+}
+
+.champion-name-row {
+  font-size: 5.5rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.16);
+  animation: champion-drift 90s linear infinite;
+}
+
+.champion-rows > :nth-child(even) .champion-name-row {
+  margin-left: -4em;
+  color: rgb(255 255 255 / 0.06);
+  -webkit-text-stroke: 0;
+  animation-direction: reverse;
+}
+
+.champion-ticker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 2.2;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.08);
+}
+
+.champion-rows > :nth-child(even) .champion-ticker {
+  color: rgb(250 204 21 / 0.16);
+}
+
+@keyframes champion-drift {
+  to {
+    translate: -30% 0;
+  }
+}
+
+.champion-next {
+  animation: champion-next 1.6s ease-in-out infinite;
+}
+
+@keyframes champion-next {
+  50% {
+    translate: 0 0.35rem;
+  }
+}
+
+.champion-name {
+  background: linear-gradient(100deg, #fff 40%, #fde68a 50%, #fff 60%);
+  background-size: 250% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: champion-shine 5s ease-in-out 1s infinite;
+}
+
+.champion-chip {
+  animation: podium-fade 400ms ease var(--delay) both;
+}
+
+.swipe > [inert] :is(.champion-name, .champion-next) {
+  animation: none;
+}
+
+@keyframes champion-shine {
+  from {
+    background-position: 100% 0;
+  }
+  50%,
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .champion-next,
+  .champion-name-row,
+  .champion-name,
+  .champion-chip {
+    animation: none;
+  }
 }

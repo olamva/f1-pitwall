@@ -99,9 +99,11 @@ export const teamTables = (s: Season) =>
 export const latest = (t: Map<number, Standing[]>): Standing[] =>
   [...t.values()].at(-1) ?? [];
 
-export function remaining(s: Season): Upcoming[] {
-  const raced = new Set(s.races.map((r) => r.round));
-  const sprinted = new Set(s.sprints.map((r) => r.round));
+export function remaining(s: Season, after = Infinity): Upcoming[] {
+  const done = (rows: { round: number }[]) =>
+    new Set(rows.map((r) => r.round).filter((n) => n <= after));
+  const raced = done(s.races);
+  const sprinted = done(s.sprints);
   return s.rounds
     .filter((r) => !raced.has(r.round))
     .flatMap((r) => [
@@ -130,6 +132,37 @@ export const clinched = (s: Season, champ: Championship): boolean => {
     table.length > 0 && hasClinched(table, remaining(s), table[0]!.id, champ)
   );
 };
+
+export function honours(s: Season, champ: Championship, id: string) {
+  const mine = (r: { driver: string; team: string }) =>
+    (champ === "drivers" ? r.driver : r.team) === id;
+  const best = s.races.map((r) => {
+    const rows = r.results.filter(mine);
+    return {
+      round: r.round,
+      position: Math.min(...rows.map((x) => x.position ?? Infinity)),
+      dsq: rows.length > 0 && rows.every((x) => x.status === "Disqualified"),
+    };
+  });
+  const decider = [
+    ...(champ === "drivers" ? driverTables(s) : teamTables(s)),
+  ].find(([round, t]) => hasClinched(t, remaining(s, round), id, champ))?.[0];
+  return {
+    best,
+    wins: best.filter((b) => b.position === 1).length,
+    podiums: s.races
+      .flatMap((r) => r.results)
+      .filter((r) => mine(r) && r.position !== null && r.position <= 3).length,
+    poles: s.qualifying.filter((q) =>
+      q.results.some((r) => r.position === 1 && mine(r)),
+    ).length,
+    decider,
+    left:
+      decider === undefined
+        ? 0
+        : remaining(s, decider).filter((e) => e.kind === "race").length,
+  };
+}
 
 export function gains(
   s: Season,

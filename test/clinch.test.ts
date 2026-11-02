@@ -7,6 +7,7 @@ import {
   earliestClinch,
   hasClinched,
   isEliminated,
+  settled,
   simulate,
   type Standing,
   type Upcoming,
@@ -200,4 +201,21 @@ test("2025 constructors: McLaren's real 27 points met the need against Mercedes'
   );
   const need = needs.find((n) => n.rival === 35)!.need;
   assert.ok(need !== null && need <= 27);
+});
+
+test("2026 after Mexico: Antonelli has the title, so the fight moves to P2", () => {
+  const afterMexico2026 = [
+    s("antonelli", 380, 9),
+    s("max_verstappen", 261, 2),
+    s("hamilton", 259, 1),
+  ];
+  const left = [
+    sprint(20, "Brazil"),
+    race(20, "Brazil"),
+    race(21, "Las Vegas"),
+    race(22, "Qatar"),
+    race(23, "Abu Dhabi"),
+  ];
+  assert.equal(settled(afterMexico2026, left, "drivers"), 1);
+  assert.equal(settled(beforeAbuDhabi2025, abuDhabi, "drivers"), 0);
 });

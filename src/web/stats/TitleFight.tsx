@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import {
   clinchMatrix,
   constructorNeeds,
@@ -7,6 +7,7 @@ import {
   maxGain,
   OUTSIDE,
   othersAfterWin,
+  settled,
   type Cell,
   type Championship,
   type Earliest,
@@ -14,21 +15,24 @@ import {
   type Upcoming,
 } from "../../shared/clinch.ts";
 import { pointsFor } from "../../shared/points.ts";
+import type { Season } from "../../shared/season.ts";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
+import { Champion } from "./Champion.tsx";
 import { Simulator } from "./Simulator.tsx";
 import type { Who } from "./derive.ts";
 
 interface TitleFightProps {
   champ: Championship;
+  season: Season;
   table: Standing[];
   events: Upcoming[];
   who: Map<string, Who>;
 }
 
-const earliestText = (e: Earliest, events: Upcoming[]): string =>
+const earliestText = (e: Earliest, events: Upcoming[], won: string): string =>
   e.state === "clinched"
-    ? "Champion"
+    ? won
     : e.state === "eliminated"
       ? "Out of contention"
       : e.state === "last-race-only"
@@ -41,6 +45,7 @@ interface MatrixProps {
   focus: string;
   rival: string;
   who: Map<string, Who>;
+  prize: string;
 }
 
 const pos = (p: number | null) =>
@@ -57,7 +62,7 @@ const list = (items: string[]) =>
     ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`
     : (items[0] ?? "");
 
-const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
+const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const m = useMemo(
     () => clinchMatrix(table, events, focus, rival),
     [table, events, focus, rival],
@@ -76,9 +81,9 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
   const margin = (mine: number | null, theirs: number) =>
     gap + pointsFor(events[0]!.kind, mine) - pointsFor(events[0]!.kind, theirs);
   const legend = {
-    clinched: `${a} is champion`,
+    clinched: `${a} secures ${prize}`,
     "rival-out": `${b} is out, ${a} needs other results`,
-    open: "Title still open",
+    open: "Still open",
   };
   return (
     <div className="space-y-3">
@@ -138,17 +143,17 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
       </div>
       <p className="text-sm text-zinc-400">
         {blocker
-          ? `${a} cannot secure the title at this event. ${code(blocker.id)} can still win the title with no points here.`
+          ? `${a} cannot secure ${prize} at this event. ${code(blocker.id)} can still take ${prize} with no points here.`
           : states.has("rival-out") && limits.length > 0
             ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
             : !states.has("clinched") &&
-              `${a} cannot secure the title at this event.`}
+              `${a} cannot secure ${prize} at this event.`}
       </p>
     </div>
   );
 };
 
-const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
+const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const needs = useMemo(
     () =>
       constructorNeeds(table, events, focus, rival).filter(
@@ -160,15 +165,15 @@ const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
   if (!needs.length)
     return (
       <p className="text-sm text-zinc-400">
-        {a} cannot secure the title at {events[0]!.name}.
+        {a} cannot secure {prize} at {events[0]!.name}.
       </p>
     );
   return (
     <div>
       <p className="mb-2 text-sm text-zinc-400">
-        The points {a} need at {events[0]!.name} to be champion there, for each
-        score of {b}. This assumes that every other team can still score the
-        maximum.
+        The points {a} need at {events[0]!.name} to secure {prize} there, for
+        each score of {b}. This assumes that every other team can still score
+        the maximum.
       </p>
       <table className="tabular text-sm">
         <thead className="text-left text-xs text-zinc-500">
@@ -192,7 +197,20 @@ const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
   );
 };
 
-export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
+export const TitleFight = ({
+  champ,
+  season,
+  table: full,
+  events,
+  who,
+}: TitleFightProps) => {
+  const done = useMemo(
+    () => settled(full, events, champ),
+    [full, events, champ],
+  );
+  const table = full.slice(done);
+  const place = done ? `P${done + 1}` : "";
+  const prize = place || "the title";
   const alive = table
     .filter((s) => !isEliminated(table, events, s.id, champ))
     .map((s) => s.id);
@@ -201,103 +219,138 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
   const rival =
     picked !== focus ? picked : (alive.find((id) => id !== focus) ?? "");
   const gain = maxGain(events, champ);
-  if (!events.length)
-    return <p className="text-zinc-400">The season is over.</p>;
+  const fight = events.length > 0 && table.length > 1;
+  const nextRef = useRef<HTMLHeadingElement>(null);
   return (
     <div className="space-y-4">
-      <section className="bg-surface rounded-xl p-3">
-        <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
-          Who can still win
-        </h2>
-        <p className="mb-2 text-sm text-zinc-500">
-          {gain} points remain across {events.length} events. The earliest
-          decider assumes that the driver wins every event and that no rival
-          scores.
-        </p>
-        <table className="tabular w-full text-sm">
-          <thead className="text-left text-xs text-zinc-500">
-            <tr>
-              <th className="py-1" />
-              <th className="py-1 pl-3 text-right">Points</th>
-              <th className="py-1 pl-3 text-right">Max</th>
-              <th className="py-1 pl-4">Earliest title</th>
-            </tr>
-          </thead>
-          <tbody>
-            {table.slice(0, 10).map((s) => (
-              <tr
-                key={s.id}
-                className={`border-t border-zinc-800 ${alive.includes(s.id) ? "" : "text-zinc-600"}`}
-              >
-                <td className="py-1">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="h-4 w-1 rounded-sm"
-                      style={{ background: ink(who.get(s.id)?.color) }}
-                    />
-                    {who.get(s.id)?.name ?? s.id}
-                  </span>
-                </td>
-                <td className="py-1 pl-3 text-right">{s.points}</td>
-                <td className="py-1 pl-3 text-right">{s.points + gain}</td>
-                <td className="py-1 pl-4">
-                  {earliestText(
-                    earliestClinch(table, events, s.id, champ),
-                    events,
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-      {alive.length > 1 && (
-        <section className="bg-surface space-y-3 rounded-xl p-3">
-          <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-            What it takes at {events[0]!.name}
-          </h2>
-          <div className="grid max-w-lg grid-cols-2 gap-3">
-            <Pick
-              label="Title for"
-              value={focus}
-              ids={alive}
-              who={who}
-              onChange={setFocus}
-            />
-            <Pick
-              label="Against"
-              value={rival}
-              ids={alive.filter((id) => id !== focus)}
-              who={who}
-              onChange={setRival}
-            />
-          </div>
-          {champ === "drivers" ? (
-            <Matrix
-              table={table}
-              events={events}
-              focus={focus}
-              rival={rival}
-              who={who}
-            />
-          ) : (
-            <Needs
-              table={table}
-              events={events}
-              focus={focus}
-              rival={rival}
-              who={who}
-            />
-          )}
-        </section>
+      {done > 0 && (
+        <Champion
+          champ={champ}
+          season={season}
+          table={full}
+          who={who}
+          next={fight ? place : undefined}
+          onNext={() =>
+            nextRef.current?.scrollIntoView({
+              behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+            })
+          }
+        />
       )}
-      <Simulator
-        champ={champ}
-        table={table}
-        events={events}
-        contenders={alive}
-        who={who}
-      />
+      {!done && !events.length && (
+        <p className="text-zinc-400">The season is over.</p>
+      )}
+      {done > 0 && fight && (
+        <h2
+          ref={nextRef}
+          className="font-f1 scroll-mt-6 px-1 pt-2 text-lg font-bold"
+        >
+          The fight for {place}
+        </h2>
+      )}
+      {fight && (
+        <>
+          <section className="bg-surface rounded-xl p-3">
+            <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
+              {place ? `Who can still finish ${place}` : "Who can still win"}
+            </h2>
+            <p className="mb-2 text-sm text-zinc-500">
+              {gain} points remain across {events.length} events. The earliest
+              decider assumes that the driver wins every event and that no rival
+              scores.
+            </p>
+            <table className="tabular w-full text-sm">
+              <thead className="text-left text-xs text-zinc-500">
+                <tr>
+                  <th className="py-1" />
+                  <th className="py-1 pl-3 text-right">Points</th>
+                  <th className="py-1 pl-3 text-right">Max</th>
+                  <th className="py-1 pl-4">Earliest {place || "title"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {table.slice(0, 10).map((s) => (
+                  <tr
+                    key={s.id}
+                    className={`border-t border-zinc-800 ${alive.includes(s.id) ? "" : "text-zinc-600"}`}
+                  >
+                    <td className="py-1">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-4 w-1 rounded-sm"
+                          style={{ background: ink(who.get(s.id)?.color) }}
+                        />
+                        {who.get(s.id)?.name ?? s.id}
+                      </span>
+                    </td>
+                    <td className="py-1 pl-3 text-right">{s.points}</td>
+                    <td className="py-1 pl-3 text-right">{s.points + gain}</td>
+                    <td className="py-1 pl-4">
+                      {earliestText(
+                        earliestClinch(table, events, s.id, champ),
+                        events,
+                        place || "Champion",
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+          {alive.length > 1 && (
+            <section className="bg-surface space-y-3 rounded-xl p-3">
+              <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
+                What it takes at {events[0]!.name}
+              </h2>
+              <div className="grid max-w-lg grid-cols-2 gap-3">
+                <Pick
+                  label={place ? `${place} for` : "Title for"}
+                  value={focus}
+                  ids={alive}
+                  who={who}
+                  onChange={setFocus}
+                />
+                <Pick
+                  label="Against"
+                  value={rival}
+                  ids={alive.filter((id) => id !== focus)}
+                  who={who}
+                  onChange={setRival}
+                />
+              </div>
+              {champ === "drivers" ? (
+                <Matrix
+                  table={table}
+                  events={events}
+                  focus={focus}
+                  rival={rival}
+                  who={who}
+                  prize={prize}
+                />
+              ) : (
+                <Needs
+                  table={table}
+                  events={events}
+                  focus={focus}
+                  rival={rival}
+                  who={who}
+                  prize={prize}
+                />
+              )}
+            </section>
+          )}
+          <Simulator
+            champ={champ}
+            table={table}
+            events={events}
+            contenders={alive}
+            who={who}
+            prize={prize}
+          />
+        </>
+      )}
     </div>
   );
 };

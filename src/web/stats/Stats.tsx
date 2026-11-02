@@ -115,6 +115,7 @@ export const Stats = ({ season }: StatsProps) => {
                   render={(c) => (
                     <TitleFight
                       champ={c}
+                      season={season}
                       table={latest(c === "drivers" ? d.dt : d.tt)}
                       events={d.events}
                       who={c === "drivers" ? d.who : d.teamWho}

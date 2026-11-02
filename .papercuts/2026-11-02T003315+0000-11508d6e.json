@@ -1,0 +1,14 @@
+{
+  "id": "11508d6e",
+  "ts": "2026-11-02T00:33:15+00:00",
+  "text": "Global npx playwright-core 1.61.1 expects webkit-2311, but only webkit-2370 is cached; use pnpm store 1.64.1",
+  "tags": [
+    "playwright",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "e850b8d0",
+  "where": "/private/tmp/claude-501/-Users-olavassbotn--t3-worktrees-f1-pitwall-t3-c6e1eaf8/e850b8d0-2dfd-46ee-8bbe-0064795c6c95/scratchpad",
+  "branch": ""
+}

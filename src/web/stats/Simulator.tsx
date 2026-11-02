@@ -17,6 +17,7 @@ interface SimulatorProps {
   events: Upcoming[];
   contenders: string[];
   who: Map<string, Who>;
+  prize: string;
 }
 
 type Row = Record<string, (number | undefined)[]>;
@@ -75,6 +76,7 @@ export const Simulator = ({
   events,
   contenders,
   who,
+  prize,
 }: SimulatorProps) => {
   const [grid, setGrid] = useState<Row[]>([]);
   const cars = champ === "drivers" ? 1 : 2;
@@ -175,8 +177,8 @@ export const Simulator = ({
         <div>
           <p>
             {decided
-              ? `${name(decided.id)} is champion after ${events[decided.index]!.name}.`
-              : "With these results, the title is not decided before the final event."}
+              ? `${name(decided.id)} secures ${prize} after ${events[decided.index]!.name}.`
+              : `With these results, ${prize} is not decided before the final event.`}
           </p>
           {decided && (
             <p className="text-xs text-emerald-300/70">{why(decided)}</p>
@@ -261,7 +263,7 @@ export const Simulator = ({
                     {e.name}
                     {decided?.index === i && (
                       <Trophy
-                        aria-label="Title decided"
+                        aria-label="Decided"
                         className="ml-1 inline size-3"
                       />
                     )}
