@@ -1,5 +1,3 @@
-import { createPortal } from "react-dom";
-
 interface BackdropProps {
   name: string;
   line: string;
@@ -7,9 +5,9 @@ interface BackdropProps {
 
 const GROUPS = Array.from({ length: 14 }, (_, i) => i);
 
-export const Backdrop = ({ name, line }: BackdropProps) =>
-  createPortal(
-    <div aria-hidden className="champion-backdrop">
+export const Backdrop = ({ name, line }: BackdropProps) => (
+  <div aria-hidden className="champion-backdrop">
+    <div className="champion-names">
       <div className="champion-rows">
         {GROUPS.map((g) => (
           <div key={g}>
@@ -18,6 +16,6 @@ export const Backdrop = ({ name, line }: BackdropProps) =>
           </div>
         ))}
       </div>
-    </div>,
-    document.body,
-  );
+    </div>
+  </div>
+);
