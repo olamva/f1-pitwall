@@ -28,37 +28,19 @@ const Panel = ({
   side: Side;
   right: boolean;
   seam: number;
-}) => {
-  const d = useArt(side.id);
-  return (
-    <div
-      className="absolute inset-0 transition-[clip-path] duration-500"
-      style={{
-        clipPath: right ? clip(seam, 100, 0.5) : clip(seam, 0, -0.5),
-        background: `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${side.color} 85%, white) 0%, ${side.color} 30%, color-mix(in srgb, ${side.color} 30%, ${INK}) 75%)`,
-      }}
-    >
-      {d && (
-        <div
-          className={`absolute top-[6%] h-[58%] transition-[width] duration-500 ${right ? "right-[3%]" : "left-[3%]"}`}
-          style={{
-            width: `${Math.min(40, (right ? 100 - seam : seam) - 12)}%`,
-          }}
-        >
-          <TeamNumber
-            id={d.id}
-            number={d.number}
-            color="rgb(255 255 255 / 0.22)"
-            className="flex size-full overflow-hidden text-[8rem]"
-          />
-        </div>
-      )}
-    </div>
-  );
-};
+}) => (
+  <div
+    className="absolute inset-0 transition-[clip-path] duration-500"
+    style={{
+      clipPath: right ? clip(seam, 100, 0.5) : clip(seam, 0, -0.5),
+      background: `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${side.color} 85%, white) 0%, ${side.color} 30%, color-mix(in srgb, ${side.color} 30%, ${INK}) 75%)`,
+    }}
+  />
+);
 
 const Plate = ({ side, right }: { side: Side; right: boolean }) => {
-  const name = useArt(side.id)?.name ?? side.id;
+  const d = useArt(side.id);
+  const name = d?.name ?? side.id;
   return (
     <div
       className={`font-f1 absolute bottom-3 z-10 ${right ? "right-4 text-right" : "left-4"}`}
@@ -69,12 +51,24 @@ const Plate = ({ side, right }: { side: Side; right: boolean }) => {
       <p className="text-xl leading-none font-black tracking-wide uppercase sm:text-3xl">
         {name.split(" ").at(-1)}
       </p>
-      <p
-        className="tabular mt-1.5 inline-block px-1.5 py-0.5 text-xs font-bold text-white sm:text-sm"
-        style={{ background: side.color }}
+      <div
+        className={`mt-1.5 flex items-center gap-2 ${right ? "flex-row-reverse" : ""}`}
       >
-        {side.note}
-      </p>
+        {d && (
+          <TeamNumber
+            id={d.id}
+            number={d.number}
+            color="white"
+            className="flex h-5 text-xl sm:h-6 sm:text-2xl"
+          />
+        )}
+        <p
+          className="tabular px-1.5 py-0.5 text-xs font-bold text-white sm:text-sm"
+          style={{ background: side.color }}
+        >
+          {side.note}
+        </p>
+      </div>
     </div>
   );
 };

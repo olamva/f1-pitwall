@@ -36,6 +36,15 @@ type Race = RaceArchive["races"][number];
 type Result = Race["results"][number];
 type Entry = Pick<Result, "driver" | "name" | "team" | "positionText">;
 
+const CODES: Record<string, string> = {
+  R: "DNF",
+  D: "DSQ",
+  E: "EXC",
+  W: "DNS",
+  F: "DNQ",
+  N: "NC",
+};
+
 const entrants = (races: Race[], round: number) =>
   new Map(
     races
@@ -76,7 +85,9 @@ const ResultsTable = <T extends Entry>({
           key={`${row.driver}:${index}`}
           className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${row.driver === favourite ? FAVOURITE_ROW : ""}`}
         >
-          <td className="py-2 font-semibold">{row.positionText}</td>
+          <td className="py-2 font-semibold">
+            {CODES[row.positionText] ?? row.positionText}
+          </td>
           <td className="py-2">
             <button
               type="button"
@@ -124,15 +135,20 @@ const Classification = <T extends Entry>({
   </>
 );
 
+const describe = ({ status, positionText }: Result) => {
+  const laps = /^\+(\d+) Laps?$/.exec(status)?.[1];
+  if (status === "Finished") return "";
+  if (laps) return `${laps} ${laps === "1" ? "lap" : "laps"} down`;
+  if (positionText !== "R" || status === "Retired") return status;
+  return status === "Lapped" ? "Not classified" : `Retired: ${status}`;
+};
+
 const raceCells = (result: Result) => {
-  const status = result.status === "Finished" ? "" : result.status;
+  const status = describe(result);
   return (
     <>
-      <td className="py-2 pl-2 text-right text-zinc-400">
-        {result.grid || "Pit"}
-      </td>
       <td
-        className="py-2 pl-2 text-right text-zinc-400 sm:max-w-40 sm:truncate"
+        className="py-2 pl-2 text-right text-zinc-400 sm:max-w-48 sm:truncate"
         title={status}
       >
         {status}
@@ -192,7 +208,7 @@ const RaceBody = ({
       key={`${round}:${kind}`}
       rows={rows}
       favourite={favourite}
-      columns={["Grid", "Status", "Pts"]}
+      columns={["", "Pts"]}
       cells={raceCells}
       value={(result) => `${result.points} pts`}
     />
