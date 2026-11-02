@@ -1,0 +1,14 @@
+{
+  "id": "ad510117",
+  "ts": "2026-11-02T23:34:34+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call, even after preview_open with open=true",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b61cae3c",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/favorite-team-highlights"
+}
