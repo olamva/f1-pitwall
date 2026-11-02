@@ -10,10 +10,15 @@ import {
   SquarePlus,
   SquareTerminal,
 } from "lucide-react";
-import type { DriverInfo } from "../shared/season.ts";
+import type { DriverInfo, Season } from "../shared/season.ts";
 import { tokenProblem, type TokenStatus } from "../shared/token.ts";
 import { DelayInput } from "./DelayInput.tsx";
-import { setFavourite, useFavourite } from "./favourite.ts";
+import {
+  setFavourite,
+  setFavouriteTeam,
+  useFavourite,
+  useFavouriteTeam,
+} from "./favourite.ts";
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
@@ -93,10 +98,12 @@ async function post(value: string): Promise<TokenStatus> {
 
 interface SettingsProps {
   drivers: DriverInfo[];
+  teams: Season["teams"];
 }
 
-export const Settings = ({ drivers }: SettingsProps) => {
+export const Settings = ({ drivers, teams }: SettingsProps) => {
   const favourite = useFavourite();
+  const team = useFavouriteTeam();
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [denied, setDenied] = useState<number | null>(null);
   const [value, setValue] = useState("");
@@ -192,6 +199,26 @@ export const Settings = ({ drivers }: SettingsProps) => {
         </select>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Favourite team</h2>
+        <p className="text-sm text-zinc-400">
+          Highlight the drivers of this team in blue, and the team in the
+          constructors standings.
+        </p>
+        <select
+          aria-label="Favourite team"
+          value={team ?? ""}
+          onChange={(e) => setFavouriteTeam(e.target.value || null)}
+          className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm"
+        >
+          <option value="">None</option>
+          {teams.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">TV delay</h2>
         <p className="text-sm text-zinc-400">
           Hold live timing back by this many seconds to match your F1TV stream.
@@ -227,7 +254,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
           <h2 className="font-f1 text-lg font-bold">Account</h2>
           <p className="text-sm text-zinc-400">
             {denied === 401
-              ? "Sign in with Google to use your TV delay and favourite driver on all devices, transcribe new radio messages, get session reminders, and add your own F1TV token."
+              ? "Sign in with Google to use your TV delay, favourite driver and favourite team on all devices, transcribe new radio messages, get session reminders, and add your own F1TV token."
               : "Your Google account has no access to settings sync, new transcripts, reminders, and F1TV tokens."}
           </p>
           {denied === 401 && (

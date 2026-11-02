@@ -7,6 +7,7 @@ const checks: Record<string, (v: any) => boolean> = {
     (/^[a-z0-9_]+$/.test(v?.id) &&
       /^[A-Z]{3}$/.test(v?.code) &&
       Object.keys(v).length === 2),
+  team: (v) => v === null || (typeof v === "string" && /^[a-z0-9_]+$/.test(v)),
 };
 
 export const SYNCED = Object.keys(checks);

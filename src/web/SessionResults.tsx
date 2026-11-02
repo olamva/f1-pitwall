@@ -9,7 +9,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
-import { FAVOURITE_ROW } from "./favourite.ts";
+import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
@@ -66,48 +66,51 @@ const ResultsTable = <T extends Entry>({
   favourite,
   columns,
   cells,
-}: ResultsTableProps<T>) => (
-  <table className="tabular w-full text-xs sm:text-sm">
-    <thead className="text-left text-xs text-zinc-500">
-      <tr>
-        <th className="w-8 pb-2">Pos</th>
-        <th className="pb-2">Driver</th>
-        {columns.map((column) => (
-          <th key={column} className="pb-2 pl-2 text-right">
-            {column}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
-        <tr
-          key={`${row.driver}:${index}`}
-          className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${row.driver === favourite ? FAVOURITE_ROW : ""}`}
-        >
-          <td className="py-2 font-semibold">
-            {CODES[row.positionText] ?? row.positionText}
-          </td>
-          <td className="py-2">
-            <button
-              type="button"
-              onClick={() => openDriver(row.driver)}
-              disabled={!row.driver}
-              className="cursor-pointer text-left after:absolute after:inset-0 disabled:cursor-default"
-            >
-              <TeamLogo
-                team={row.team}
-                className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
-              />
-              {row.name}
-            </button>
-          </td>
-          {cells(row)}
+}: ResultsTableProps<T>) => {
+  const teamRow = useTeamRow();
+  return (
+    <table className="tabular w-full text-xs sm:text-sm">
+      <thead className="text-left text-xs text-zinc-500">
+        <tr>
+          <th className="w-8 pb-2">Pos</th>
+          <th className="pb-2">Driver</th>
+          {columns.map((column) => (
+            <th key={column} className="pb-2 pl-2 text-right">
+              {column}
+            </th>
+          ))}
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
+          <tr
+            key={`${row.driver}:${index}`}
+            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${row.driver === favourite ? FAVOURITE_ROW : teamRow(row.team)}`}
+          >
+            <td className="py-2 font-semibold">
+              {CODES[row.positionText] ?? row.positionText}
+            </td>
+            <td className="py-2">
+              <button
+                type="button"
+                onClick={() => openDriver(row.driver)}
+                disabled={!row.driver}
+                className="cursor-pointer text-left after:absolute after:inset-0 disabled:cursor-default"
+              >
+                <TeamLogo
+                  team={row.team}
+                  className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
+                />
+                {row.name}
+              </button>
+            </td>
+            {cells(row)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 interface ClassificationProps<T extends Entry> extends ResultsTableProps<T> {
   value: (row: T) => string;
