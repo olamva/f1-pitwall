@@ -18,6 +18,7 @@ interface SimulatorProps {
   contenders: string[];
   who: Map<string, Who>;
   prize: string;
+  settled: number;
 }
 
 type Row = Record<string, (number | undefined)[]>;
@@ -77,6 +78,7 @@ export const Simulator = ({
   contenders,
   who,
   prize,
+  settled,
 }: SimulatorProps) => {
   const [grid, setGrid] = useState<Row[]>([]);
   const cars = champ === "drivers" ? 1 : 2;
@@ -132,7 +134,9 @@ export const Simulator = ({
     const all = events.map((_, i) => grid[i]?.[id]?.[car]);
     return all.every((v) => v === all[0]) ? all[0] : "mixed";
   };
-  const standings = result.final.filter((s) => contenders.includes(s.id));
+  const standings = result.final
+    .map((s, i) => ({ ...s, rank: settled + i + 1 }))
+    .filter((s) => contenders.includes(s.id));
   const leader = standings[0]?.points ?? 0;
   return (
     <section className="bg-surface space-y-3 rounded-xl p-3">
@@ -193,7 +197,7 @@ export const Simulator = ({
               className="flex items-center gap-2 rounded-md bg-zinc-800/40 px-2 py-1"
             >
               <span className="w-4 text-right text-xs text-zinc-500">
-                {i + 1}
+                {s.rank}
               </span>
               <span
                 className="h-4 w-1 rounded-sm"
