@@ -1,0 +1,14 @@
+{
+  "id": "0717c076",
+  "ts": "2026-11-02T20:58:13+00:00",
+  "text": "T3 preview_snapshot times out after 15s twice on a background tab at the iphone-14-pro-max preset",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "34cc79b6",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/consolidate-calendar-results"
+}

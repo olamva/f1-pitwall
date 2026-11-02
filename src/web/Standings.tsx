@@ -6,12 +6,13 @@ import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
 import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
 import { Loading } from "./Loading.tsx";
-import { openDriver } from "./path.ts";
+import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { clinched } from "./stats/derive.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { YEARS, YearSelect } from "./YearSelect.tsx";
 
 const CHAMPS = ["drivers", "constructors"] as const;
 
@@ -107,32 +108,66 @@ const StandingsTable = ({
 };
 
 interface StandingsProps {
-  year: string;
-  season: Season | null;
+  season: Season;
 }
 
-export const Standings = ({ year, season }: StandingsProps) => {
+export const Standings = ({ season }: StandingsProps) => {
+  const [year, setYear] = useState(() => {
+    const path = pathSegment("stats", 3);
+    return pathPart("stats") === "standings" && YEARS.includes(path ?? "")
+      ? path!
+      : String(season.year);
+  });
+  const pick = (next: string) => {
+    setYear(next);
+    history.replaceState(
+      null,
+      "",
+      `/stats/standings${next === String(season.year) ? "" : `/${next}`}`,
+    );
+  };
   const [champ, setChamp] = useState<Championship>("drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
+  const ready = data?.year === Number(year);
   const crowned = (champ: Championship) =>
     Number(year) < new Date().getUTCFullYear() ||
-    (season?.year === Number(year) && clinched(season, champ));
-  useConfetti(
-    data?.year === Number(year) &&
-      data.drivers.length > 0 &&
-      CHAMPS.some(crowned),
-    year,
+    (season.year === Number(year) && clinched(season, champ));
+  useConfetti(ready && data.drivers.length > 0 && CHAMPS.some(crowned), year);
+  const teams = ready && data.constructors.length > 0;
+  const picker = (
+    <div className="flex items-center gap-3">
+      {teams && (
+        <div className="grow xl:hidden">
+          <Tabs
+            items={CHAMPS}
+            value={champ}
+            onChange={setChamp}
+            small
+            stretch
+            drive={blob}
+          />
+        </div>
+      )}
+      <YearSelect value={year} onChange={pick} />
+    </div>
   );
   if (data?.year !== Number(year))
-    return <Loading label="Loading standings…" error={error} />;
+    return (
+      <div className="space-y-4">
+        {picker}
+        <Loading label="Loading standings…" error={error} />
+      </div>
+    );
   if (!data.drivers.length)
     return (
-      <p className="bg-surface rounded-xl p-4 text-sm text-zinc-400">
-        No standings are available for {year}.
-      </p>
+      <div className="space-y-4">
+        {picker}
+        <p className="bg-surface rounded-xl p-4 text-sm text-zinc-400">
+          No standings are available for {year}.
+        </p>
+      </div>
     );
-  const teams = data.constructors.length > 0;
   const table = (champ: Championship) =>
     champ === "drivers" ? (
       <StandingsTable
@@ -151,18 +186,7 @@ export const Standings = ({ year, season }: StandingsProps) => {
     );
   return (
     <div className="space-y-4">
-      {teams && (
-        <div className="xl:hidden">
-          <Tabs
-            items={CHAMPS}
-            value={champ}
-            onChange={setChamp}
-            small
-            stretch
-            drive={blob}
-          />
-        </div>
-      )}
+      {picker}
       <div className="xl:hidden">
         <Swipe
           items={teams ? CHAMPS : CHAMPS.slice(0, 1)}

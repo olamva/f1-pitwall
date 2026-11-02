@@ -1,7 +1,10 @@
 import type { CSSProperties } from "react";
-import { Trophy } from "lucide-react";
+import { EyeOff, Trophy } from "lucide-react";
+import type { RaceArchive } from "../shared/season.ts";
 import { BUST, Figure } from "./Headshot.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
+
+export type Race = RaceArchive["races"][number];
 
 export interface PodiumEntry {
   id: string;
@@ -96,3 +99,40 @@ export const Podium = ({ entries, crowned, onSelect, inline }: PodiumProps) => (
     <div className="h-px bg-linear-to-r from-transparent via-zinc-600 to-transparent" />
   </div>
 );
+
+interface PodiumRowProps {
+  race: Race;
+  hidden: Set<string>;
+}
+
+export const PodiumRow = ({ race, hidden }: PodiumRowProps) => {
+  const kind = race.results.length ? "race" : "sprint";
+  return hidden.has(`${race.round}/${kind}`) ? (
+    <span className="flex h-6 items-center gap-1.5 text-xs text-zinc-400">
+      <EyeOff aria-hidden="true" className="size-4 text-red-500" />
+      Results hidden
+    </span>
+  ) : (
+    <span className="grid grid-cols-3 gap-2 text-xs">
+      {race[kind === "race" ? "results" : "sprint"]
+        .slice(0, 3)
+        .map((result, index) => (
+          <span
+            key={result.driver}
+            className="flex min-w-0 items-center gap-1.5"
+          >
+            <span
+              className="font-f1 font-black"
+              style={{ color: METALS[index] }}
+            >
+              {index + 1}
+            </span>
+            <TeamLogo team={result.team} className="h-4 w-6 shrink-0" />
+            <span className="truncate font-semibold">
+              {result.code || result.name}
+            </span>
+          </span>
+        ))}
+    </span>
+  );
+};

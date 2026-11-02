@@ -1,8 +1,9 @@
-import { ChartLine, Gauge, IdCard, Swords, Users } from "lucide-react";
+import { ChartLine, Gauge, Swords, Trophy, Users } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { pathPart, pathSegment, setPathPart } from "../path.ts";
+import { Standings } from "../Standings.tsx";
 import { Swipe } from "../Swipe.tsx";
 import { Tabs } from "../Tabs.tsx";
 import {
@@ -16,18 +17,23 @@ import {
   teams,
 } from "./derive.ts";
 import { DriverProfile } from "./DriverProfile.tsx";
-import { Drivers } from "./Drivers.tsx";
 import { RacePace } from "./RacePace.tsx";
 import { SeasonCharts } from "./SeasonCharts.tsx";
 import { Teammates } from "./Teammates.tsx";
 import { TitleFight } from "./TitleFight.tsx";
 
-const VIEWS = ["Drivers", "Title fight", "H2H", "Season", "Race pace"] as const;
+const VIEWS = [
+  "Standings",
+  "Title fight",
+  "H2H",
+  "Season",
+  "Race pace",
+] as const;
 type View = (typeof VIEWS)[number];
 const CHAMPS = ["drivers", "constructors"] as const;
 
 const ICONS = {
-  Drivers: IdCard,
+  Standings: Trophy,
   "Title fight": Swords,
   H2H: Users,
   Season: ChartLine,
@@ -42,10 +48,10 @@ interface StatsProps {
 
 export const Stats = ({ season }: StatsProps) => {
   const [view, setView] = useState<View>(
-    () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Drivers",
+    () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings",
   );
   const [driver, setDriver] = useState(() =>
-    view === "Drivers" ? pathSegment("stats", 3) : null,
+    pathPart("stats") === "drivers" ? pathSegment("stats", 3) : null,
   );
   const show = (v: View) => {
     setPathPart("stats", slug(v));
@@ -86,16 +92,16 @@ export const Stats = ({ season }: StatsProps) => {
         drive={viewBlob}
         render={(v) => (
           <>
-            {v === "Drivers" &&
+            {v === "Standings" &&
               (driver ? (
                 <DriverProfile
                   key={driver}
                   id={driver}
                   season={season}
-                  onBack={() => show("Drivers")}
+                  onBack={() => show("Standings")}
                 />
               ) : (
-                <Drivers season={season} who={d.who} table={latest(d.dt)} />
+                <Standings season={season} />
               ))}
             {v === "Title fight" && (
               <div className="space-y-4">

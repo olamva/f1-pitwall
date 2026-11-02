@@ -20,14 +20,12 @@ import { useJson, type Loaded } from "../api.ts";
 import { setDelay, useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
-import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
 import { setSearchParam } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
 import { useActive } from "../Swipe.tsx";
 import { Board } from "./Board.tsx";
-import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
@@ -302,7 +300,7 @@ type Play = { t: number | null; speed: number; on: boolean | null };
 const streamUrl = (q: string, { t, speed }: Play) =>
   `/api/replay/stream?${q}&speed=${speed}${t === null ? "" : `&t=${t}`}`;
 
-const Replay = ({ session, rounds, onClose }: ReplayProps) => {
+export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
   const [play, setPlay] = useState<Play>(() => {
     const t = Number(new URLSearchParams(location.search).get("t")) * 1000;
     return { t: t || null, speed: 4, on: t ? null : true };
@@ -336,7 +334,7 @@ const Replay = ({ session, rounds, onClose }: ReplayProps) => {
         className="flex cursor-pointer items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-zinc-100"
       >
         <ChevronLeft aria-hidden="true" className="size-4" />
-        All replays
+        Back
       </button>
       <ReplayBar
         race={/^(Race|Sprint)$/.test(session.name)}
@@ -448,49 +446,5 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
     </div>
   ) : (
     <Countdown rounds={season.data.rounds} />
-  );
-};
-
-interface CalendarProps {
-  season: Loaded<Season>;
-}
-
-export const Calendar = ({ season }: CalendarProps) => {
-  const sessions = useJson<SessionRef[]>("/api/replay/sessions", 10 * 60_000);
-  const [path, setPath] = useState(() => pathPart("calendar"));
-  const pushed = useRef(false);
-  const open = (s: SessionRef) => {
-    navigate(`/calendar/${encodeURIComponent(s.path)}`);
-    pushed.current = !standalone;
-    setPath(s.path);
-  };
-  const close = () => {
-    if (pushed.current) return history.back();
-    setPathPart("calendar", null);
-    setPath(null);
-  };
-  const chosen = sessions.data?.find((s) => s.path === path);
-  if (!sessions.data || !season.data)
-    return (
-      <Loading
-        label="Loading the calendar…"
-        error={sessions.error ?? season.error}
-      />
-    );
-  if (chosen)
-    return (
-      <Replay
-        key={chosen.path}
-        session={chosen}
-        rounds={season.data.rounds}
-        onClose={close}
-      />
-    );
-  return (
-    <CalendarList
-      sessions={sessions.data}
-      season={season.data}
-      onStart={open}
-    />
   );
 };
