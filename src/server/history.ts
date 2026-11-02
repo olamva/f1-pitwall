@@ -5,9 +5,10 @@ import {
   type RaceArchive,
   type SeasonStandings,
 } from "../shared/season.ts";
+import { startingGrid } from "./archive.ts";
 import champions from "./champions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
-import { provisional } from "./openf1.ts";
+import { provisional, raceResults } from "./openf1.ts";
 import { seconds, when } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
@@ -65,6 +66,21 @@ export async function raceArchive(year: number): Promise<RaceArchive> {
     entry(race).results.push(...race.Results.map(result));
   for (const race of sprintRows)
     entry(race).sprint.push(...race.SprintResults.map(result));
+  const latest = schedule.RaceTable.Races.findLast(
+    (race: any) => Date.parse(when(race)!) + SESSION_MS <= Date.now(),
+  );
+  const pending = latest && races.get(Number(latest.round));
+  if (!freshMs && pending && !pending.results.length)
+    pending.results = await raceResults(
+      year,
+      Date.parse(when(latest)!),
+      new Map(
+        rows
+          .flatMap((race) => race.Results.map(result))
+          .map((r) => [r.code, r]),
+      ),
+      await startingGrid(year, pending.round).catch(() => new Map()),
+    ).catch(() => []);
   const byPosition = (a: Result, b: Result) => a.position - b.position;
   return {
     year,

@@ -114,6 +114,20 @@ export async function sessionPath(
   return match.path;
 }
 
+export async function startingGrid(
+  year: number,
+  round: number,
+): Promise<Map<string, number>> {
+  const path = await sessionPath(year, round, "race");
+  const data = await json(`${path}TimingAppData.json`);
+  return new Map(
+    Object.entries(data.Lines ?? {}).map(([number, line]: [string, any]) => [
+      number,
+      Number(line.GridPos) || 0,
+    ]),
+  );
+}
+
 export async function stints(
   year: number,
   round: number,
