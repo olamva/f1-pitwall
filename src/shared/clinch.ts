@@ -237,6 +237,22 @@ export function constructorNeeds(
   });
 }
 
+export type Finish = { best: number; other: number | null };
+
+export function finishesFor(kind: EventKind, need: number): Finish[] {
+  const out: Finish[] = [];
+  for (let best = 1; best < OUTSIDE; best++) {
+    const other = [
+      null,
+      ...Array.from({ length: OUTSIDE - 1 - best }, (_, i) => OUTSIDE - 1 - i),
+    ].find((p) => pointsFor(kind, best) + pointsFor(kind, p) >= need);
+    if (other === undefined) break;
+    if (out.at(-1)?.other === other) out.pop();
+    out.push({ best, other });
+  }
+  return out;
+}
+
 export type Decided = {
   index: number;
   id: string;

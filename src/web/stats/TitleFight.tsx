@@ -3,6 +3,7 @@ import {
   clinchMatrix,
   constructorNeeds,
   earliestClinch,
+  finishesFor,
   isEliminated,
   maxGain,
   OUTSIDE,
@@ -175,22 +176,37 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
       <p className="mb-2 text-sm text-zinc-400">
         The points {a} need at {events[0]!.name} to secure {prize} there, for
         each score of {b}. This assumes that every other team can still score
-        the maximum.
+        the maximum. Each finish shows the lowest pair of positions that gives
+        those points.
       </p>
       <table className="tabular text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
-            <th className="py-1 pr-6">{b} score</th>
-            <th className="py-1">{a} need</th>
+            <th className="py-1 pr-4">{b} score</th>
+            <th className="py-1 pr-4">{a} need</th>
+            <th className="py-1">Finishes</th>
           </tr>
         </thead>
         <tbody>
           {needs.map((n) => (
-            <tr key={n.rival} className="border-t border-zinc-800">
-              <td className="py-1 pr-6">
+            <tr key={n.rival} className="border-t border-zinc-800 align-top">
+              <td className="py-1 pr-4 whitespace-nowrap">
                 {n.rival ? `${n.rival} or less` : 0}
               </td>
-              <td className="py-1 font-semibold text-emerald-400">{n.need}</td>
+              <td className="py-1 pr-4 font-semibold text-emerald-400">
+                {n.need}
+              </td>
+              <td className="py-1 text-zinc-300">
+                <span className="flex flex-wrap gap-x-3">
+                  {n.need
+                    ? finishesFor(events[0]!.kind, n.need).map((f) => (
+                        <span key={f.best} className="whitespace-nowrap">
+                          {f.other ? `P${f.best} + P${f.other}` : `P${f.best}`}
+                        </span>
+                      ))
+                    : "Any"}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>
