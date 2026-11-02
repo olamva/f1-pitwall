@@ -144,6 +144,9 @@ export class Feed {
   private run() {
     this.connect().catch((e) => {
       console.error("live timing:", e.message);
+      const failed = this.connection;
+      this.connection = null;
+      void failed?.stop();
       setTimeout(() => this.run(), RETRY_MS);
     });
   }
