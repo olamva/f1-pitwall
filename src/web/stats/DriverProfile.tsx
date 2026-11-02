@@ -12,7 +12,6 @@ import { Headshot } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
-import { SprintLogo } from "../SprintLogo.tsx";
 import { clinched, driverTables, latest } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
 
@@ -28,11 +27,9 @@ interface PlaceProps {
 
 const Place = ({ result, sprint }: PlaceProps) => (
   <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-    {sprint ? (
-      <SprintLogo className="h-2 text-zinc-100" />
-    ) : (
-      <span className="text-zinc-500 uppercase">Race</span>
-    )}
+    <span className="text-zinc-500 uppercase">
+      {sprint ? "Sprint" : "Race"}
+    </span>
     <span
       className={`text-xs ${result?.points ? "" : "text-zinc-500"}`}
       style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
