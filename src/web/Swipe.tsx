@@ -92,6 +92,7 @@ export const Swipe = <T extends string>({
     at: number;
     dx: number;
     speed: number;
+    width: number;
     on: boolean;
   } | null>(null);
   const landing = useRef<number | null>(null);
@@ -116,8 +117,8 @@ export const Swipe = <T extends string>({
     const el = root.current!;
     delete el.dataset.swiping;
     delete el.dataset.settling;
-    el.style.removeProperty("--swipe");
     for (const panel of el.children) {
+      (panel as HTMLElement).style.removeProperty("--swipe");
       (panel as HTMLElement).style.removeProperty("top");
       (panel as HTMLElement).style.removeProperty("height");
     }
@@ -161,6 +162,11 @@ export const Swipe = <T extends string>({
     levels.add(level);
     return () => void levels.delete(level);
   }, [active, depth, items, index, onChange, drive]);
+
+  const slide = (x: number) => {
+    for (const panel of root.current!.children)
+      (panel as HTMLElement).style.setProperty("--swipe", `${x}px`);
+  };
 
   const reveal = () => {
     const el = root.current!;
@@ -215,10 +221,7 @@ export const Swipe = <T extends string>({
     el.dataset.settling = "";
     if (lift?.current) lift.current.style.transition = EASE;
     raise(next ? 1 : 0, step);
-    el.style.setProperty(
-      "--swipe",
-      `${next ? -step * (el.offsetWidth + GAP) : 0}px`,
-    );
+    slide(next ? -step * (el.offsetWidth + GAP) : 0);
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const done = () => {
       pending = null;
@@ -239,11 +242,12 @@ export const Swipe = <T extends string>({
     drag.current = null;
     if (!current.on) return;
     if (event.timeStamp - current.at > 100) current.speed = 0;
-    const width = root.current!.offsetWidth;
     const step =
-      current.dx < -width / 3 || (current.dx < 0 && current.speed < -0.4)
+      current.dx < -current.width / 3 ||
+      (current.dx < 0 && current.speed < -0.4)
         ? 1
-        : current.dx > width / 3 || (current.dx > 0 && current.speed > 0.4)
+        : current.dx > current.width / 3 ||
+            (current.dx > 0 && current.speed > 0.4)
           ? -1
           : 0;
     settle(event.type === "pointerup" ? step : 0);
@@ -272,6 +276,7 @@ export const Swipe = <T extends string>({
           at: event.timeStamp,
           dx: 0,
           speed: 0,
+          width: 0,
           on: false,
         };
       }}
@@ -292,6 +297,7 @@ export const Swipe = <T extends string>({
           }
           claimed.add(event.nativeEvent);
           current.on = true;
+          current.width = root.current!.offsetWidth;
           reveal();
         }
         const elapsed = Math.max(1, event.timeStamp - current.at);
@@ -299,8 +305,8 @@ export const Swipe = <T extends string>({
         current.at = event.timeStamp;
         current.dx = dx;
         const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : 0;
-        root.current!.style.setProperty("--swipe", `${shift}px`);
-        const offset = -shift / (root.current!.offsetWidth + GAP);
+        slide(shift);
+        const offset = -shift / (current.width + GAP);
         drive?.current?.(offset, true);
         raise(Math.min(1, Math.abs(offset)), Math.sign(offset));
       }}
