@@ -1,14 +1,13 @@
 import type { CSSProperties, RefObject } from "react";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { ChevronDown, Trophy } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
 import { useActive } from "../Swipe.tsx";
-import { TeamLogo } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
-import { TeamNumber } from "./TeamNumber.tsx";
+import { Backdrop } from "./Backdrop.tsx";
 
 interface ChampionProps {
   champ: Championship;
@@ -55,6 +54,7 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
         root.style.removeProperty(p);
     };
   }, [ref, active, color]);
+  return active;
 };
 
 export const Champion = ({
@@ -73,9 +73,11 @@ export const Champion = ({
     [season, champ, first.id],
   );
   useConfetti(true, `${champ}-${first.id}`);
-  useBackdrop(ref, me?.color ?? "#888");
+  const active = useBackdrop(ref, me?.color ?? "#888");
+  const surname = (me?.name ?? first.id).split(" ").at(-1)!;
+  const title =
+    champ === "drivers" ? "World Champion" : "Constructors' Champion";
   const decider = season.rounds.find((r) => r.round === h.decider);
-  const driver = season.drivers.find((d) => d.id === first.id);
   const team =
     season.teams.find((t) => t.id === me?.team)?.name ?? me?.team ?? "";
   const stats = [
@@ -87,34 +89,18 @@ export const Champion = ({
   return (
     <section
       ref={ref}
-      className="champion relative isolate flex flex-col pt-2 pb-26 sm:pb-6"
+      className="champion relative isolate flex flex-col pt-6 pb-26 sm:pb-6"
     >
-      <div
-        aria-hidden
-        className="champion-rays pointer-events-none absolute -inset-x-4 top-0 bottom-1/3 -z-10"
-      />
-      {champ === "drivers" && driver?.number ? (
-        <TeamNumber
-          id={driver.id}
-          number={driver.number}
-          color="rgb(255 255 255 / 0.14)"
-          className="absolute top-0 right-0 -z-10 flex h-32 items-start text-[8rem] sm:h-44 sm:text-[11rem]"
-        />
-      ) : (
-        <TeamLogo
-          team={first.id}
-          className="absolute top-0 right-0 -z-10 size-32 opacity-25 brightness-0 invert sm:size-44"
+      {active && (
+        <Backdrop
+          name={surname}
+          line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
         />
       )}
-      <Trophy
-        aria-hidden
-        className="champion-trophy size-12 text-[#fde047] sm:size-16"
-      />
-      <p className="font-f1 mt-3 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
-        {season.year}{" "}
-        {champ === "drivers" ? "World Champion" : "Constructors' Champion"}
+      <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
+        {season.year} {title}
       </p>
-      <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black italic sm:text-7xl">
+      <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black sm:text-7xl">
         {me?.name ?? first.id}
       </h2>
       {champ === "drivers" && (
@@ -183,7 +169,6 @@ const Road = ({ champ, season, h }: RoadProps) => (
             <span className="tabular font-f1 font-bold">
               {b.position === Infinity ? "DNF" : `P${b.position}`}
             </span>
-            {won && <Trophy aria-label="Title clinched" className="size-3" />}
           </li>
         );
       })}
