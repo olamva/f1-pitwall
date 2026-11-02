@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RotateCcw, Trophy } from "lucide-react";
 import {
+  maxGain,
   simulate,
   type Championship,
   type Decided,
@@ -10,6 +11,7 @@ import {
 import { Flag } from "../Flag.tsx";
 import { ink } from "../ink.ts";
 import type { Who } from "./derive.ts";
+import { Lineup } from "./Lineup.tsx";
 
 interface SimulatorProps {
   champ: Championship;
@@ -189,6 +191,14 @@ export const Simulator = ({
           )}
         </div>
       </div>
+      <Lineup
+        champ={champ}
+        table={result.final}
+        field={contenders}
+        out={decided ? contenders.filter((id) => id !== decided.id) : []}
+        who={who}
+        gain={maxGain(events, champ)}
+      />
       <div className="space-y-3 lg:flex lg:items-start lg:gap-4 lg:space-y-0">
         <ol className="tabular grid gap-1 text-sm lg:order-last lg:w-72 lg:shrink-0">
           {standings.map((s, i) => (

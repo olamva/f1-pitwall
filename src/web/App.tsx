@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   ChartColumn,
@@ -13,6 +13,7 @@ import {
   LiveSession,
   type LiveInfo,
 } from "./live/CurrentSession.tsx";
+import { Faces } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { navigate } from "./path.ts";
 import { Results } from "./Results.tsx";
@@ -56,6 +57,16 @@ export const App = () => {
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
+  const faces = useMemo(
+    () =>
+      new Map(
+        season.data?.drivers.flatMap((d) => [
+          [d.id, d],
+          [d.code, d],
+        ]),
+      ),
+    [season.data],
+  );
   const info = useJson<LiveInfo>("/api/live", 30_000);
   const tokenHidden = useTokenHidden();
   useEffect(() => {
@@ -108,39 +119,41 @@ export const App = () => {
           />
         </div>
       </header>
-      <Swipe
-        items={TABS}
-        value={tab}
-        onChange={go}
-        keep={["Countdown"]}
-        drive={blob}
-        lift={logo}
-        render={(t) =>
-          t === "Countdown" ? (
-            <LiveSession key={session} season={season} info={info} />
-          ) : (
-            <Fragment key={visit}>
-              {t === "Calendar" && <Calendar season={season} />}
-              {t === "Results" && <Results season={season.data} />}
-              {t === "Stats" &&
-                (season.data ? (
-                  <Spoiler
-                    season={season.data}
-                    year={season.data.year}
-                    kinds={KINDS}
-                  >
-                    <Stats season={season.data} />
-                  </Spoiler>
-                ) : (
-                  <Loading label="Loading the season…" error={season.error} />
-                ))}
-              {t === "Settings" && (
-                <Settings drivers={season.data?.drivers ?? []} />
-              )}
-            </Fragment>
-          )
-        }
-      />
+      <Faces value={faces}>
+        <Swipe
+          items={TABS}
+          value={tab}
+          onChange={go}
+          keep={["Countdown"]}
+          drive={blob}
+          lift={logo}
+          render={(t) =>
+            t === "Countdown" ? (
+              <LiveSession key={session} season={season} info={info} />
+            ) : (
+              <Fragment key={visit}>
+                {t === "Calendar" && <Calendar season={season} />}
+                {t === "Results" && <Results season={season.data} />}
+                {t === "Stats" &&
+                  (season.data ? (
+                    <Spoiler
+                      season={season.data}
+                      year={season.data.year}
+                      kinds={KINDS}
+                    >
+                      <Stats season={season.data} />
+                    </Spoiler>
+                  ) : (
+                    <Loading label="Loading the season…" error={season.error} />
+                  ))}
+                {t === "Settings" && (
+                  <Settings drivers={season.data?.drivers ?? []} />
+                )}
+              </Fragment>
+            )
+          }
+        />
+      </Faces>
       <UpdateToast />
     </div>
   );

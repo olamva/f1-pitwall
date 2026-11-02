@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
+import { BUST, Figure } from "./Headshot.tsx";
+import { TeamLogo } from "./TeamLogo.tsx";
 
 export interface PodiumEntry {
   id: string;
@@ -7,6 +9,7 @@ export interface PodiumEntry {
   color: string;
   value: string;
   detail?: string;
+  team?: string;
 }
 
 interface PodiumProps {
@@ -19,6 +22,7 @@ export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
 const HEIGHTS = ["h-28", "h-20", "h-16"];
 const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
+const POSES = ["front", "left", "right"] as const;
 
 export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
   <div className="mx-auto mb-4 max-w-2xl pt-2">
@@ -53,19 +57,26 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
               >
                 {e.name}
               </Name>
+              {e.team && <TeamLogo team={e.team} className="mt-1 h-5 w-10" />}
               {e.detail && (
                 <span className="max-w-full truncate text-[11px] text-zinc-500">
                   {e.detail}
                 </span>
               )}
             </div>
+            <Figure
+              id={e.id}
+              pose={POSES[i]!}
+              transform={BUST(0.6)}
+              className="podium-name podium-figure mx-auto block h-32 sm:h-44"
+            />
             <div
               className={`podium-block relative flex flex-col items-center justify-center rounded-t-lg ${HEIGHTS[i]}`}
             >
               <span className="podium-metal font-f1 text-3xl leading-none font-black">
                 {i + 1}
               </span>
-              <span className="tabular mt-1 text-xs text-zinc-300">
+              <span className="tabular mt-1 text-xs font-semibold">
                 {e.value}
               </span>
             </div>
