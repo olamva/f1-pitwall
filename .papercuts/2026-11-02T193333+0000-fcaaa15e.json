@@ -1,0 +1,14 @@
+{
+  "id": "fcaaa15e",
+  "ts": "2026-11-02T19:33:33+00:00",
+  "text": "T3 preview_snapshot times out after 15s on f1-pitwall /stats/title-fight (champion confetti page), even with the tab shown",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6f462506",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-d25078e3",
+  "branch": "t3/fix-driver-visuals-cache"
+}
