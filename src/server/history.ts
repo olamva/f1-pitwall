@@ -201,7 +201,7 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     number: info.permanentNumber ?? null,
     url,
     portrait:
-      (last >= 2023 && (await portraits(last)).get(info.code)) ||
+      (last >= 2023 && (await portraits(last)).get(info.code)?.portrait) ||
       (url && (await wikiPortrait(url))),
     firstSeason: seasons.at(-1)?.year ?? null,
     lastSeason: seasons[0]?.year ?? null,

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
-import { Face } from "./Headshot.tsx";
+import { Figure } from "./Headshot.tsx";
 
 export interface PodiumEntry {
   id: string;
@@ -20,6 +20,7 @@ export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
 const HEIGHTS = ["h-28", "h-20", "h-16"];
 const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
+const POSES = ["front", "left", "right"] as const;
 
 export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
   <div className="mx-auto mb-4 max-w-2xl pt-2">
@@ -45,11 +46,6 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
                 />
               )}
-              <Face
-                id={e.id}
-                color={e.color}
-                className="mb-1 size-14 sm:size-16"
-              />
               <Name
                 {...(onSelect && {
                   type: "button" as const,
@@ -65,6 +61,12 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                 </span>
               )}
             </div>
+            <Figure
+              id={e.id}
+              pose={POSES[i]!}
+              transform="c_crop,g_north,h_0.6/c_scale,h_500"
+              className="podium-name mx-auto block h-32 sm:h-44"
+            />
             <div
               className={`podium-block relative flex flex-col items-center justify-center rounded-t-lg ${HEIGHTS[i]}`}
             >

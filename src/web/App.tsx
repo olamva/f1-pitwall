@@ -58,7 +58,7 @@ export const App = () => {
   const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const faces = useMemo(
-    () => new Map(season.data?.drivers.map((d) => [d.id, d.portrait])),
+    () => new Map(season.data?.drivers.map((d) => [d.id, d])),
     [season.data],
   );
   const info = useJson<LiveInfo>("/api/live", 30_000);

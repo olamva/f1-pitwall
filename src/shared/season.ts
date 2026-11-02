@@ -42,6 +42,7 @@ export type DriverInfo = {
   number: string;
   team: string;
   portrait: string | null;
+  art: string | null;
 };
 
 export type Season = {

@@ -1,6 +1,16 @@
 import { createContext, useContext, type ComponentProps } from "react";
+import type { DriverInfo } from "../shared/season.ts";
 
-export const Faces = createContext(new Map<string, string | null>());
+type Art = Pick<DriverInfo, "portrait" | "art">;
+
+export type Pose = "front" | "left" | "right";
+
+export const Faces = createContext(new Map<string, Art>());
+
+export const useArt = (id: string) => useContext(Faces).get(id);
+
+export const artSrc = (art: string, pose: Pose, transform = "c_lfill,w_400") =>
+  `https://media.formula1.com/image/upload/${transform}/q_auto/${art}${pose}.webp`;
 
 export const Headshot = (props: ComponentProps<"img">) => (
   <img
@@ -12,21 +22,13 @@ export const Headshot = (props: ComponentProps<"img">) => (
   />
 );
 
-interface FaceProps {
+interface FigureProps extends ComponentProps<"img"> {
   id: string;
-  color: string;
-  className: string;
+  pose: Pose;
+  transform?: string;
 }
 
-export const Face = ({ id, color, className }: FaceProps) => {
-  const src = useContext(Faces).get(id);
-  return (
-    src && (
-      <Headshot
-        src={src}
-        className={`rounded-full object-cover object-top ${className}`}
-        style={{ background: `color-mix(in srgb, ${color} 40%, transparent)` }}
-      />
-    )
-  );
+export const Figure = ({ id, pose, transform, ...props }: FigureProps) => {
+  const art = useArt(id)?.art;
+  return art && <Headshot src={artSrc(art, pose, transform)} {...props} />;
 };

@@ -7,6 +7,7 @@ import { startingGrid } from "./archive.ts";
 import { when } from "./season.ts";
 
 const BASE = "https://api.openf1.org/v1/";
+const ART = "https://media.formula1.com/image/upload";
 const FRESH_MS = 10 * 60_000;
 const SPACING_MS = 400;
 
@@ -101,9 +102,26 @@ export async function provisional(
   };
 }
 
-const faces = new Map<number, Map<string, string>>();
+type Face = { portrait: string; art: string | null };
 
-async function headshots(year: number): Promise<Map<string, string>> {
+const faces = new Map<number, Map<string, Face>>();
+
+const face = (year: number, e: any): Face => {
+  const ref = e.headshot_url.match(/\/([a-z]+\d+)\.png/)?.[1];
+  const team = e.team_name?.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const art =
+    year >= 2024 && ref && team
+      ? `common/f1/${year}/${team}/${ref}/${year}${team}${ref}`
+      : null;
+  return {
+    portrait: art
+      ? `${ART}/c_thumb,g_face,w_432,h_432,z_0.5/q_auto/${art}front.webp`
+      : e.headshot_url.replace("/1col/", "/4col/"),
+    art,
+  };
+};
+
+async function headshots(year: number): Promise<Map<string, Face>> {
   const sessions: any[] = (await get(`sessions?year=${year}`)).filter(
     (s: any) => !s.is_cancelled && Date.parse(s.date_end) < Date.now(),
   );
@@ -116,12 +134,12 @@ async function headshots(year: number): Promise<Map<string, string>> {
     entrants
       .flat()
       .filter((e) => e.headshot_url)
-      .map((e) => [e.name_acronym, e.headshot_url.replace("/1col/", "/4col/")]),
+      .map((e) => [e.name_acronym, face(year, e)]),
   );
 }
 
-export const portraits = (year: number): Promise<Map<string, string>> => {
-  const last = () => faces.get(year) ?? new Map<string, string>();
+export const portraits = (year: number): Promise<Map<string, Face>> => {
+  const last = () => faces.get(year) ?? new Map<string, Face>();
   const fresh = headshots(year).then((found) => faces.set(year, found));
   const wait = new Promise((r) => setTimeout(r, faces.has(year) ? 0 : 2000));
   return Promise.race([fresh, wait]).then(last, last);

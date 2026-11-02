@@ -28,6 +28,7 @@ const season: Season = {
       number: "1",
       team: "team",
       portrait: null,
+      art: null,
     },
     {
       id: "b",
@@ -36,6 +37,7 @@ const season: Season = {
       number: "2",
       team: "team",
       portrait: null,
+      art: null,
     },
   ],
   teams: [{ id: "team", name: "Team" }],

@@ -45,6 +45,7 @@ test("sprintQualifying reads jolpica alpha schedules and results", async (t) => 
         number: "63",
         team: "mercedes",
         portrait: null,
+        art: null,
       },
       {
         id: "antonelli",
@@ -53,6 +54,7 @@ test("sprintQualifying reads jolpica alpha schedules and results", async (t) => 
         number: "12",
         team: "mercedes",
         portrait: null,
+        art: null,
       },
     ],
   );
