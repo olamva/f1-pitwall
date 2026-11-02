@@ -59,10 +59,7 @@ export const current = (rounds: Round[], now: number) =>
           minutes: MINUTES[k] ?? 60,
         })),
     )
-    .find(
-      (s) =>
-        now >= s.at - 15 * 60_000 && now <= s.at + (s.minutes + 30) * 60_000,
-    );
+    .find((s) => now >= s.at && now <= s.at + (s.minutes + 30) * 60_000);
 
 const span = (ms: number) => {
   const s = Math.floor(ms / 1000);

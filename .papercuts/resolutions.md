@@ -104,3 +104,25 @@ This review covers 20 open reports.
 
 The personal tool-failures skill holds the new tool workarounds. Its symlinks expose it to Claude Code, Codex, and Gemini.
 The review changes no global instruction file.
+
+## Review of 2 November 2026
+
+This review covers 44 open reports.
+
+| IDs | Type | Fault and resolution |
+| --- | --- | --- |
+| `bd450e5d` | fixed | An ungrouped alternation in a route parameter captures a later segment. All parameter patterns now use `(?:...)`. A test checks that `/api/live/standings` does not reach the standings route. |
+| `4e7120ff` | fixed | Missing VM token file. Commit `4975d51` reads `tokens.json` from the main checkout `DATA_DIR`. |
+| `3f8df2ad` | avoided | Archive 401 in local dev. The worktree dev server reads the main checkout token. The Mexico City race stints return HTTP 200. |
+| `0d36bf08` | avoided | Season circuit keys. The README gives a command that reads an archive file with the saved token. |
+| `92b79ecf`, `106f4066`, `08dcc625`, `374da3ae`, `6685ebc2`, `188b4ae4`, `6829a181`, `3de90c55`, `8b04b773`, `ca7692d3`, `9619037d`, `f1afffb2`, `b638e237`, `c7725959`, `610a129f`, `3e62a1f4`, `bf3432bc`, `3307ad2a`, `fd177802` | skill | T3 snapshot timeouts. After one reopen and one retry, capture with the T3 headless shell or Playwright. |
+| `ce923447`, `8f4834fb` | skill | Preview host loss and evaluation limits. Check `preview_status` after a timeout. Wrap `await` in an async function. Keep each call under 15 seconds. |
+| `c06a27ed`, `ea69bf21`, `fcdbcdd6`, `07a7172e`, `9595ba71`, `99c73420` | skill | zsh `:r` modifier in a refspec. The skill gives a braced `git push` example. |
+| `2a8127c9`, `249990c7` | skill | pnpm `-s` flag. The skill already holds this workaround. |
+| `ed8a0182`, `81445f27`, `11508d6e`, `89db28c6`, `c41268d4`, `43009bbc` | skill | Playwright browser builds, video scale, WebKit push crash, and WebKit font wait. |
+| `def310c4` | skill | Empty Write error. Retry the call once. |
+| `669e27f2` | left open | Dev server restart after a build. `pnpm build` in a worktree does not restart the dev server in this review. |
+| `76edbe97`, `27002807` | left open | Auto-mode reviewer denials. The permission reviewer refused the skill edit for these reports. |
+| `19248a02` | left open | Two-driver season data. The report has no fixture. |
+
+The review changes no global instruction file.
