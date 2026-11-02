@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
+import { FAVOURITE_ROW, useFavourite, useTeamRow } from "../favourite.ts";
 import { ink } from "../ink.ts";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
@@ -201,7 +201,7 @@ interface TowerRowProps {
   qualifying: boolean;
   lapOwner: boolean;
   selected: boolean;
-  favourite: boolean;
+  tint: string;
   relative: boolean;
   hide: string;
   scale: number;
@@ -217,7 +217,7 @@ const TowerRow = ({
   qualifying,
   lapOwner,
   selected,
-  favourite,
+  tint,
   relative,
   hide,
   scale,
@@ -229,7 +229,7 @@ const TowerRow = ({
   <tr
     ref={bind}
     onClick={onToggle}
-    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : favourite ? FAVOURITE_ROW : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
+    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : tint} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
     <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
       {children}
@@ -342,6 +342,7 @@ export const TimingTower = ({
 }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
   const favourite = useFavourite();
+  const teamRow = useTeamRow();
   const relative = relativeTo(rows, [...selected][0]);
   const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
   const tyres = view === "Tyres";
@@ -469,7 +470,7 @@ export const TimingTower = ({
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
               selected={selected.has(r.number)}
-              favourite={r.tla === favourite?.code}
+              tint={r.tla === favourite?.code ? FAVOURITE_ROW : teamRow(r.team)}
               relative={relative !== rows}
               hide={hide}
               scale={scale}
