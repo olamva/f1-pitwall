@@ -20,6 +20,7 @@ interface StandingsTableProps {
   rows: StandingRow[];
   crowned: boolean;
   onSelect?: (id: string) => void;
+  inline?: boolean;
 }
 
 const StandingsTable = ({
@@ -27,6 +28,7 @@ const StandingsTable = ({
   rows,
   crowned,
   onSelect,
+  inline,
 }: StandingsTableProps) => {
   const favourite = useFavourite();
   const lead = rows[0]?.points ?? 0;
@@ -46,9 +48,11 @@ const StandingsTable = ({
             detail: [i && `-${lead - row.points}`, row.wins && `${row.wins} 🏆`]
               .filter(Boolean)
               .join(" · "),
+            team: row.team,
           }))}
           crowned={crowned}
           onSelect={onSelect}
+          inline={inline}
         />
       )}
       <table className="tabular w-full text-sm">
@@ -142,6 +146,7 @@ export const Standings = ({ year, season }: StandingsProps) => {
         title="Constructors"
         rows={data.constructors}
         crowned={crowned("constructors")}
+        inline
       />
     );
   return (
