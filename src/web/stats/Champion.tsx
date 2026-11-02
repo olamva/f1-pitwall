@@ -49,27 +49,26 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
   const active = useActive();
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!active || !el) return;
+    if (!el) return;
     const root = document.documentElement;
-    const measure = () => {
+    const observer = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
-      root.style.setProperty("--champion-top", `${r.top + scrollY}px`);
-      root.style.setProperty("--champion-end", `${r.bottom + scrollY}px`);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
+      el.style.setProperty("--champion-top", `${r.top + scrollY}px`);
+      if (active)
+        root.style.setProperty("--champion-end", `${r.bottom + scrollY}px`);
+    });
     observer.observe(el);
     observer.observe(document.body);
+    if (!active) return () => observer.disconnect();
     root.style.setProperty("--champion", color);
     root.dataset.champion = "";
     return () => {
       observer.disconnect();
       delete root.dataset.champion;
-      for (const p of ["--champion", "--champion-top", "--champion-end"])
+      for (const p of ["--champion", "--champion-end"])
         root.style.removeProperty(p);
     };
   }, [ref, active, color]);
-  return active;
 };
 
 export const Champion = ({
@@ -88,7 +87,8 @@ export const Champion = ({
     [season, champ, first.id],
   );
   useConfetti(true, `${champ}-${first.id}`);
-  const active = useBackdrop(ref, me?.color ?? "#888");
+  const color = me?.color ?? "#888";
+  useBackdrop(ref, color);
   const full = me?.name ?? first.id;
   const surname = champ === "drivers" ? full.split(" ").at(-1)! : full;
   const title =
@@ -105,14 +105,13 @@ export const Champion = ({
   return (
     <section
       ref={ref}
-      className="champion relative isolate flex flex-col pt-6 pb-26 sm:pb-6"
+      className="champion relative flex flex-col pt-6 pb-26 sm:pb-6"
+      style={{ "--champion": color } as CSSProperties}
     >
-      {active && (
-        <Backdrop
-          name={surname}
-          line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
-        />
-      )}
+      <Backdrop
+        name={surname}
+        line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
+      />
       <Poster champ={champ} id={first.id} />
       <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
         {season.year} {title}
