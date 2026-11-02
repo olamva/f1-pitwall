@@ -173,10 +173,10 @@ export const Standings = ({ season }: StandingsProps) => {
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   const ready = data?.year === Number(year);
   const crowned = (champ: Championship) =>
-    Number(year) < new Date().getUTCFullYear() ||
-    (season.year === Number(year) && clinched(season, champ));
+    season.year === Number(year) && clinched(season, champ);
   useConfetti(
     ready && data.drivers.length > 0 && CHAMPS.some(crowned),
+    Number(year),
     `standings-${year}`,
   );
   const teams = ready && data.constructors.length > 0;
