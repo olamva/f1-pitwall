@@ -167,7 +167,10 @@ export const Standings = ({ season }: StandingsProps) => {
   const crowned = (champ: Championship) =>
     Number(year) < new Date().getUTCFullYear() ||
     (season.year === Number(year) && clinched(season, champ));
-  useConfetti(ready && data.drivers.length > 0 && CHAMPS.some(crowned), year);
+  useConfetti(
+    ready && data.drivers.length > 0 && CHAMPS.some(crowned),
+    `standings-${year}`,
+  );
   const teams = ready && data.constructors.length > 0;
   const picker = (
     <div className="flex items-center gap-3">

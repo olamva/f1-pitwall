@@ -136,7 +136,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
   const color = teamColor(data?.seasons[0]?.team ?? "");
   const champion =
     clinched(season, "drivers") && latest(driverTables(season))[0]?.id === id;
-  useConfetti(champion, id);
+  useConfetti(champion, `driver-${season.year}-${id}`);
   useBack(onBack);
   const titles = [
     ...new Set([
