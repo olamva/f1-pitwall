@@ -37,10 +37,10 @@ let edge: Touch | null = null;
 
 export const useActive = () => useContext(Level).active;
 
-export const useBack = (back: () => void) => {
+export const useBack = (back?: () => void) => {
   const active = useActive();
   useEffect(() => {
-    if (!active) return;
+    if (!active || !back) return;
     backs.add(back);
     return () => void backs.delete(back);
   }, [active, back]);
