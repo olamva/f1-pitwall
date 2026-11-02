@@ -26,12 +26,16 @@ interface PlaceProps {
 }
 
 const Place = ({ result, sprint }: PlaceProps) => (
-  <span
-    className={`font-f1 font-bold ${sprint ? "text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
-    style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
-  >
-    {sprint && <span className="mr-0.5 text-zinc-500">S</span>}
-    {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
+    <span className="text-zinc-100 uppercase">
+      {sprint ? "Sprint" : "Race"}
+    </span>
+    <span
+      className={`text-xs ${result?.points ? "" : "text-zinc-500"}`}
+      style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
+    >
+      {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+    </span>
   </span>
 );
 
@@ -64,7 +68,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
@@ -74,7 +78,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
                 (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
               ),
             ].join("\n")}
-            className="flex flex-col items-center gap-0.5 rounded-md bg-zinc-800/60 py-1.5 *:mr-0"
+            className="flex flex-col items-center gap-1 rounded-md bg-zinc-800/60 px-1 py-1.5 *:mr-0"
           >
             <Flag country={round.country} />
             {sessions.map((s) => (

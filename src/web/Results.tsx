@@ -9,6 +9,7 @@ import { pathPart, pathSegment } from "./path.ts";
 import { METALS } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
+import { SprintLogo } from "./SprintLogo.tsx";
 import { fresh, useSeen } from "./spoilers.ts";
 import { Standings } from "./Standings.tsx";
 import { Swipe } from "./Swipe.tsx";
@@ -25,15 +26,6 @@ const LABELS = {
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
 type Race = RaceArchive["races"][number];
-
-const SprintMarker = () => (
-  <span
-    title="Sprint Weekend"
-    className="inline-grid size-4 place-items-center rounded bg-zinc-700/60 align-middle text-[10px] font-bold text-zinc-400"
-  >
-    S
-  </span>
-);
 
 const currentYear = new Date().getUTCFullYear();
 const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
@@ -76,9 +68,7 @@ const RaceList = ({ year, season, races, onOpen }: RaceListProps) => {
             <span className="flex items-center gap-2 text-xs text-zinc-400">
               Round {race.round} · {race.date}
               {race.sprint.length > 0 && (
-                <span className="ml-auto">
-                  <SprintMarker />
-                </span>
+                <SprintLogo className="ml-auto h-2.5 shrink-0 text-zinc-100" />
               )}
             </span>
             <span className="font-f1 mt-1 block font-bold">
