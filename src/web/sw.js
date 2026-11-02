@@ -16,15 +16,13 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => url.pathname === "/api/replay/sessions",
+  ({ url }) => /^\/api\/(replay\/sessions$|drivers\/)/.test(url.pathname),
   new NetworkFirst({ cacheName: "api" }),
 );
 
 registerRoute(
   ({ url }) =>
-    /^\/api\/(season|results\/|standings\/|drivers\/|facts\/|pace\/)/.test(
-      url.pathname,
-    ),
+    /^\/api\/(season|results\/|standings\/|facts\/|pace\/)/.test(url.pathname),
   new StaleWhileRevalidate({ cacheName: "api" }),
 );
 

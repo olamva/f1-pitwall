@@ -118,7 +118,9 @@ const face = (year: number, e: any): Face => {
     portrait: art
       ? `${ART}/c_thumb,g_face,w_432,h_432,z_0.5/q_auto/${art}front.webp`
       : headshot,
-    headshot,
+    headshot: art
+      ? `${ART}/c_crop,g_north,w_0.75,h_0.32/c_scale,h_432/q_auto/${art}right.webp`
+      : headshot,
     art,
   };
 };

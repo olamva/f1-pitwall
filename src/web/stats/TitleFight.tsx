@@ -316,6 +316,7 @@ export const TitleFight = ({
               <Faceoff
                 focus={focus}
                 rival={rival}
+                pool={alive}
                 table={table}
                 who={who}
                 gain={gain}

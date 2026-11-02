@@ -172,7 +172,7 @@ const Poster = ({ champ, id }: PosterProps) => {
           id={id}
           pose="front"
           transform={BUST(0.42)}
-          className="champion-figure relative mx-auto h-full max-w-none mask-b-from-70%"
+          className="champion-figure absolute left-1/2 h-full max-w-none -translate-x-1/2 mask-b-from-70%"
         />
       </div>
     )
