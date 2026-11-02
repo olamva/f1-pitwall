@@ -32,8 +32,37 @@ let busy = false;
 let pending: (() => void) | null = null;
 let last = { at: -Infinity, depth: 0 };
 const levels = new Set<{ depth: number; move: (step: number) => boolean }>();
+const backs = new Set<() => void>();
+let edge: Touch | null = null;
 
 export const useActive = () => useContext(Level).active;
+
+export const useBack = (back: () => void) => {
+  const active = useActive();
+  useEffect(() => {
+    if (!active) return;
+    backs.add(back);
+    return () => void backs.delete(back);
+  }, [active, back]);
+};
+
+const edged = (event: { clientX: number }) =>
+  event.clientX < 20
+    ? !standalone || backs.size > 0
+    : !standalone && event.clientX > innerWidth - 20;
+
+addEventListener("touchstart", (event) => {
+  const start = event.touches.length === 1 ? event.touches[0] : undefined;
+  edge = standalone && backs.size && start && start.clientX < 20 ? start : null;
+});
+
+addEventListener("touchend", (event) => {
+  const end = event.changedTouches[0];
+  const dx = end.clientX - (edge?.clientX ?? 0);
+  if (edge && dx > 50 && dx > 2 * Math.abs(end.clientY - edge.clientY))
+    [...backs].at(-1)?.();
+  edge = null;
+});
 
 const locked = (depth: number) =>
   depth > 0 && !last.depth && performance.now() - last.at < 1000;
@@ -264,8 +293,7 @@ export const Swipe = <T extends string>({
           busy ||
           event.pointerType !== "touch" ||
           !event.isPrimary ||
-          (!standalone &&
-            (event.clientX < 20 || event.clientX > innerWidth - 20)) ||
+          edged(event) ||
           blocked(event.target)
         )
           return;

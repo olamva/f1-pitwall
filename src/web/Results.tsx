@@ -12,7 +12,7 @@ import { Spoiler } from "./Spoiler.tsx";
 import { SprintLogo } from "./SprintLogo.tsx";
 import { fresh, useSeen } from "./spoilers.ts";
 import { Standings } from "./Standings.tsx";
-import { Swipe } from "./Swipe.tsx";
+import { Swipe, useBack } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 
@@ -119,6 +119,7 @@ interface RaceDetailProps {
 const RaceDetail = ({ year, season, races, race, onBack }: RaceDetailProps) => {
   const [session, setSession] = useState<Kind>("race");
   const favourite = useFavourite();
+  useBack(onBack);
   const archived = Number(year) >= 2018;
   const times =
     season?.year === Number(year)
