@@ -1,3 +1,4 @@
+import { ArrowLeft, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
 import { useJson, type Loaded } from "./api.ts";
@@ -5,11 +6,14 @@ import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { pathPart, pathSegment } from "./path.ts";
+import { METALS } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
+import { fresh, useSeen } from "./spoilers.ts";
 import { Standings } from "./Standings.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { TeamLogo } from "./TeamLogo.tsx";
 
 const LABELS = {
   fp1: "FP1",
@@ -20,6 +24,7 @@ const LABELS = {
 };
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
+type Race = RaceArchive["races"][number];
 
 const SprintMarker = () => (
   <span
@@ -38,30 +43,92 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
 const resultsPath = (year: string, part: Part, round: number) =>
   `/results/${year}${part === "Standings" ? "/standings" : round ? `/${round}` : ""}`;
 
-interface RacesProps {
+interface RaceListProps {
   year: string;
   season: Season | null;
-  archive: Loaded<RaceArchive>;
-  races: RaceArchive["races"];
-  race: RaceArchive["races"][number] | undefined;
-  onRound: (round: number) => void;
+  races: Race[];
+  onOpen: (round: number) => void;
 }
 
-const Races = ({ year, season, archive, races, race, onRound }: RacesProps) => {
+const RaceList = ({ year, season, races, onOpen }: RaceListProps) => {
+  const seen = useSeen();
+  const guarded = seen && Number(year) === (season?.year ?? currentYear);
+  if (guarded && !season) return <Loading label="Loading the season…" />;
+  const hidden = new Set(
+    guarded && season
+      ? fresh(season.rounds, Date.now())
+          .filter((s) => seen[s.id] !== "shown")
+          .map((s) => `${s.round.round}/${s.kind}`)
+      : [],
+  );
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {races.map((race) => {
+        const kind = race.results.length ? "race" : "sprint";
+        const podium = race[kind === "race" ? "results" : "sprint"].slice(0, 3);
+        return (
+          <button
+            key={race.round}
+            type="button"
+            onClick={() => onOpen(race.round)}
+            className="bg-surface cursor-pointer rounded-xl p-4 text-left ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
+          >
+            <span className="flex items-center gap-2 text-xs text-zinc-400">
+              Round {race.round} · {race.date}
+              {race.sprint.length > 0 && (
+                <span className="ml-auto">
+                  <SprintMarker />
+                </span>
+              )}
+            </span>
+            <span className="font-f1 mt-1 block font-bold">
+              <Flag country={race.country} />
+              {race.name}
+            </span>
+            {hidden.has(`${race.round}/${kind}`) ? (
+              <span className="mt-3 flex h-6 items-center gap-1.5 text-xs text-zinc-400">
+                <EyeOff aria-hidden="true" className="size-4 text-red-500" />
+                Results hidden
+              </span>
+            ) : (
+              <span className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                {podium.map((result, index) => (
+                  <span
+                    key={result.driver}
+                    className="flex min-w-0 items-center gap-1.5"
+                  >
+                    <span
+                      className="font-f1 font-black"
+                      style={{ color: METALS[index] }}
+                    >
+                      {index + 1}
+                    </span>
+                    <TeamLogo team={result.team} className="h-4 w-6 shrink-0" />
+                    <span className="truncate font-semibold">
+                      {result.code || result.name}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+interface RaceDetailProps {
+  year: string;
+  season: Season | null;
+  races: Race[];
+  race: Race;
+  onBack: () => void;
+}
+
+const RaceDetail = ({ year, season, races, race, onBack }: RaceDetailProps) => {
   const [session, setSession] = useState<Kind>("race");
   const favourite = useFavourite();
-  const choose = (nextRound: number) => {
-    setSession("race");
-    onRound(nextRound);
-  };
-  if (archive.data?.year !== Number(year))
-    return <Loading label="Loading race results…" error={archive.error} />;
-  if (!race)
-    return (
-      <p className="bg-surface rounded-xl p-4 text-sm text-zinc-400">
-        No race results are available for {year}.
-      </p>
-    );
   const archived = Number(year) >= 2018;
   const times =
     season?.year === Number(year)
@@ -84,44 +151,15 @@ const Races = ({ year, season, archive, races, race, onRound }: RacesProps) => {
   );
   const shown = sessions.includes(session) ? session : sessions.at(-1)!;
   return (
-    <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-      <aside className="bg-surface rounded-xl p-3">
-        <select
-          aria-label="Race"
-          value={race.round}
-          onChange={(event) => choose(Number(event.target.value))}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 lg:hidden"
-        >
-          {races.map((entry) => (
-            <option key={entry.round} value={entry.round}>
-              {entry.round}. {entry.name}
-              {entry.sprint.length ? " (S)" : ""}
-            </option>
-          ))}
-        </select>
-        <div className="hidden max-h-[70vh] space-y-1 overflow-y-auto lg:block">
-          {races.map((entry) => (
-            <button
-              key={entry.round}
-              type="button"
-              onClick={() => choose(entry.round)}
-              aria-pressed={race.round === entry.round}
-              className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800 ${race.round === entry.round ? "bg-red-700/25 text-zinc-50" : "text-zinc-400"}`}
-            >
-              <span className="tabular mr-2 text-xs text-zinc-500">
-                {String(entry.round).padStart(2, "0")}
-              </span>
-              <Flag country={entry.country} />
-              {entry.name}
-              {entry.sprint.length > 0 && (
-                <span className="ml-auto pl-2">
-                  <SprintMarker />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </aside>
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-50"
+      >
+        <ArrowLeft aria-hidden className="size-4" />
+        All races
+      </button>
       <section className="bg-surface min-w-0 overflow-x-auto rounded-xl p-3 sm:p-4">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
           <div>
@@ -164,6 +202,38 @@ const Races = ({ year, season, archive, races, race, onRound }: RacesProps) => {
   );
 };
 
+interface RacesProps {
+  year: string;
+  season: Season | null;
+  archive: Loaded<RaceArchive>;
+  races: Race[];
+  race: Race | undefined;
+  onRound: (round: number) => void;
+}
+
+const Races = ({ year, season, archive, races, race, onRound }: RacesProps) => {
+  if (archive.data?.year !== Number(year))
+    return <Loading label="Loading race results…" error={archive.error} />;
+  if (!races.length)
+    return (
+      <p className="bg-surface rounded-xl p-4 text-sm text-zinc-400">
+        No race results are available for {year}.
+      </p>
+    );
+  return race ? (
+    <RaceDetail
+      key={race.round}
+      year={year}
+      season={season}
+      races={races}
+      race={race}
+      onBack={() => onRound(0)}
+    />
+  ) : (
+    <RaceList year={year} season={season} races={races} onOpen={onRound} />
+  );
+};
+
 interface ResultsProps {
   season: Season | null;
 }
@@ -180,10 +250,10 @@ export const Results = ({ season }: ResultsProps) => {
   const [name, setName] = useState<string>();
   const archive = useJson<RaceArchive>(`/api/results/${year}`);
   const races = archive.data?.year === Number(year) ? archive.data.races : [];
-  const race =
-    races.find((entry) => entry.name === name) ??
-    races.find((entry) => entry.round === round) ??
-    races[0];
+  const race = round
+    ? (races.find((entry) => entry.name === name) ??
+      races.find((entry) => entry.round === round))
+    : undefined;
   const show = (
     nextYear: string,
     nextPart: Part,
@@ -195,10 +265,10 @@ export const Results = ({ season }: ResultsProps) => {
     setRound(nextRound);
     setName(nextName);
     history.replaceState(null, "", resultsPath(nextYear, nextPart, nextRound));
+    scrollTo(0, 0);
   };
   useEffect(() => {
-    if (race && round && race.round !== round)
-      show(year, part, race.round, name);
+    if (race && race.round !== round) show(year, part, race.round, name);
   }, [race]);
   const blob = useRef<(offset: number, held: boolean) => void>(null);
 
@@ -216,7 +286,7 @@ export const Results = ({ season }: ResultsProps) => {
           aria-label="Season"
           value={year}
           onChange={(event) =>
-            show(event.target.value, part, race?.round ?? round, race?.name)
+            show(event.target.value, part, race?.round ?? 0, race?.name)
           }
           className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-50"
         >
