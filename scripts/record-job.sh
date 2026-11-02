@@ -12,7 +12,9 @@ export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 rm -f "$HOME/Library/LaunchAgents/$LABEL.plist"
 export DATA_DIR=$(mktemp -d)
 trap 'rm -rf "$DATA_DIR"; launchctl bootout "gui/$(id -u)/$LABEL"' EXIT
-LOCAL=$(sed -n 's/^DATA_DIR=//p' "$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)/../.env.local")
+MAIN=$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)/..
+LOCAL=$(sed -n 's/^DATA_DIR=//p' "$MAIN/.env" 2>/dev/null)
+LOCAL=${LOCAL:-$MAIN/data}
 ssh -o BatchMode=yes ubuntu@82.70.43.201 'sudo cat /srv/f1/tokens.json' > "$DATA_DIR/tokens.json" || cp "$LOCAL/tokens.json" "$DATA_DIR/tokens.json" || { rm "$DATA_DIR/tokens.json"; echo "no F1TV tokens"; }
 echo "start $(date -u +%FT%TZ)"
 cd "$REPO" || exit 1

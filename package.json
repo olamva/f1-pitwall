@@ -6,12 +6,12 @@
     "dev": "node scripts/dev.ts",
     "build": "vite build --configLoader native",
     "start": "node src/server/main.ts",
-    "test": "prettier --check . && oxlint && node --test 'test/**/*.test.ts'",
+    "test": "prettier --check . && oxlint && DATA_DIR= node --test 'test/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "format": "prettier --write .",
     "sessions": "node scripts/sessions.ts",
-    "record": "node --env-file-if-exists=.env.local scripts/record.ts",
+    "record": "node --env-file-if-exists=.env scripts/record.ts",
     "worktree:cleanup": "node scripts/worktree-cleanup.ts"
   },
   "dependencies": {

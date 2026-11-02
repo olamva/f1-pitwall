@@ -7,4 +7,5 @@ infra/*
 .git
 *.tfvars
 .env*
+data
 recordings
