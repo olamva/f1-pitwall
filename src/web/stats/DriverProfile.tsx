@@ -27,7 +27,7 @@ interface PlaceProps {
 
 const Place = ({ result, sprint }: PlaceProps) => (
   <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-    <span className="text-zinc-500 uppercase">
+    <span className="text-zinc-100 uppercase">
       {sprint ? "Sprint" : "Race"}
     </span>
     <span
