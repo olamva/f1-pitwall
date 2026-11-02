@@ -13,13 +13,14 @@ const SLUGS: Record<string, string> = {
 
 const WHITE = ["astonmartin", "audi", "cadillac", "mercedes"];
 
-const file = (team: string) =>
+export const teamKey = (team: string) =>
   SLUGS[team] ?? team.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-export const logoSrc = (team: string) => IMAGES[`./teams/${file(team)}.webp`];
+export const logoSrc = (team: string) =>
+  IMAGES[`./teams/${teamKey(team)}.webp`];
 
 export const logoTone = (team: string) =>
-  WHITE.includes(file(team)) ? "light:invert" : "";
+  WHITE.includes(teamKey(team)) ? "light:invert" : "";
 
 interface TeamLogoProps {
   team: string;

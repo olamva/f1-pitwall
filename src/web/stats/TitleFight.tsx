@@ -3,6 +3,8 @@ import {
   clinchMatrix,
   constructorNeeds,
   earliestClinch,
+  finishesAtLeast,
+  finishesAtMost,
   isEliminated,
   maxGain,
   OUTSIDE,
@@ -11,6 +13,7 @@ import {
   type Cell,
   type Championship,
   type Earliest,
+  type Finish,
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
@@ -155,6 +158,20 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   );
 };
 
+const pts = (n: number) => `${n} ${n === 1 ? "pt" : "pts"}`;
+
+const Places = ({ list, empty }: { list: Finish[]; empty: string }) => (
+  <span className="flex flex-wrap gap-x-3 text-xs text-zinc-400">
+    {list.length
+      ? list.map((f) => (
+          <span key={f.best} className="whitespace-nowrap">
+            {f.other ? `P${f.best} + P${f.other}` : `P${f.best}`}
+          </span>
+        ))
+      : empty}
+  </span>
+);
+
 const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const needs = useMemo(
     () =>
@@ -175,22 +192,36 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
       <p className="mb-2 text-sm text-zinc-400">
         The points {a} need at {events[0]!.name} to secure {prize} there, for
         each score of {b}. This assumes that every other team can still score
-        the maximum.
+        the maximum. The finishes show the best results for {b} and the worst
+        results for {a} that give those points. A single position means that the
+        other car scores no points.
       </p>
-      <table className="tabular text-sm">
+      <table className="tabular w-full text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
-            <th className="py-1 pr-6">{b} score</th>
-            <th className="py-1">{a} need</th>
+            <th className="w-1/2 py-1 pr-4">{b} at most</th>
+            <th className="w-1/2 py-1">{a} at least</th>
           </tr>
         </thead>
         <tbody>
           {needs.map((n) => (
-            <tr key={n.rival} className="border-t border-zinc-800">
-              <td className="py-1 pr-6">
-                {n.rival ? `${n.rival} or less` : 0}
+            <tr key={n.rival} className="border-t border-zinc-800 align-top">
+              <td className="py-1.5 pr-4">
+                {pts(n.rival)}
+                <Places
+                  list={finishesAtMost(events[0]!.kind, n.rival)}
+                  empty="No points"
+                />
               </td>
-              <td className="py-1 font-semibold text-emerald-400">{n.need}</td>
+              <td className="py-1.5">
+                <span className="font-semibold text-emerald-400">
+                  {pts(n.need!)}
+                </span>
+                <Places
+                  list={n.need ? finishesAtLeast(events[0]!.kind, n.need) : []}
+                  empty="Any finish"
+                />
+              </td>
             </tr>
           ))}
         </tbody>
