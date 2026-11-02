@@ -15,6 +15,8 @@ users:
     system: true
     homedir: /srv/f1
     shell: /usr/sbin/nologin
+bootcmd:
+  - sysctl -w net.mptcp.enabled=0
 write_files:
   - path: /etc/systemd/system/podman-auto-update.timer.d/f1.conf
     content: |
