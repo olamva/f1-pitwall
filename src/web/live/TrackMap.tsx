@@ -9,7 +9,7 @@ import {
 import { Crown } from "lucide-react";
 import { ink } from "../ink.ts";
 import { MapFrame } from "./MapFrame.tsx";
-import type { Outline, Telemetry } from "../../shared/timing.ts";
+import type { Outline, Telemetry, Track } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
@@ -45,7 +45,7 @@ interface TrackMapProps {
   flags: Map<number, string>;
 }
 
-export const projector = (outline: Outline, tag = TAG) => {
+export const projector = (outline: Track, tag = TAG) => {
   const a = (outline.rotation * Math.PI) / 180;
   const turn = (x: number, y: number): [number, number] => [
     x * Math.cos(a) - y * Math.sin(a),

@@ -1,13 +1,17 @@
 import { Play } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
 import { SESSION_MS, type Season } from "../../shared/season.ts";
-import type { SessionRef } from "../../shared/timing.ts";
-import { Flag } from "../Flag.tsx";
-import { PodiumRow, type Race } from "../Podium.tsx";
+import type { SessionRef, Track } from "../../shared/timing.ts";
+import { Circuit } from "../Circuit.tsx";
+import { Finish, type Race } from "../Podium.tsx";
 import { LABEL } from "./Countdown.tsx";
 import {
+  CardHead,
+  Days,
   ScheduleWeekend,
   sessions as schedule,
+  short,
+  Slot,
   time,
   upcoming,
 } from "./Schedule.tsx";
@@ -18,6 +22,7 @@ interface CalendarListProps {
   sessions: SessionRef[];
   season: Season;
   races: Race[];
+  tracks: Record<number, Track>;
   hidden: Set<string>;
   onStart: (session: SessionRef) => void;
   onOpen: (round: number) => void;
@@ -26,11 +31,13 @@ interface CalendarListProps {
 interface SessionButtonProps {
   session: Entry;
   onStart: (session: SessionRef) => void;
-  featured?: boolean;
+  next?: boolean;
 }
 
 interface WeekendProps {
   sessions: Entry[];
+  round: number | undefined;
+  track: Track | undefined;
   onStart: (session: SessionRef) => void;
   onOpen?: () => void;
   podium?: ReactNode;
@@ -93,34 +100,31 @@ const dates = (sessions: SessionRef[]) =>
     timeZone: "UTC",
   }).formatRange(day(sessions[0]), day(sessions.at(-1)!));
 
-const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
+const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
   session.time ? (
-    <span
-      className={`flex items-center gap-1.5 rounded-md bg-zinc-800/50 text-zinc-300 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
-    >
-      {session.name}
-      <span className="tabular font-mono text-xs text-zinc-400">
-        {session.time}
-      </span>
-    </span>
+    <Slot
+      name={short(session.name)}
+      time={session.time}
+      next={next ? Date.parse(session.start) : undefined}
+    />
   ) : session.path ? (
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 hover:text-white ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+      className="pointer-events-auto flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
-      {session.name}
+      <span className="truncate">{short(session.name)}</span>
     </button>
   ) : (
     <span className="group/pending pointer-events-auto relative flex">
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
-        className={`striped-border flex grow cursor-not-allowed items-center gap-1.5 rounded-md text-zinc-500 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+        className="striped-border flex grow cursor-not-allowed items-center gap-1.5 rounded-md px-2 py-1 text-zinc-500"
       >
         <Play aria-hidden="true" className="size-3.5 shrink-0" />
-        {session.name}
+        <span className="truncate">{short(session.name)}</span>
       </button>
       <span
         id={`pending-${session.start}`}
@@ -132,84 +136,62 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
     </span>
   );
 
-const weekday = (s: SessionRef, weekday: "long" | "short") =>
-  day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
+const weekday = (s: SessionRef) =>
+  day(s).toLocaleDateString([], { weekday: "short", timeZone: "UTC" });
 
 const Weekend = ({
   sessions,
+  round,
+  track,
   onStart,
   onOpen,
   podium,
   featured,
-}: WeekendProps) => (
-  <article
-    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
-  >
-    {onOpen && (
-      <button
-        onClick={onOpen}
-        aria-label={`Results: ${sessions[0].meeting}`}
-        className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
-      />
-    )}
-    <header className="flex items-baseline justify-between gap-2">
-      <div className="min-w-0">
-        {featured && (
-          <p className="font-f1 text-xs tracking-wider text-red-400 uppercase">
-            Current race weekend
-          </p>
-        )}
-        <h2
-          className={`font-f1 line-clamp-2 ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
-        >
-          <Flag country={sessions[0].country} />
-          {sessions[0].meeting}
-        </h2>
-      </div>
-      <span
-        className={`shrink-0 text-xs ${featured ? "text-zinc-300" : "text-zinc-500"}`}
-      >
-        {dates(sessions)}
-      </span>
-    </header>
-    {podium}
-    <div
-      className={`pointer-events-none relative space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
+}: WeekendProps) => {
+  const next = featured ? sessions.find((s) => s.time) : undefined;
+  return (
+    <article
+      className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
     >
-      {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
-        (group) => (
-          <div
-            key={group![0].start}
-            className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
-          >
-            <h3
-              className={`w-8 shrink-0 text-xs ${featured ? "text-zinc-300 sm:w-auto" : "text-zinc-500"}`}
-            >
-              {featured && (
-                <span className="max-sm:hidden">
-                  {weekday(group![0], "long")}
-                </span>
-              )}
-              <span className={featured ? "sm:hidden" : ""}>
-                {weekday(group![0], "short")}
-              </span>
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {group!.map((s) => (
-                <SessionButton
-                  key={s.start}
-                  session={s}
-                  onStart={onStart}
-                  featured={featured}
-                />
-              ))}
-            </div>
-          </div>
-        ),
+      {onOpen && (
+        <button
+          onClick={onOpen}
+          aria-label={`Results: ${sessions[0].meeting}`}
+          className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
+        />
       )}
-    </div>
-  </article>
-);
+      <Circuit track={track} round={round} />
+      <CardHead
+        label={
+          featured
+            ? `Current race weekend · ${dates(sessions)}`
+            : dates(sessions)
+        }
+        name={sessions[0].meeting}
+        country={sessions[0].country}
+        featured={featured}
+      />
+      {podium}
+      <div className="pointer-events-none relative">
+        <Days
+          days={Object.values(
+            Object.groupBy(sessions, (s) => s.start.slice(0, 10)),
+          ).map((group) => [
+            weekday(group![0]),
+            group!.map((s) => (
+              <SessionButton
+                key={s.start}
+                session={s}
+                onStart={onStart}
+                next={s === next}
+              />
+            )),
+          ])}
+        />
+      </div>
+    </article>
+  );
+};
 
 const SM_SPAN = ["", "sm:col-span-2"];
 const LG_SPAN = ["lg:col-span-2", "lg:col-span-6", "lg:col-span-3"];
@@ -226,6 +208,7 @@ export const CalendarList = ({
   sessions,
   season,
   races,
+  tracks,
   hidden,
   onStart,
   onOpen,
@@ -259,19 +242,26 @@ export const CalendarList = ({
     <ul className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-6">
       {future.map((r) => (
         <li key={r.name} {...item(r.name)}>
-          <ScheduleWeekend round={r} featured={r.name === anchor} />
+          <ScheduleWeekend
+            round={r}
+            track={tracks[r.round]}
+            featured={r.name === anchor}
+          />
         </li>
       ))}
       {past.map((w) => {
         const round = started(season, w);
         const race = races.find((r) => r.round === round);
+        const number = roundOf(season, w)?.round;
         return (
           <li key={w[0].start} {...item(w[0].start)}>
             <Weekend
               sessions={[...w, ...remaining(season, w)]}
+              round={number}
+              track={number ? tracks[number] : undefined}
               onStart={onStart}
               onOpen={round ? () => onOpen(round) : undefined}
-              podium={race && <PodiumRow race={race} hidden={hidden} />}
+              podium={race && <Finish race={race} hidden={hidden} />}
               featured={w[0].start === anchor}
             />
           </li>

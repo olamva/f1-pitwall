@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
 import { BUST, Figure } from "./Headshot.tsx";
+import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
 export type Race = RaceArchive["races"][number];
@@ -84,39 +85,66 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
   </div>
 );
 
-interface PodiumRowProps {
+interface FinishProps {
   race: Race;
   hidden: Set<string>;
 }
 
-export const PodiumRow = ({ race, hidden }: PodiumRowProps) => {
-  const kind = race.results.length ? "race" : "sprint";
-  return hidden.has(`${race.round}/${kind}`) ? (
-    <span className="flex h-6 items-center gap-1.5 text-xs text-zinc-400">
-      <EyeOff aria-hidden="true" className="size-4 text-red-500" />
-      Results hidden
+type Result = Race["results"][number];
+
+const start = ({ grid }: Result) =>
+  grid === 1 ? "From pole" : grid ? `From P${grid}` : "From the pit lane";
+
+const Gain = ({ grid, position }: Result) => {
+  const gain = grid - position;
+  return grid && gain ? (
+    <span className={gain > 0 ? "text-emerald-400" : "text-red-500"}>
+      {gain > 0 ? "▲" : "▼"}
+      {Math.abs(gain)}
     </span>
-  ) : (
-    <span className="grid grid-cols-3 gap-2 text-xs">
-      {race[kind === "race" ? "results" : "sprint"]
-        .slice(0, 3)
-        .map((result, index) => (
-          <span
-            key={result.driver}
-            className="flex min-w-0 items-center gap-1.5"
-          >
-            <span
-              className="font-f1 font-black"
-              style={{ color: METALS[index] }}
-            >
-              {index + 1}
-            </span>
-            <TeamLogo team={result.team} className="h-4 w-6 shrink-0" />
-            <span className="truncate font-semibold">
+  ) : null;
+};
+
+export const Finish = ({ race, hidden }: FinishProps) => {
+  const sprint = !race.results.length;
+  const [winner, ...rest] = (sprint ? race.sprint : race.results).slice(0, 3);
+  if (hidden.has(`${race.round}/${sprint ? "sprint" : "race"}`))
+    return (
+      <span className="flex h-6 items-center gap-1.5 text-xs text-zinc-400">
+        <EyeOff aria-hidden="true" className="size-4 text-red-500" />
+        Results hidden
+      </span>
+    );
+  return (
+    winner && (
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2.5">
+          <TeamLogo team={winner.team} className="h-6 w-8 shrink-0" />
+          <div className="min-w-0">
+            <p className="font-f1 truncate text-base leading-tight font-bold">
+              {winner.name}
+            </p>
+            <p className="text-xs text-zinc-400">
+              {sprint && "Sprint winner · "}
+              {start(winner)} · {winner.points} pts
+            </p>
+          </div>
+        </div>
+        <p className="flex gap-3 text-xs text-zinc-300">
+          {rest.map((result, index) => (
+            <span key={result.driver} className="flex gap-1">
+              <span
+                className="font-f1 font-black"
+                style={{ color: ink(METALS[index + 1]) }}
+              >
+                {index + 2}
+              </span>
               {result.code || result.name}
+              <Gain {...result} />
             </span>
-          </span>
-        ))}
-    </span>
+          ))}
+        </p>
+      </div>
+    )
   );
 };

@@ -32,6 +32,7 @@ import * as push from "./push.ts";
 import * as reminders from "./reminders.ts";
 import { season, seasonYear } from "./season.ts";
 import * as settings from "./settings.ts";
+import { circuitTracks } from "./tracks.ts";
 import { expand, type Session } from "./timing.ts";
 import * as token from "./token.ts";
 
@@ -94,7 +95,12 @@ app.get(
     return c.json(await topics[topic](year, round, kind as never));
   },
 );
-app.get("/api/:kind{(?:results|standings)}/:year", async (c) => {
+const YEARLY = {
+  results: raceArchive,
+  standings,
+  tracks: circuitTracks,
+};
+app.get("/api/:kind{(?:results|standings|tracks)}/:year", async (c) => {
   const year = Number(c.req.param("year"));
   if (
     !Number.isInteger(year) ||
@@ -102,9 +108,7 @@ app.get("/api/:kind{(?:results|standings)}/:year", async (c) => {
     year > new Date().getUTCFullYear()
   )
     return c.json({ error: "Invalid season." }, 400);
-  return c.json(
-    await (c.req.param("kind") === "results" ? raceArchive : standings)(year),
-  );
+  return c.json(await YEARLY[c.req.param("kind") as keyof typeof YEARLY](year));
 });
 app.get("/api/drivers/:id", async (c) => {
   const id = c.req.param("id");
