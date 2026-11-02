@@ -71,14 +71,13 @@ export const Lineup = ({
             <li
               key={s.id}
               data-id={s.id}
-              className="relative flex w-14 shrink-0 flex-col items-center sm:w-18"
+              className="relative flex w-9 shrink-0 flex-col items-center sm:w-12"
               style={{ zIndex: field.length - i }}
             >
-              <div className="relative h-56 w-full sm:h-72">
+              <div className="relative h-72 w-full sm:h-96">
                 <div
-                  className="absolute inset-y-0 left-1/2 flex w-40 origin-[50%_5%] -translate-x-1/2 justify-center transition-[scale,filter] duration-700"
+                  className="absolute inset-y-0 left-1/2 flex w-32 -translate-x-1/2 justify-center transition-[filter] duration-700"
                   style={{
-                    scale: 1 - 0.4 * depth,
                     filter: gone
                       ? "brightness(0) invert(0.3)"
                       : `brightness(${1 - 0.45 * depth})`,
@@ -94,11 +93,11 @@ export const Lineup = ({
                 </div>
               </div>
               <span
-                className={`tabular font-f1 text-lg font-bold ${gone ? "text-zinc-600" : ""}`}
+                className={`tabular font-f1 text-xs font-bold sm:text-base ${gone ? "text-zinc-600" : ""}`}
               >
                 {s.points}
               </span>
-              <span className="tabular text-xs text-zinc-400">
+              <span className="tabular text-[10px] text-zinc-400 sm:text-xs">
                 {gap ? `−${gap}` : "Leader"}
               </span>
             </li>

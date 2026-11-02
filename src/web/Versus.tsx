@@ -39,12 +39,19 @@ const Panel = ({
       }}
     >
       {d && (
-        <TeamNumber
-          id={d.id}
-          number={d.number}
-          color="rgb(255 255 255 / 0.22)"
-          className={`absolute top-[6%] flex h-[58%] text-[10rem] ${right ? "right-[3%]" : "left-[3%]"}`}
-        />
+        <div
+          className={`absolute top-[6%] h-[58%] transition-[width] duration-500 ${right ? "right-[3%]" : "left-[3%]"}`}
+          style={{
+            width: `${Math.min(40, (right ? 100 - seam : seam) - 12)}%`,
+          }}
+        >
+          <TeamNumber
+            id={d.id}
+            number={d.number}
+            color="rgb(255 255 255 / 0.22)"
+            className="flex size-full overflow-hidden text-[8rem]"
+          />
+        </div>
       )}
     </div>
   );

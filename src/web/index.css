@@ -1155,7 +1155,27 @@ html:has(dialog[open]) {
   animation: podium-fade 400ms ease var(--delay) both;
 }
 
-.swipe > [inert] :is(.champion-name, .champion-next) {
+.champion-rays {
+  background: repeating-conic-gradient(
+    rgb(250 204 21 / 0.28) 0 3deg,
+    transparent 3deg 12deg
+  );
+  mask: radial-gradient(closest-side, black, transparent);
+  animation: champion-rays 120s linear infinite;
+}
+
+@keyframes champion-rays {
+  to {
+    rotate: 1turn;
+  }
+}
+
+.champion-figure {
+  filter: drop-shadow(0 0 1px #fef08a)
+    drop-shadow(0 0 32px rgb(250 204 21 / 0.55));
+}
+
+.swipe > [inert] :is(.champion-name, .champion-next, .champion-rays) {
   animation: none;
 }
 
@@ -1173,7 +1193,8 @@ html:has(dialog[open]) {
   .champion-next,
   .champion-name-row,
   .champion-name,
-  .champion-chip {
+  .champion-chip,
+  .champion-rays {
     animation: none;
   }
 }

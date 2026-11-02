@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
 import { BUST, Figure } from "./Headshot.tsx";
+import { TeamLogo } from "./TeamLogo.tsx";
 
 export interface PodiumEntry {
   id: string;
@@ -8,6 +9,7 @@ export interface PodiumEntry {
   color: string;
   value: string;
   detail?: string;
+  team?: string;
 }
 
 interface PodiumProps {
@@ -55,6 +57,7 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
               >
                 {e.name}
               </Name>
+              {e.team && <TeamLogo team={e.team} className="mt-1 h-5 w-10" />}
               {e.detail && (
                 <span className="max-w-full truncate text-[11px] text-zinc-500">
                   {e.detail}

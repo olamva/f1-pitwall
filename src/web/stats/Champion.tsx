@@ -5,7 +5,7 @@ import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
-import { BODY, Figure, useArt } from "../Headshot.tsx";
+import { BUST, Figure, useArt } from "../Headshot.tsx";
 import { useActive } from "../Swipe.tsx";
 import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
@@ -161,18 +161,19 @@ const Poster = ({ champ, id }: PosterProps) => {
   return (
     champ === "drivers" &&
     d?.art && (
-      <div className="pointer-events-none relative -z-10 mx-auto -mb-20 h-96 w-full sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:h-[34rem] sm:w-2/5 sm:max-w-lg">
+      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full overflow-clip sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:h-[36rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85%">
+        <div className="champion-rays absolute top-[34%] left-1/2 aspect-square w-[130%] -translate-1/2 sm:w-[110%]" />
         <TeamNumber
           id={d.id}
           number={d.number}
           color={GOLD}
-          className="absolute inset-x-0 top-[4%] flex h-3/5 justify-center text-[14rem] drop-shadow-[0_0_24px_rgb(250_204_21_/_0.45)]"
+          className="absolute inset-x-0 top-[3%] flex h-[62%] justify-center text-[16rem] opacity-90"
         />
         <Figure
           id={id}
           pose="front"
-          transform={BODY}
-          className="relative mx-auto h-full mask-b-from-60%"
+          transform={BUST(0.42)}
+          className="champion-figure relative mx-auto h-full max-w-none mask-b-from-70%"
         />
       </div>
     )
