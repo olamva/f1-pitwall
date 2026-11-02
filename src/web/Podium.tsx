@@ -20,9 +20,9 @@ interface PodiumProps {
 
 export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
 const HEIGHTS = ["h-28", "h-20", "h-16"];
-export const ORDER = ["order-2", "order-1", "order-3"];
+const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
-export const POSES = ["front", "left", "right"] as const;
+const POSES = ["front", "left", "right"] as const;
 
 export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
   <div className="mx-auto mb-4 max-w-2xl pt-2">
