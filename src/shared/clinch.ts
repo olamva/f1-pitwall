@@ -1,4 +1,9 @@
-import { pointsFor, type EventKind } from "./points.ts";
+import {
+  pointsFor,
+  RACE_POINTS,
+  SPRINT_POINTS,
+  type EventKind,
+} from "./points.ts";
 
 export type Championship = "drivers" | "constructors";
 export type Standing = { id: string; points: number; countback: number[] };
@@ -239,16 +244,38 @@ export function constructorNeeds(
 
 export type Finish = { best: number; other: number | null };
 
-export function finishesFor(kind: EventKind, need: number): Finish[] {
+const below = (kind: EventKind, best: number): number[] =>
+  Array.from(
+    { length: (kind === "race" ? RACE_POINTS : SPRINT_POINTS).length - best },
+    (_, i) => best + 1 + i,
+  );
+
+const pair = (kind: EventKind, best: number, other: number | null) =>
+  pointsFor(kind, best) + pointsFor(kind, other);
+
+export function finishesAtLeast(kind: EventKind, need: number): Finish[] {
   const out: Finish[] = [];
-  for (let best = 1; best < OUTSIDE; best++) {
-    const other = [
-      null,
-      ...Array.from({ length: OUTSIDE - 1 - best }, (_, i) => OUTSIDE - 1 - i),
-    ].find((p) => pointsFor(kind, best) + pointsFor(kind, p) >= need);
+  for (let best = 1; best <= below(kind, 0).length; best++) {
+    const other = [null, ...below(kind, best).reverse()].find(
+      (p) => pair(kind, best, p) >= need,
+    );
     if (other === undefined) break;
     if (out.at(-1)?.other === other) out.pop();
     out.push({ best, other });
+  }
+  return out;
+}
+
+export function finishesAtMost(kind: EventKind, cap: number): Finish[] {
+  const out: Finish[] = [];
+  for (let best = 1; best <= below(kind, 0).length; best++) {
+    if (pointsFor(kind, best) > cap) continue;
+    const other = [...below(kind, best), null].find(
+      (p) => pair(kind, best, p) <= cap,
+    )!;
+    const last = out.at(-1);
+    if (!last || (other ?? OUTSIDE) < (last.other ?? OUTSIDE))
+      out.push({ best, other });
   }
   return out;
 }

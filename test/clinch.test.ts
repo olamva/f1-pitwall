@@ -3,7 +3,8 @@ import { test } from "node:test";
 import {
   clinchMatrix,
   constructorNeeds,
-  finishesFor,
+  finishesAtLeast,
+  finishesAtMost,
   othersAfterWin,
   earliestClinch,
   hasClinched,
@@ -204,20 +205,40 @@ test("2025 constructors: McLaren's real 27 points met the need against Mercedes'
   assert.ok(need !== null && need <= 27);
 });
 
+test("a rival points cap lists the best finish pairs that stay within it", () => {
+  assert.deepEqual(finishesAtMost("race", 27), [
+    { best: 1, other: 9 },
+    { best: 2, other: 6 },
+    { best: 3, other: 4 },
+  ]);
+  assert.deepEqual(finishesAtMost("race", 25), [
+    { best: 1, other: null },
+    { best: 2, other: 7 },
+    { best: 3, other: 5 },
+  ]);
+  assert.deepEqual(finishesAtMost("sprint", 7), [
+    { best: 2, other: null },
+    { best: 3, other: 8 },
+    { best: 4, other: 7 },
+    { best: 5, other: 6 },
+  ]);
+  assert.deepEqual(finishesAtMost("race", 0), []);
+});
+
 test("a team points need lists the lowest finish pairs that reach it", () => {
-  assert.deepEqual(finishesFor("race", 26), [
+  assert.deepEqual(finishesAtLeast("race", 26), [
     { best: 1, other: 10 },
     { best: 2, other: 6 },
     { best: 3, other: 4 },
   ]);
-  assert.deepEqual(finishesFor("race", 13), [
+  assert.deepEqual(finishesAtLeast("race", 13), [
     { best: 3, other: null },
     { best: 4, other: 10 },
     { best: 5, other: 8 },
     { best: 6, other: 7 },
   ]);
-  assert.deepEqual(finishesFor("sprint", 15), [{ best: 1, other: 2 }]);
-  assert.deepEqual(finishesFor("race", 44), []);
+  assert.deepEqual(finishesAtLeast("sprint", 15), [{ best: 1, other: 2 }]);
+  assert.deepEqual(finishesAtLeast("race", 44), []);
 });
 
 test("2026 after Mexico: Antonelli has the title, so the fight moves to P2", () => {
