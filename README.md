@@ -24,6 +24,11 @@ pnpm test
 Set `LIVE_REPLAY` to a file in `recordings/` to replay a recorded session as a live session. See the [live replay skill](.claude/skills/live-replay/SKILL.md).
 The F1 archive returns HTTP 401 without an F1TV token, so replays and the session list need one. Save a token in Settings.
 Put `DATA_DIR=<absolute path>` in `.env.local` in the main checkout to keep the token. Use an ignored directory, such as `.env.data`. `pnpm dev` reads that file in each worktree. A `.env.local` in the worktree overrides it.
+Read an archive file with the saved token from a worktree. For example, `Meetings[].Circuit.Key` in `2026/Index.json` gives the circuit keys of the season:
+
+```sh
+node --env-file="$(git rev-parse --path-format=absolute --git-common-dir)/../.env.local" --input-type=module -e 'const t = await import("./src/server/token.ts"); await t.load(); const { archive } = await import("./src/server/origin.ts"); process.stdout.write(await (await archive(process.argv[1])).text())' 2026/Index.json
+```
 
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
 The command checks both ports before startup.
