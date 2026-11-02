@@ -6,6 +6,7 @@ import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
 import { useActive } from "../Swipe.tsx";
+import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
 import { Backdrop } from "./Backdrop.tsx";
 
@@ -22,6 +23,11 @@ interface RoadProps {
   champ: Championship;
   season: Season;
   h: ReturnType<typeof honours>;
+}
+
+interface TeamProps {
+  id: string;
+  name: string;
 }
 
 const CHIP = [
@@ -104,9 +110,7 @@ export const Champion = ({
       <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black sm:text-7xl">
         {full}
       </h2>
-      {champ === "drivers" && (
-        <p className="mt-1 text-base text-zinc-300">{team}</p>
-      )}
+      {champ === "drivers" && <Team id={me?.team ?? ""} name={team} />}
       {decider && (
         <p className="mt-4 w-fit rounded-2xl bg-black/30 px-3 py-1.5 text-sm text-white">
           Clinched at <Flag country={decider.country} />
@@ -139,6 +143,15 @@ export const Champion = ({
         </button>
       )}
     </section>
+  );
+};
+
+const Team = ({ id, name }: TeamProps) => {
+  const src = logoSrc(id);
+  return src ? (
+    <img src={src} alt={name} className="mt-2 size-14 object-contain" />
+  ) : (
+    <p className="mt-1 text-base text-zinc-300">{name}</p>
   );
 };
 

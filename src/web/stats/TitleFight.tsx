@@ -348,6 +348,7 @@ export const TitleFight = ({
             contenders={alive}
             who={who}
             prize={prize}
+            settled={done}
           />
         </>
       )}
