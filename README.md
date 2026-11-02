@@ -36,7 +36,9 @@ Jolpica requests share one queue per server, including sprint qualifying request
 The server retries HTTP 429 twice and follows `Retry-After` for waits of at most one minute.
 When a cached response is old, the server sends it and refreshes it in the background.
 The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
-Start preview servers one at a time. Multiple servers share the upstream IP limit, but keep separate caches.
+With `DATA_DIR`, the server saves each response to `jolpica/v1/` in that directory. A restarted server, or a server in another worktree, reads the saved responses first.
+The server does not refresh a response for a past season after it gets one from a later year.
+Start preview servers one at a time. Multiple servers share the upstream IP limit. Without `DATA_DIR`, they also keep separate caches.
 See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).
 
 `scripts/circuits.py` refreshes `src/server/circuits.json`. It needs UnityPy. Run `python3 -m venv /tmp/unitypy && /tmp/unitypy/bin/pip install UnityPy && /tmp/unitypy/bin/python scripts/circuits.py`.
