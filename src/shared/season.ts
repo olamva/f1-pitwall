@@ -41,7 +41,7 @@ export type DriverInfo = {
   name: string;
   number: string;
   team: string;
-  portrait: string | null;
+  headshot: string | null;
   art: string | null;
 };
 

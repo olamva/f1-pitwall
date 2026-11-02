@@ -15,6 +15,7 @@ import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
 import { LongRuns } from "./LongRuns.tsx";
+import { Battle } from "./Battle.tsx";
 import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
@@ -205,6 +206,7 @@ export const Board = ({
           />
         </div>
         <div className={`flex flex-col gap-4 ${layout.side}`}>
+          {race && <Battle rows={rows} />}
           {!hideMap && (
             <TrackMap
               outline={outline}

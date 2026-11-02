@@ -133,7 +133,7 @@ export async function season(): Promise<Season> {
     name: `${d.Driver.givenName} ${d.Driver.familyName}`,
     number: d.Driver.permanentNumber,
     team: d.Constructors.at(-1)?.constructorId ?? "",
-    portrait: faces.get(d.Driver.code)?.portrait ?? null,
+    headshot: faces.get(d.Driver.code)?.headshot ?? null,
     art: faces.get(d.Driver.code)?.art ?? null,
   }));
   results.push(

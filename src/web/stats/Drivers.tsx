@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import type { Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useFavourite } from "../favourite.ts";
-import { Figure } from "../Headshot.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { openDriver } from "../path.ts";
 import type { Who } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
@@ -41,21 +41,19 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               }),
             }}
           >
-            <span className="absolute inset-y-0 right-0 flex items-center">
-              <TeamNumber
-                id={driver.id}
-                number={driver.number}
-                color={color}
-                className={`flex items-center transition group-hover:-translate-x-2 ${!driver.art ? "mr-4" : driver.number.length > 1 ? "-mr-6" : "mr-1"} ${big ? "h-24 text-7xl opacity-60 group-hover:opacity-80 sm:h-40 sm:text-[11rem]" : "h-20 text-7xl opacity-40 group-hover:opacity-60 sm:h-24 sm:text-8xl"}`}
-              />
-              <Figure
-                id={driver.id}
-                pose="right"
-                transform="c_crop,g_north,h_0.55/c_scale,h_500"
+            {driver.headshot && (
+              <Headshot
+                src={driver.headshot}
                 loading="lazy"
-                className="relative h-full origin-bottom self-end transition group-hover:scale-104"
+                className={`absolute bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "right-4 max-h-64 origin-bottom-right max-sm:h-3/4 sm:right-24" : "right-8 max-h-36 origin-bottom"}`}
               />
-            </span>
+            )}
+            <TeamNumber
+              id={driver.id}
+              number={driver.number}
+              color={color}
+              className={`absolute top-3 right-3 flex transition ${big ? "h-10 text-4xl sm:top-6 sm:right-6 sm:h-16 sm:text-6xl" : "h-7 text-3xl"}`}
+            />
             <span className="relative flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400">
               {driver.code}
               {big && (

@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Figure } from "../Headshot.tsx";
+import { BUST, Figure } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import type { Duel, Who } from "./derive.ts";
 
@@ -70,10 +70,10 @@ export const Teammates = ({
           >
             {(
               [
-                [d.a, a, "left", d.racePoints[0] < d.racePoints[1]],
-                [d.b, b, "right", d.racePoints[1] < d.racePoints[0]],
+                [d.a, a, "left"],
+                [d.b, b, "right"],
               ] as const
-            ).map(([id, w, pose, behind], i) => (
+            ).map(([id, w, pose], i) => (
               <Fragment key={id}>
                 {i > 0 && (
                   <span className="font-f1 self-center text-zinc-500">vs</span>
@@ -84,9 +84,9 @@ export const Teammates = ({
                   <Figure
                     id={id}
                     pose={pose}
-                    transform="c_crop,g_north,h_0.55/c_scale,h_500"
+                    transform={BUST(0.55)}
                     loading="lazy"
-                    className={`h-44 ${i ? "origin-bottom-left" : "origin-bottom-right"} ${behind ? "scale-92 opacity-70" : ""}`}
+                    className="h-44 mask-b-from-75%"
                   />
                   {w?.name ?? id}
                 </span>

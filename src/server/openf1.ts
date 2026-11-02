@@ -102,7 +102,7 @@ export async function provisional(
   };
 }
 
-type Face = { portrait: string; art: string | null };
+type Face = { portrait: string; headshot: string; art: string | null };
 
 const faces = new Map<number, Map<string, Face>>();
 
@@ -113,10 +113,12 @@ const face = (year: number, e: any): Face => {
     year >= 2024 && ref && team
       ? `common/f1/${year}/${team}/${ref}/${year}${team}${ref}`
       : null;
+  const headshot = e.headshot_url.replace("/1col/", "/4col/");
   return {
     portrait: art
       ? `${ART}/c_thumb,g_face,w_432,h_432,z_0.5/q_auto/${art}front.webp`
-      : e.headshot_url.replace("/1col/", "/4col/"),
+      : headshot,
+    headshot,
     art,
   };
 };

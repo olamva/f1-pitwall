@@ -27,7 +27,7 @@ const season: Season = {
       name: "Driver A",
       number: "1",
       team: "team",
-      portrait: null,
+      headshot: null,
       art: null,
     },
     {
@@ -36,7 +36,7 @@ const season: Season = {
       name: "Driver B",
       number: "2",
       team: "team",
-      portrait: null,
+      headshot: null,
       art: null,
     },
   ],

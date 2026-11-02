@@ -44,7 +44,7 @@ test("sprintQualifying reads jolpica alpha schedules and results", async (t) => 
         name: "George Russell",
         number: "63",
         team: "mercedes",
-        portrait: null,
+        headshot: null,
         art: null,
       },
       {
@@ -53,7 +53,7 @@ test("sprintQualifying reads jolpica alpha schedules and results", async (t) => 
         name: "Kimi Antonelli",
         number: "12",
         team: "mercedes",
-        portrait: null,
+        headshot: null,
         art: null,
       },
     ],

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
-import { Figure } from "./Headshot.tsx";
+import { BUST, Figure } from "./Headshot.tsx";
 
 export interface PodiumEntry {
   id: string;
@@ -64,8 +64,8 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
             <Figure
               id={e.id}
               pose={POSES[i]!}
-              transform="c_crop,g_north,h_0.6/c_scale,h_500"
-              className="podium-name mx-auto block h-32 sm:h-44"
+              transform={BUST(0.6)}
+              className="podium-name podium-figure mx-auto block h-32 sm:h-44"
             />
             <div
               className={`podium-block relative flex flex-col items-center justify-center rounded-t-lg ${HEIGHTS[i]}`}
@@ -73,7 +73,7 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
               <span className="podium-metal font-f1 text-3xl leading-none font-black">
                 {i + 1}
               </span>
-              <span className="tabular mt-1 text-xs text-zinc-300">
+              <span className="tabular mt-1 text-xs font-semibold">
                 {e.value}
               </span>
             </div>

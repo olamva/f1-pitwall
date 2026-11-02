@@ -5,11 +5,12 @@ import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
-import { Headshot } from "../Headshot.tsx";
+import { BODY, Figure, useArt } from "../Headshot.tsx";
 import { useActive } from "../Swipe.tsx";
 import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
 import { Backdrop } from "./Backdrop.tsx";
+import { TeamNumber } from "./TeamNumber.tsx";
 
 interface ChampionProps {
   champ: Championship;
@@ -26,11 +27,12 @@ interface RoadProps {
   h: ReturnType<typeof honours>;
 }
 
-interface PortraitProps {
+interface PosterProps {
   champ: Championship;
   id: string;
-  season: Season;
 }
+
+const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
 
 interface TeamProps {
   id: string;
@@ -111,7 +113,7 @@ export const Champion = ({
           line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
         />
       )}
-      <Portrait champ={champ} id={first.id} season={season} />
+      <Poster champ={champ} id={first.id} />
       <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
         {season.year} {title}
       </p>
@@ -154,15 +156,25 @@ export const Champion = ({
   );
 };
 
-const Portrait = ({ champ, id, season }: PortraitProps) => {
-  const src =
-    champ === "drivers" && season.drivers.find((d) => d.id === id)?.portrait;
+const Poster = ({ champ, id }: PosterProps) => {
+  const d = useArt(id);
   return (
-    src && (
-      <Headshot
-        src={src}
-        className="pointer-events-none relative -z-10 mx-auto -mb-12 aspect-square w-3/4 mask-b-from-60% opacity-90 sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:w-2/5 sm:max-w-lg"
-      />
+    champ === "drivers" &&
+    d?.art && (
+      <div className="pointer-events-none relative -z-10 mx-auto -mb-20 h-96 w-full sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:h-[34rem] sm:w-2/5 sm:max-w-lg">
+        <TeamNumber
+          id={d.id}
+          number={d.number}
+          color={GOLD}
+          className="absolute inset-x-0 top-[4%] flex h-3/5 justify-center text-[14rem] drop-shadow-[0_0_24px_rgb(250_204_21_/_0.45)]"
+        />
+        <Figure
+          id={id}
+          pose="front"
+          transform={BODY}
+          className="relative mx-auto h-full mask-b-from-60%"
+        />
+      </div>
     )
   );
 };

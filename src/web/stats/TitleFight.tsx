@@ -266,7 +266,7 @@ export const TitleFight = ({
             <Lineup
               champ={champ}
               table={table}
-              alive={alive}
+              field={alive}
               who={who}
               gain={gain}
             />
