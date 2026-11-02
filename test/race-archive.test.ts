@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { raceArchive } from "../src/server/history.ts";
+import { season } from "../src/server/season.ts";
 import { F1_ORIGIN } from "../src/server/origin.ts";
 
 const BASE = "https://api.jolpi.ca/ergast/f1/2026";
@@ -16,7 +17,7 @@ const race = (round: string, raceName: string, fp1: string) => ({
 const singapore = race("17", "Singapore Grand Prix", "09:30:00Z");
 const austin = race("18", "United States Grand Prix", "17:30:00Z");
 const page = (Races: unknown[]) => ({
-  MRData: { total: String(Races.length), RaceTable: { Races } },
+  MRData: { total: String(Races.length), RaceTable: { season: "2026", Races } },
 });
 
 const files: Record<string, unknown> = {
@@ -44,6 +45,13 @@ const files: Record<string, unknown> = {
     },
   ]),
   [`${BASE}/sprint.json?limit=100&offset=0`]: page([]),
+  [`${BASE}/qualifying.json?limit=100&offset=0`]: page([]),
+  [`${BASE}/driverstandings.json`]: {
+    MRData: { StandingsTable: { StandingsLists: [] } },
+  },
+  [`${BASE}/constructorstandings.json`]: {
+    MRData: { StandingsTable: { StandingsLists: [] } },
+  },
   [`${BASE}/18.json`]: page([austin]),
   [`${F1_ORIGIN}/static/2026/Index.json`]: {
     Meetings: [
@@ -76,7 +84,8 @@ const files: Record<string, unknown> = {
     {
       driver_number: 1,
       name_acronym: "NOR",
-      full_name: "Lando NORRIS",
+      first_name: "Lando",
+      last_name: "Norris",
       team_name: "McLaren",
     },
   ],
@@ -112,14 +121,15 @@ test("race archive lists a round once its first practice ends, before the round 
   ]);
 });
 
-test("race archive fills a finished race from OpenF1 and the timing archive until Jolpica has its results", async (t) => {
+test("results and season fill a finished race from OpenF1 and the timing archive until Jolpica has its results", async (t) => {
   t.mock.method(Date, "now", () => Date.parse("2026-10-25T23:00:00Z"));
   t.mock.method(globalThis, "setTimeout", (callback: () => void) =>
     queueMicrotask(callback),
   );
-  t.mock.method(globalThis, "fetch", async (url: string) =>
-    files[url] ? Response.json(files[url]) : new Response("", { status: 404 }),
-  );
+  t.mock.method(globalThis, "fetch", async (url: string) => {
+    const file = files[url.replace("/f1/current", "/f1/2026")];
+    return file ? Response.json(file) : new Response("", { status: 404 });
+  });
   const [austin] = (await raceArchive(2026)).races;
 
   assert.deepEqual(
@@ -134,7 +144,7 @@ test("race archive fills a finished race from OpenF1 and the timing archive unti
       r.status,
     ]),
     [
-      ["1", "nor", "Lando NORRIS", "", "McLaren", 2, 25, "Finished"],
+      ["1", "nor", "Lando Norris", "", "McLaren", 2, 25, "Finished"],
       [
         "R",
         "leclerc",
@@ -145,6 +155,15 @@ test("race archive fills a finished race from OpenF1 and the timing archive unti
         0,
         "Retired",
       ],
+    ],
+  );
+  assert.deepEqual(
+    (await season()).races
+      .find((r) => r.round === 18)
+      ?.results.map((r) => [r.driver, r.team, r.grid, r.position, r.points]),
+    [
+      ["nor", "", 2, 1, 25],
+      ["leclerc", "ferrari", 1, null, 0],
     ],
   );
 });

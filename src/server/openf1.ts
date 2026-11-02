@@ -1,10 +1,10 @@
-import type {
-  RaceArchive,
-  SeasonStandings,
-  StandingRow,
+import {
+  SESSION_MS,
+  type SeasonStandings,
+  type StandingRow,
 } from "../shared/season.ts";
-
-type Result = RaceArchive["races"][number]["results"][number];
+import { startingGrid } from "./archive.ts";
+import { when } from "./season.ts";
 
 const BASE = "https://api.openf1.org/v1/";
 const FRESH_MS = 10 * 60_000;
@@ -98,54 +98,71 @@ export async function provisional(
   };
 }
 
-export async function raceResults(
+const outcome = (row: any, laps: number): [string, string] =>
+  row.dsq
+    ? ["D", "Disqualified"]
+    : row.dns
+      ? ["W", "Did not start"]
+      : row.dnf
+        ? ["R", "Retired"]
+        : row.number_of_laps < laps
+          ? ["R", "Lapped"]
+          : ["R", "Finished"];
+
+export async function pendingRace(
   year: number,
-  start: number,
-  known: Map<string, Result>,
-  grid: Map<string, number>,
-): Promise<Result[]> {
+  calendar: any[],
+  rows: any[],
+): Promise<any[]> {
+  const race = calendar.findLast(
+    (r) => Date.parse(when(r)!) + SESSION_MS <= Date.now(),
+  );
+  if (!race || rows.some((r) => r.round === race.round)) return [];
   const sessions: any[] = await get(`sessions?year=${year}&session_type=Race`);
   const session = sessions.find(
     (s) =>
       s.session_name === "Race" &&
-      Math.abs(Date.parse(s.date_start) - start) < 60 * 60_000,
+      Math.abs(Date.parse(s.date_start) - Date.parse(when(race)!)) <
+        60 * 60_000,
   );
   if (!session) return [];
   const key = `session_key=${session.session_key}`;
   const entrants: any[] = await get(`drivers?${key}`);
-  const rows: any[] = await get(`session_result?${key}`);
+  const results: any[] = await get(`session_result?${key}`);
+  const grid = await startingGrid(year, Number(race.round)).catch(
+    () => new Map<string, number>(),
+  );
+  const known = new Map(
+    rows.flatMap((r) => r.Results).map((r: any) => [r.Driver.code, r]),
+  );
   const entrant = new Map(entrants.map((e) => [e.driver_number, e]));
-  return rows.map((row, i) => {
-    const e = entrant.get(row.driver_number);
-    const code = e?.name_acronym ?? "";
-    const status = row.dsq
-      ? "Disqualified"
-      : row.dns
-        ? "Did not start"
-        : row.dnf
-          ? "Retired"
-          : row.number_of_laps < rows[0].number_of_laps
-            ? "Lapped"
-            : "Finished";
-    return {
-      driver: code.toLowerCase(),
-      name: e?.full_name ?? code,
-      team: "",
-      teamName: e?.team_name ?? "",
-      ...known.get(code),
-      code,
-      number: String(row.driver_number),
-      grid: grid.get(String(row.driver_number)) ?? 0,
-      position: row.position ?? i + 1,
-      positionText: row.position
-        ? String(row.position)
-        : row.dsq
-          ? "D"
-          : row.dns
-            ? "W"
-            : "R",
-      points: row.points,
-      status,
-    };
-  });
+  return [
+    {
+      ...race,
+      Results: results.map((row, i) => {
+        const e = entrant.get(row.driver_number);
+        const before = known.get(e?.name_acronym);
+        return {
+          Driver: before?.Driver ?? {
+            driverId: e?.name_acronym?.toLowerCase() ?? "",
+            code: e?.name_acronym ?? "",
+            givenName: e?.first_name ?? "",
+            familyName: e?.last_name ?? "",
+          },
+          Constructor: before?.Constructor ?? {
+            constructorId: "",
+            name: e?.team_name ?? "",
+          },
+          number: String(row.driver_number),
+          grid: String(grid.get(String(row.driver_number)) ?? 0),
+          position: String(row.position ?? i + 1),
+          positionText: row.position
+            ? String(row.position)
+            : outcome(row, 0)[0],
+          points: String(row.points),
+          status: outcome(row, results[0].number_of_laps)[1],
+        };
+      }),
+    },
+  ];
 }

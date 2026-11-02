@@ -1,4 +1,5 @@
 import { all, get, json } from "./jolpica.ts";
+import { pendingRace } from "./openf1.ts";
 import type {
   Classified,
   DriverInfo,
@@ -132,6 +133,13 @@ export async function season(): Promise<Season> {
     number: d.Driver.permanentNumber,
     team: d.Constructors.at(-1)?.constructorId ?? "",
   }));
+  results.push(
+    ...(await pendingRace(
+      Number(calendar.RaceTable.season),
+      races(calendar),
+      results,
+    ).catch(() => [])),
+  );
   const rounds = races(calendar).map(schedule);
   const sprintQualifyingResults = await sprintQualifying(
     Number(calendar.RaceTable.season),
