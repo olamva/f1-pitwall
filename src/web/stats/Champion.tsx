@@ -91,7 +91,11 @@ export const Champion = ({
     () => honours(season, champ, first.id),
     [season, champ, first.id],
   );
-  useConfetti(true, `champion-${season.year}-${champ}-${first.id}`);
+  useConfetti(
+    true,
+    season.year,
+    `champion-${season.year}-${champ}-${first.id}`,
+  );
   const color = me?.color ?? "#888";
   useBackdrop(ref, color);
   const full = me?.name ?? first.id;
