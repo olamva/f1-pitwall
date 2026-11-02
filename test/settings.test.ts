@@ -29,6 +29,8 @@ test("the server accepts only the synced settings with valid values", () => {
     { delay: 0 },
     { delay: 300, favourite: null },
     { favourite: { id: "max_verstappen", code: "VER" } },
+    { team: "red_bull" },
+    { team: null },
   ])
     assert.equal(validSettings(patch), true, JSON.stringify(patch));
   for (const patch of [
@@ -40,6 +42,8 @@ test("the server accepts only the synced settings with valid values", () => {
     { autoplay: true },
     { favourite: { id: "norris" } },
     { favourite: { id: "norris", code: "NOR", name: "Lando" } },
+    { team: "Red Bull" },
+    { team: 1 },
     JSON.parse('{"__proto__": {"delay": 1}}'),
   ])
     assert.equal(validSettings(patch), false, JSON.stringify(patch));

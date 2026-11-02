@@ -10,7 +10,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
-import { useFavourite } from "./favourite.ts";
+import { useFavourite, useFavouriteTeam } from "./favourite.ts";
 import { Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
@@ -162,6 +162,7 @@ export const Standings = ({ season }: StandingsProps) => {
   const [champ, setChamp] = useState<Championship>("drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const favourite = useFavourite()?.id;
+  const team = useFavouriteTeam();
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   const ready = data?.year === Number(year);
   const crowned = (champ: Championship) =>
@@ -228,7 +229,7 @@ export const Standings = ({ season }: StandingsProps) => {
               rows={data.constructors}
               season={season}
               teams={names}
-              favourite={data.drivers.find((row) => row.id === favourite)?.team}
+              favourite={team ?? undefined}
             />
           )
         }

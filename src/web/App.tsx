@@ -150,7 +150,10 @@ export const App = () => {
                     <Loading label="Loading the season…" error={season.error} />
                   ))}
                 {t === "Settings" && (
-                  <Settings drivers={season.data?.drivers ?? []} />
+                  <Settings
+                    drivers={season.data?.drivers ?? []}
+                    teams={season.data?.teams ?? []}
+                  />
                 )}
               </Fragment>
             )
