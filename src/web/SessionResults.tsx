@@ -127,7 +127,6 @@ const Classification = <T extends Entry>({
           value: value(row),
           team: row.team,
         }))}
-        crowned
         onSelect={openDriver}
       />
     )}

@@ -4,19 +4,14 @@ import {
   ChartColumn,
   Settings as SettingsIcon,
   Timer,
-  Trophy,
 } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
-import {
-  Calendar,
-  LiveSession,
-  type LiveInfo,
-} from "./live/CurrentSession.tsx";
+import { Calendar } from "./Calendar.tsx";
+import { LiveSession, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Faces } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { navigate } from "./path.ts";
-import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { KINDS } from "./spoilers.ts";
@@ -27,13 +22,12 @@ import { useTokenHidden } from "./tokenHidden.ts";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
-const TABS = ["Countdown", "Calendar", "Results", "Stats", "Settings"] as const;
+const TABS = ["Countdown", "Calendar", "Stats", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
   Countdown: "session",
   Calendar: "calendar",
-  Results: "results",
   Stats: "stats",
   Settings: "settings",
 };
@@ -41,10 +35,20 @@ const SLUG: Record<Tab, string> = {
 const ICONS = {
   Countdown: Timer,
   Calendar: CalendarDays,
-  Results: Trophy,
   Stats: ChartColumn,
   Settings: SettingsIcon,
 };
+
+const [, standings] =
+  location.pathname.match(/^\/results\/(\d+)\/standings/) ?? [];
+if (location.pathname.startsWith("/results"))
+  history.replaceState(
+    null,
+    "",
+    standings
+      ? `/stats/standings/${standings}`
+      : location.pathname.replace("/results", "/calendar"),
+  );
 
 const fromPath = (): Tab =>
   TABS.find((t) => location.pathname.slice(1).startsWith(SLUG[t])) ??
@@ -133,7 +137,6 @@ export const App = () => {
             ) : (
               <Fragment key={visit}>
                 {t === "Calendar" && <Calendar season={season} />}
-                {t === "Results" && <Results season={season.data} />}
                 {t === "Stats" &&
                   (season.data ? (
                     <Spoiler

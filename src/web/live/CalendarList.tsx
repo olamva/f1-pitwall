@@ -1,9 +1,9 @@
 import { Play } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
-import { openPath } from "../path.ts";
+import { PodiumRow, type Race } from "../Podium.tsx";
 import { LABEL } from "./Countdown.tsx";
 import {
   ScheduleWeekend,
@@ -17,7 +17,10 @@ type Entry = SessionRef & { time?: string };
 interface CalendarListProps {
   sessions: SessionRef[];
   season: Season;
+  races: Race[];
+  hidden: Set<string>;
   onStart: (session: SessionRef) => void;
+  onOpen: (round: number) => void;
 }
 
 interface SessionButtonProps {
@@ -29,7 +32,8 @@ interface SessionButtonProps {
 interface WeekendProps {
   sessions: Entry[];
   onStart: (session: SessionRef) => void;
-  results?: string;
+  onOpen?: () => void;
+  podium?: ReactNode;
   featured?: boolean;
 }
 
@@ -73,12 +77,12 @@ const remaining = (season: Season, sessions: SessionRef[]): Entry[] => {
     : [];
 };
 
-const resultsPath = (season: Season, sessions: SessionRef[]) => {
+const started = (season: Season, sessions: SessionRef[]) => {
   const round = roundOf(season, sessions);
   return round &&
     Date.parse(round.sessions.fp1 ?? round.sessions.race!) + SESSION_MS <=
       Date.now()
-    ? `/results/${season.year}/${round.round}`
+    ? round.round
     : undefined;
 };
 
@@ -131,13 +135,19 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
 const weekday = (s: SessionRef, weekday: "long" | "short") =>
   day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
 
-const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
+const Weekend = ({
+  sessions,
+  onStart,
+  onOpen,
+  podium,
+  featured,
+}: WeekendProps) => (
   <article
     className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
-    {results && (
+    {onOpen && (
       <button
-        onClick={() => openPath(results)}
+        onClick={onOpen}
         aria-label={`Results: ${sessions[0].meeting}`}
         className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
       />
@@ -162,6 +172,7 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
         {dates(sessions)}
       </span>
     </header>
+    {podium}
     <div
       className={`pointer-events-none relative space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
     >
@@ -214,7 +225,10 @@ const leftover = (i: number, at: number, total: number, cols: number) => {
 export const CalendarList = ({
   sessions,
   season,
+  races,
+  hidden,
   onStart,
+  onOpen,
 }: CalendarListProps) => {
   const ref = useRef<HTMLLIElement>(null);
   useEffect(() => {
@@ -248,16 +262,21 @@ export const CalendarList = ({
           <ScheduleWeekend round={r} featured={r.name === anchor} />
         </li>
       ))}
-      {past.map((w) => (
-        <li key={w[0].start} {...item(w[0].start)}>
-          <Weekend
-            sessions={[...w, ...remaining(season, w)]}
-            onStart={onStart}
-            results={resultsPath(season, w)}
-            featured={w[0].start === anchor}
-          />
-        </li>
-      ))}
+      {past.map((w) => {
+        const round = started(season, w);
+        const race = races.find((r) => r.round === round);
+        return (
+          <li key={w[0].start} {...item(w[0].start)}>
+            <Weekend
+              sessions={[...w, ...remaining(season, w)]}
+              onStart={onStart}
+              onOpen={round ? () => onOpen(round) : undefined}
+              podium={race && <PodiumRow race={race} hidden={hidden} />}
+              featured={w[0].start === anchor}
+            />
+          </li>
+        );
+      })}
     </ul>
   );
 };
