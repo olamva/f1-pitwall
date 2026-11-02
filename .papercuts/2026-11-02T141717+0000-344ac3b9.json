@@ -1,0 +1,14 @@
+{
+  "id": "344ac3b9",
+  "ts": "2026-11-02T14:17:17+00:00",
+  "text": "Cloudinary c_crop with only a relative h also shrinks the width to keep the aspect ratio; add w_1.0 to keep the full width",
+  "tags": [
+    "api",
+    "images"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "37b0ef6f",
+  "where": "media.formula1.com",
+  "branch": "t3/fetch-driver-portraits"
+}

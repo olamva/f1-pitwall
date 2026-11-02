@@ -5,10 +5,12 @@ import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { BUST, Figure, useArt } from "../Headshot.tsx";
 import { useActive } from "../Swipe.tsx";
 import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
 import { Backdrop } from "./Backdrop.tsx";
+import { TeamNumber } from "./TeamNumber.tsx";
 
 interface ChampionProps {
   champ: Championship;
@@ -24,6 +26,13 @@ interface RoadProps {
   season: Season;
   h: ReturnType<typeof honours>;
 }
+
+interface PosterProps {
+  champ: Championship;
+  id: string;
+}
+
+const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
 
 interface TeamProps {
   id: string;
@@ -104,6 +113,7 @@ export const Champion = ({
           line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
         />
       )}
+      <Poster champ={champ} id={first.id} />
       <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
         {season.year} {title}
       </p>
@@ -143,6 +153,29 @@ export const Champion = ({
         </button>
       )}
     </section>
+  );
+};
+
+const Poster = ({ champ, id }: PosterProps) => {
+  const d = useArt(id);
+  return (
+    champ === "drivers" &&
+    d?.art && (
+      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full overflow-clip sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:h-[36rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85%">
+        <TeamNumber
+          id={d.id}
+          number={d.number}
+          color={GOLD}
+          className="absolute inset-x-0 top-[3%] flex h-[62%] justify-center text-[16rem] opacity-90"
+        />
+        <Figure
+          id={id}
+          pose="front"
+          transform={BUST(0.42)}
+          className="champion-figure relative mx-auto h-full max-w-none mask-b-from-70%"
+        />
+      </div>
+    )
   );
 };
 

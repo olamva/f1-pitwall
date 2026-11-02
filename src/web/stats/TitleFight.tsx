@@ -19,6 +19,8 @@ import type { Season } from "../../shared/season.ts";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
 import { Champion } from "./Champion.tsx";
+import { Faceoff } from "./Faceoff.tsx";
+import { Lineup } from "./Lineup.tsx";
 import { Simulator } from "./Simulator.tsx";
 import type { Who } from "./derive.ts";
 
@@ -261,6 +263,13 @@ export const TitleFight = ({
               decider assumes that the driver wins every event and that no rival
               scores.
             </p>
+            <Lineup
+              champ={champ}
+              table={table}
+              field={alive}
+              who={who}
+              gain={gain}
+            />
             <table className="tabular w-full text-sm">
               <thead className="text-left text-xs text-zinc-500">
                 <tr>
@@ -304,6 +313,13 @@ export const TitleFight = ({
               <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
                 What it takes at {events[0]!.name}
               </h2>
+              <Faceoff
+                focus={focus}
+                rival={rival}
+                table={table}
+                who={who}
+                gain={gain}
+              />
               <div className="grid max-w-lg grid-cols-2 gap-3">
                 <Pick
                   label={place ? `${place} for` : "Title for"}

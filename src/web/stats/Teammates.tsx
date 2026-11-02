@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+import { BUST, Figure } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import type { Duel, Who } from "./derive.ts";
 
@@ -60,10 +62,36 @@ export const Teammates = ({
       const faster = d.gap === null ? null : d.gap < 0 ? a : b;
       return (
         <section key={d.team} className="bg-surface space-y-2 rounded-xl p-3">
-          <header className="flex items-center justify-between text-sm font-semibold">
-            <span>{a?.name ?? d.a}</span>
-            <span className="text-zinc-500">vs</span>
-            <span>{b?.name ?? d.b}</span>
+          <header
+            className="-mx-3 -mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2 rounded-t-xl px-3 pt-3 text-sm font-semibold"
+            style={{
+              background: `linear-gradient(180deg, color-mix(in srgb, ${color} 30%, transparent), transparent)`,
+            }}
+          >
+            {(
+              [
+                [d.a, a, "left"],
+                [d.b, b, "right"],
+              ] as const
+            ).map(([id, w, pose], i) => (
+              <Fragment key={id}>
+                {i > 0 && (
+                  <span className="font-f1 self-center text-zinc-500">vs</span>
+                )}
+                <span
+                  className={`flex min-w-0 flex-col gap-1 ${i ? "items-start" : "items-end text-right"}`}
+                >
+                  <Figure
+                    id={id}
+                    pose={pose}
+                    transform={BUST(0.55)}
+                    loading="lazy"
+                    className="h-44 mask-b-from-75%"
+                  />
+                  {w?.name ?? id}
+                </span>
+              </Fragment>
+            ))}
           </header>
           <div className="text-xs text-zinc-500">Qualifying</div>
           <Split label="Qualifying" pair={d.quali} color={color} />

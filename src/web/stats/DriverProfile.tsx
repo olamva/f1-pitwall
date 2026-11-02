@@ -8,6 +8,7 @@ import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
@@ -157,6 +158,12 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
               backgroundImage: `linear-gradient(135deg, ${color}40, transparent 60%)`,
             }}
           >
+            {data.portrait && (
+              <Headshot
+                src={data.portrait}
+                className="-mx-5 -mt-5 -mb-12 h-72 w-[calc(100%+2.5rem)] max-w-none mask-b-from-50% object-cover object-top sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:aspect-square sm:h-full sm:w-auto sm:mask-l-from-70%"
+              />
+            )}
             {data.number && (
               <TeamNumber
                 id={data.id}

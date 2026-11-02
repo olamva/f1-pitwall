@@ -41,6 +41,8 @@ export type DriverInfo = {
   name: string;
   number: string;
   team: string;
+  headshot: string | null;
+  art: string | null;
 };
 
 export type Season = {
@@ -118,6 +120,7 @@ export type DriverProfile = {
   dateOfBirth: string | null;
   number: string | null;
   url: string | null;
+  portrait: string | null;
   firstSeason: number | null;
   lastSeason: number | null;
   starts: number;
