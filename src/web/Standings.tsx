@@ -104,7 +104,7 @@ const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
               </span>
             )}
             <span
-              className={`font-f1 relative mt-1 block leading-tight font-bold ${big ? "text-3xl sm:text-5xl" : "text-lg"}`}
+              className={`font-f1 relative block leading-tight font-bold ${big ? "mt-1 text-3xl sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
             >
               {row.name}
             </span>
