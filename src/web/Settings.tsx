@@ -240,7 +240,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
             </a>
           )}
         </section>
-      ) : (
+      ) : status ? (
         <>
           <section className="bg-surface space-y-2 rounded-xl p-4">
             <h2 className="font-f1 text-lg font-bold">Notifications</h2>
@@ -298,7 +298,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
             </GuideSheet>
           </section>
         </>
-      )}
+      ) : null}
     </div>
   );
 };

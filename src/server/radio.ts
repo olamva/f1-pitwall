@@ -30,7 +30,11 @@ export const audio = (url: string) => {
   return path ? archive(path) : null;
 };
 
-const post = async (url: string, body: FormData | string): Promise<any> => {
+const post = async (
+  url: string,
+  body: FormData | string,
+  retries = 3,
+): Promise<any> => {
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -41,11 +45,11 @@ const post = async (url: string, body: FormData | string): Promise<any> => {
     },
     body,
   });
-  if (res.status === 429) {
+  if (res.status === 429 && retries) {
     await new Promise((r) =>
       setTimeout(r, Number(res.headers.get("retry-after") ?? 10) * 1000),
     );
-    return post(url, body);
+    return post(url, body, retries - 1);
   }
   if (!res.ok) throw new Error(`${url} ${res.status}`);
   return res.json();
