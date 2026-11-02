@@ -23,11 +23,12 @@ pnpm test
 `pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=0 VITE_PORT=0 pnpm dev`. The value 0 selects an unused port. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 Set `LIVE_REPLAY` to a file in `recordings/` to replay a recorded session as a live session. See the [live replay skill](.claude/skills/live-replay/SKILL.md).
 The F1 archive returns HTTP 401 without an F1TV token, so replays and the session list need one. Save a token in Settings.
-Put `DATA_DIR=<absolute path>` in `.env.local` in the main checkout to keep the token. Use an ignored directory, such as `.env.data`. `pnpm dev` reads that file in each worktree. A `.env.local` in the worktree overrides it.
+The server keeps the token in the `data` folder of the checkout. Set `DATA_DIR` to use a different folder, and set it to an empty value to keep data only in memory.
+Put `DATA_DIR=<absolute path to the main checkout>/data` in `.env` in the main checkout to share the token with all worktrees. `pnpm dev` reads that file in each worktree. A `.env` in the worktree overrides it.
 Read an archive file with the saved token from a worktree. For example, `Meetings[].Circuit.Key` in `2026/Index.json` gives the circuit keys of the season:
 
 ```sh
-node --env-file="$(git rev-parse --path-format=absolute --git-common-dir)/../.env.local" --input-type=module -e 'const t = await import("./src/server/token.ts"); await t.load(); const { archive } = await import("./src/server/origin.ts"); process.stdout.write(await (await archive(process.argv[1])).text())' 2026/Index.json
+node --env-file="$(git rev-parse --path-format=absolute --git-common-dir)/../.env" --input-type=module -e 'const t = await import("./src/server/token.ts"); await t.load(); const { archive } = await import("./src/server/origin.ts"); process.stdout.write(await (await archive(process.argv[1])).text())' 2026/Index.json
 ```
 
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
@@ -43,7 +44,7 @@ When a cached response is old, the server sends it and refreshes it in the backg
 The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
 With `DATA_DIR`, the server saves each response to `jolpica/v1/` in that directory. A restarted server, or a server in another worktree, reads the saved responses first.
 The server does not refresh a response for a past season after it gets one from a later year.
-Start preview servers one at a time. Multiple servers share the upstream IP limit. Without `DATA_DIR`, they also keep separate caches.
+Start preview servers one at a time. Multiple servers share the upstream IP limit. Without a shared `DATA_DIR`, they also keep separate caches.
 See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).
 
 `scripts/circuits.py` refreshes `src/server/circuits.json`. It needs UnityPy. Run `python3 -m venv /tmp/unitypy && /tmp/unitypy/bin/pip install UnityPy && /tmp/unitypy/bin/python scripts/circuits.py`.
@@ -65,7 +66,7 @@ Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pu
 
 The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
-The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the user settings, the transcripts and the pace cache in that directory. In production, the server also writes each live timing message of the current session to `$DATA_DIR/live`. After a restart, it reads these messages again, so that a TV delay starts at once. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications and settings sync.
+The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the user settings, the transcripts and the pace cache in that directory. In production, the server also writes each live timing message of the current session to `$DATA_DIR/live`. After a restart, it reads these messages again, so that a TV delay starts at once. With an empty `DATA_DIR`, the server keeps the tokens in memory and turns off notifications and settings sync.
 
 Keep the other settings in `/etc/f1/env` on the VM, with mode 0600:
 
