@@ -89,6 +89,20 @@ export const isEliminated = (
   return table.some((r) => r.id !== id && ahead(r, best));
 };
 
+export const settled = (
+  table: Standing[],
+  remaining: Upcoming[],
+  champ: Championship,
+): number => {
+  let n = 0;
+  while (
+    n < table.length - 1 &&
+    hasClinched(table.slice(n), remaining, table[n]!.id, champ)
+  )
+    n++;
+  return n;
+};
+
 export type Earliest =
   | { state: "clinched" }
   | { state: "eliminated" }
