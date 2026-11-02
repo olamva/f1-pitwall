@@ -1,4 +1,7 @@
-const BASE = "https://api.jolpi.ca/ergast/f1/";
+import { DATA_DIR, readJson, writeJson } from "./data.ts";
+
+const ORIGIN = "https://api.jolpi.ca/";
+const BASE = `${ORIGIN}ergast/f1/`;
 const SPACING_MS = 300;
 const FRESH_MS = 10 * 60_000;
 
@@ -40,23 +43,54 @@ function throttled(url: string): Promise<any> {
   return run;
 }
 
-export function json(path: string, freshMs = FRESH_MS): Promise<any> {
-  const hit = cache.get(path);
-  if (hit && Date.now() - hit.at < freshMs) return hit.body;
-  const request = throttled(path);
+const file = (url: string) =>
+  `jolpica/v1/${encodeURIComponent(url.slice(ORIGIN.length))}.json`;
+
+function refresh(url: string, hit?: Entry): Promise<any> {
+  const request = throttled(url);
   const entry = { at: Date.now(), body: hit?.body ?? request };
-  cache.set(path, entry);
+  cache.set(url, entry);
   request.then(
-    () => {
-      if (cache.get(path) === entry) entry.body = request;
+    (body) => {
+      if (cache.get(url) === entry) entry.body = request;
+      if (DATA_DIR)
+        writeJson(file(url), { at: entry.at, body }).catch((e) =>
+          console.error("jolpica store write:", e),
+        );
     },
     () => {
-      if (cache.get(path) === entry) {
-        if (hit) cache.set(path, hit);
-        else cache.delete(path);
+      if (cache.get(url) === entry) {
+        if (hit) cache.set(url, hit);
+        else cache.delete(url);
       }
     },
   );
+  return entry.body;
+}
+
+const usable = (url: string, hit: { at: number }, freshMs: number) =>
+  Date.now() - hit.at < freshMs ||
+  (url.startsWith(BASE) &&
+    Number(url.slice(BASE.length, BASE.length + 4)) <
+      new Date(hit.at).getUTCFullYear());
+
+export function json(url: string, freshMs = FRESH_MS): Promise<any> {
+  const hit = cache.get(url);
+  if (hit && usable(url, hit, freshMs)) return hit.body;
+  if (hit || !DATA_DIR) return refresh(url, hit);
+  const entry: Entry = {
+    at: Date.now(),
+    body: readJson(file(url))
+      .catch(() => null)
+      .then((saved: { at: number; body: unknown } | null) => {
+        if (!saved) return refresh(url);
+        const stored = { at: saved.at, body: Promise.resolve(saved.body) };
+        cache.set(url, stored);
+        if (!usable(url, saved, freshMs)) refresh(url, stored);
+        return saved.body;
+      }),
+  };
+  cache.set(url, entry);
   return entry.body;
 }
 
