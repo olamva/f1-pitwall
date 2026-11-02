@@ -1,10 +1,11 @@
-import type { CSSProperties } from "react";
-import { useMemo } from "react";
-import { Trophy } from "lucide-react";
+import type { CSSProperties, RefObject } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
+import { ChevronDown, Trophy } from "lucide-react";
 import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { useActive } from "../Swipe.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
@@ -14,6 +15,8 @@ interface ChampionProps {
   season: Season;
   table: Standing[];
   who: Map<string, Who>;
+  next?: string;
+  onNext: () => void;
 }
 
 interface RoadProps {
@@ -28,16 +31,50 @@ const CHIP = [
   "bg-[#d97706] text-white",
 ];
 
-export const Champion = ({ champ, season, table, who }: ChampionProps) => {
+const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
+  const active = useActive();
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!active || !el) return;
+    const root = document.documentElement;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      root.style.setProperty("--champion-top", `${r.top + scrollY}px`);
+      root.style.setProperty("--champion-end", `${r.bottom + scrollY}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    observer.observe(document.body);
+    root.style.setProperty("--champion", color);
+    root.dataset.champion = "";
+    return () => {
+      observer.disconnect();
+      delete root.dataset.champion;
+      for (const p of ["--champion", "--champion-top", "--champion-end"])
+        root.style.removeProperty(p);
+    };
+  }, [ref, active, color]);
+};
+
+export const Champion = ({
+  champ,
+  season,
+  table,
+  who,
+  next,
+  onNext,
+}: ChampionProps) => {
   const [first, second] = table as [Standing, Standing | undefined];
   const me = who.get(first.id);
+  const ref = useRef<HTMLElement>(null);
   const h = useMemo(
     () => honours(season, champ, first.id),
     [season, champ, first.id],
   );
   useConfetti(true, `${champ}-${first.id}`);
-  const round = (n?: number) => season.rounds.find((r) => r.round === n);
-  const decider = round(h.decider);
+  useBackdrop(ref, me?.color ?? "#888");
+  const decider = season.rounds.find((r) => r.round === h.decider);
   const driver = season.drivers.find((d) => d.id === first.id);
   const team =
     season.teams.find((t) => t.id === me?.team)?.name ?? me?.team ?? "";
@@ -48,71 +85,82 @@ export const Champion = ({ champ, season, table, who }: ChampionProps) => {
     ["Lead", second ? `+${first.points - second.points}` : "—"],
   ] as const;
   return (
-    <div className="space-y-4">
-      <section
-        className="champion relative isolate overflow-hidden rounded-2xl px-5 pt-6 pb-5 sm:px-8 sm:pt-8"
-        style={{ "--team": me?.color ?? "#888" } as CSSProperties}
-      >
-        <div aria-hidden className="champion-rays absolute -inset-1/2 -z-10" />
-        {champ === "drivers" && driver?.number ? (
-          <TeamNumber
-            id={driver.id}
-            number={driver.number}
-            color="rgb(255 255 255 / 0.14)"
-            className="absolute top-4 right-4 -z-10 flex h-28 items-start text-[7rem] sm:h-36 sm:text-[9rem]"
-          />
-        ) : (
-          <TeamLogo
-            team={first.id}
-            className="absolute top-5 right-5 -z-10 size-28 opacity-25 brightness-0 invert sm:size-36"
-          />
-        )}
-        <Trophy
-          aria-hidden
-          className="champion-trophy size-12 text-[#fde047] sm:size-14"
+    <section
+      ref={ref}
+      className="champion relative isolate flex flex-col pt-2 pb-26 sm:pb-6"
+    >
+      <div
+        aria-hidden
+        className="champion-rays pointer-events-none absolute -inset-x-4 top-0 bottom-1/3 -z-10"
+      />
+      {champ === "drivers" && driver?.number ? (
+        <TeamNumber
+          id={driver.id}
+          number={driver.number}
+          color="rgb(255 255 255 / 0.14)"
+          className="absolute top-0 right-0 -z-10 flex h-32 items-start text-[8rem] sm:h-44 sm:text-[11rem]"
         />
-        <p className="font-f1 mt-4 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase">
-          {season.year}{" "}
-          {champ === "drivers" ? "World Champion" : "Constructors' Champion"}
+      ) : (
+        <TeamLogo
+          team={first.id}
+          className="absolute top-0 right-0 -z-10 size-32 opacity-25 brightness-0 invert sm:size-44"
+        />
+      )}
+      <Trophy
+        aria-hidden
+        className="champion-trophy size-12 text-[#fde047] sm:size-16"
+      />
+      <p className="font-f1 mt-3 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
+        {season.year}{" "}
+        {champ === "drivers" ? "World Champion" : "Constructors' Champion"}
+      </p>
+      <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black italic sm:text-7xl">
+        {me?.name ?? first.id}
+      </h2>
+      {champ === "drivers" && (
+        <p className="mt-1 text-base text-zinc-300">{team}</p>
+      )}
+      {decider && (
+        <p className="mt-4 w-fit rounded-2xl bg-black/30 px-3 py-1.5 text-sm text-white">
+          Clinched at <Flag country={decider.country} />
+          <span className="font-semibold">{decider.name}</span>
+          {h.left > 0 &&
+            ` with ${h.left} ${h.left === 1 ? "race" : "races"} to spare`}
         </p>
-        <h2 className="champion-name font-f1 mt-1 text-4xl leading-none font-black italic sm:text-6xl">
-          {me?.name ?? first.id}
-        </h2>
-        {champ === "drivers" && (
-          <p className="mt-2 text-sm text-zinc-300">{team}</p>
-        )}
-        {decider && (
-          <p className="mt-4 inline-block rounded-2xl bg-black/30 px-3 py-1.5 text-sm text-white">
-            Clinched at <Flag country={decider.country} />
-            <span className="font-semibold">{decider.name}</span>
-            {h.left > 0 &&
-              ` with ${h.left} ${h.left === 1 ? "race" : "races"} to spare`}
-          </p>
-        )}
-        <dl className="mt-6 grid grid-cols-4 gap-2 border-t border-white/20 pt-4">
-          {stats.map(([label, value]) => (
-            <div key={label} className="min-w-0">
-              <dt className="text-[10px] tracking-wider text-zinc-400 uppercase">
-                {label}
-              </dt>
-              <dd className="tabular font-f1 text-2xl font-bold sm:text-3xl">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      )}
+      <dl className="mt-5 grid max-w-2xl grid-cols-4 gap-2 border-t border-white/20 pt-3">
+        {stats.map(([label, value]) => (
+          <div key={label} className="min-w-0">
+            <dt className="text-[10px] tracking-wider text-zinc-400 uppercase">
+              {label}
+            </dt>
+            <dd className="tabular font-f1 text-2xl font-bold sm:text-4xl">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
       <Road champ={champ} season={season} h={h} />
-    </div>
+      {next && (
+        <button
+          type="button"
+          onClick={onNext}
+          className="mx-auto mt-auto flex cursor-pointer flex-col items-center pt-6 text-sm font-semibold text-zinc-300 hover:text-zinc-50"
+        >
+          The fight for {next}
+          <ChevronDown aria-hidden className="champion-next size-6" />
+        </button>
+      )}
+    </section>
   );
 };
 
 const Road = ({ champ, season, h }: RoadProps) => (
-  <section className="bg-surface rounded-xl p-3">
-    <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
+  <div className="mt-5 max-w-2xl">
+    <h3 className="font-f1 text-xs tracking-wider text-zinc-300 uppercase">
       Road to the title
-    </h2>
-    <p className="mb-3 text-sm text-zinc-500">
+    </h3>
+    <p className="mb-3 text-sm text-zinc-400">
       {champ === "drivers"
         ? "The finish in each Grand Prix."
         : "The best finish in each Grand Prix."}{" "}
@@ -126,7 +174,7 @@ const Road = ({ champ, season, h }: RoadProps) => (
           <li
             key={b.round}
             title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? "no finish" : `P${b.position}`}`}
-            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs ${CHIP[b.position - 1] ?? "bg-zinc-800 text-zinc-300"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-(--color-surface)" : ""}`}
+            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-transparent" : ""}`}
             style={{ "--delay": `${i * 40}ms` } as CSSProperties}
           >
             <span className="text-sm leading-tight [&>span]:mr-0">
@@ -140,5 +188,5 @@ const Road = ({ champ, season, h }: RoadProps) => (
         );
       })}
     </ol>
-  </section>
+  </div>
 );

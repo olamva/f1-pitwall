@@ -769,7 +769,8 @@ textarea {
   }
 }
 
-:root[data-tab="Countdown"]:has(.spotlight) header nav {
+:root[data-tab="Countdown"]:has(.spotlight) header nav,
+:root[data-champion] main .glass-tabs {
   @variant light {
     &::before {
       border-color: rgb(255 255 255 / 0.3);
@@ -796,7 +797,9 @@ textarea {
 .featured,
 section:has(> .spotlight),
 :root[data-tab="Countdown"]:has(.spotlight) header nav,
-:root[data-tab="Countdown"]:has(.spotlight) header > button {
+:root[data-tab="Countdown"]:has(.spotlight) header > button,
+:root[data-champion] main .glass-tabs,
+:root[data-champion] header > button {
   @variant light {
     color: #fff;
     --color-zinc-50: #fff;
@@ -1024,36 +1027,74 @@ html:has(dialog[open]) {
   width: 100vw;
 }
 
-.champion {
-  color: #fff;
+:root[data-champion] body {
   background:
     radial-gradient(
-      ellipse 90% 70% at 0% 0%,
-      rgb(250 204 21 / 0.35),
-      transparent 70%
-    ),
+        ellipse 120% 50% at 30% 0%,
+        rgb(250 204 21 / 0.3),
+        transparent 70%
+      )
+      top / 100% var(--champion-end, 100svh) no-repeat,
     linear-gradient(
-      160deg,
-      color-mix(in oklab, var(--team) 75%, black),
-      color-mix(in oklab, var(--team) 25%, #09090b)
-    );
-  box-shadow:
-    inset 0 0 0 1px rgb(250 204 21 / 0.35),
-    0 16px 40px -16px color-mix(in oklab, var(--team) 70%, transparent);
+        170deg,
+        color-mix(in oklab, var(--champion) 50%, #09090b),
+        color-mix(in oklab, var(--champion) 18%, #09090b)
+      )
+      top / 100% var(--champion-end, 100svh) no-repeat,
+    var(--color-zinc-950);
+
+  @variant light {
+    background:
+      radial-gradient(
+          ellipse 120% 50% at 30% 0%,
+          rgb(250 204 21 / 0.3),
+          transparent 70%
+        )
+        top / 100% var(--champion-end, 100svh) no-repeat,
+      linear-gradient(
+          170deg,
+          color-mix(in oklab, var(--champion) 65%, black),
+          color-mix(in oklab, var(--champion) 35%, black)
+        )
+        top / 100% var(--champion-end, 100svh) no-repeat,
+      var(--color-zinc-950);
+  }
+}
+
+:root[data-champion] header > button img {
+  @variant light {
+    filter: brightness(0) invert(1);
+  }
+}
+
+.champion {
+  min-height: calc(100svh - var(--champion-top, 0px));
+  color: #fff;
   --color-zinc-50: #fff;
   --color-zinc-300: rgb(255 255 255 / 0.85);
   --color-zinc-400: rgb(255 255 255 / 0.7);
-  animation: champion-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.champion-next {
+  animation: champion-next 1.6s ease-in-out infinite;
+}
+
+@keyframes champion-next {
+  50% {
+    translate: 0 0.35rem;
+  }
 }
 
 .champion-rays {
   background: repeating-conic-gradient(
-    from 0deg at 15% 15%,
-    rgb(250 204 21 / 0.14) 0 5deg,
+    from 0deg at 3rem 3.5rem,
+    rgb(250 204 21 / 0.12) 0 5deg,
     transparent 5deg 15deg
   );
-  mask: radial-gradient(circle at 15% 15%, black, transparent 55%);
-  animation: champion-spin 60s linear infinite;
+  mask:
+    radial-gradient(circle at 3rem 3.5rem, black, transparent 70%),
+    linear-gradient(transparent, black 3.5rem);
+  mask-composite: intersect;
 }
 
 .champion-trophy {
@@ -1073,21 +1114,8 @@ html:has(dialog[open]) {
   animation: podium-fade 400ms ease var(--delay) both;
 }
 
-.swipe > [inert] :is(.champion-rays, .champion-name) {
+.swipe > [inert] :is(.champion-name, .champion-next) {
   animation: none;
-}
-
-@keyframes champion-in {
-  from {
-    opacity: 0;
-    scale: 0.96;
-  }
-}
-
-@keyframes champion-spin {
-  to {
-    rotate: 1turn;
-  }
 }
 
 @keyframes champion-trophy {
@@ -1109,8 +1137,7 @@ html:has(dialog[open]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .champion,
-  .champion-rays,
+  .champion-next,
   .champion-trophy,
   .champion-name,
   .champion-chip {

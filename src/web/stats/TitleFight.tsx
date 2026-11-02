@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import {
   clinchMatrix,
   constructorNeeds,
@@ -220,16 +220,33 @@ export const TitleFight = ({
     picked !== focus ? picked : (alive.find((id) => id !== focus) ?? "");
   const gain = maxGain(events, champ);
   const fight = events.length > 0 && table.length > 1;
+  const nextRef = useRef<HTMLHeadingElement>(null);
   return (
     <div className="space-y-4">
       {done > 0 && (
-        <Champion champ={champ} season={season} table={full} who={who} />
+        <Champion
+          champ={champ}
+          season={season}
+          table={full}
+          who={who}
+          next={fight ? place : undefined}
+          onNext={() =>
+            nextRef.current?.scrollIntoView({
+              behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+            })
+          }
+        />
       )}
       {!done && !events.length && (
         <p className="text-zinc-400">The season is over.</p>
       )}
       {done > 0 && fight && (
-        <h2 className="font-f1 px-1 pt-4 text-lg font-bold">
+        <h2
+          ref={nextRef}
+          className="font-f1 scroll-mt-6 px-1 pt-2 text-lg font-bold"
+        >
           The fight for {place}
         </h2>
       )}
