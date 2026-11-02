@@ -98,6 +98,17 @@ export async function provisional(
   };
 }
 
+const outcome = (row: any, laps: number): [string, string] =>
+  row.dsq
+    ? ["D", "Disqualified"]
+    : row.dns
+      ? ["W", "Did not start"]
+      : row.dnf
+        ? ["R", "Retired"]
+        : row.number_of_laps < laps
+          ? ["R", "Lapped"]
+          : ["R", "Finished"];
+
 export async function pendingRace(
   year: number,
   calendar: any[],
@@ -147,21 +158,9 @@ export async function pendingRace(
           position: String(row.position ?? i + 1),
           positionText: row.position
             ? String(row.position)
-            : row.dsq
-              ? "D"
-              : row.dns
-                ? "W"
-                : "R",
+            : outcome(row, 0)[0],
           points: String(row.points),
-          status: row.dsq
-            ? "Disqualified"
-            : row.dns
-              ? "Did not start"
-              : row.dnf
-                ? "Retired"
-                : row.number_of_laps < results[0].number_of_laps
-                  ? "Lapped"
-                  : "Finished",
+          status: outcome(row, results[0].number_of_laps)[1],
         };
       }),
     },
