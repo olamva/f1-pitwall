@@ -16,6 +16,7 @@ interface PodiumProps {
   entries: PodiumEntry[];
   crowned: boolean;
   onSelect?: (id: string) => void;
+  inline?: boolean;
 }
 
 export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
@@ -24,7 +25,7 @@ const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
 const POSES = ["front", "left", "right"] as const;
 
-export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
+export const Podium = ({ entries, crowned, onSelect, inline }: PodiumProps) => (
   <div className="mx-auto mb-4 max-w-2xl pt-2">
     <div className="grid grid-cols-3 items-end gap-2 text-center">
       {entries.slice(0, 3).map((e, i) => {
@@ -55,9 +56,17 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                 })}
                 className={`max-w-full text-xs font-semibold wrap-break-word sm:text-sm ${onSelect ? "cursor-pointer hover:text-red-400" : ""}`}
               >
+                {inline && e.team && (
+                  <TeamLogo
+                    team={e.team}
+                    className="mr-1.5 inline h-4 w-6 align-[-3px]"
+                  />
+                )}
                 {e.name}
               </Name>
-              {e.team && <TeamLogo team={e.team} className="mt-1 h-5 w-10" />}
+              {!inline && e.team && (
+                <TeamLogo team={e.team} className="mt-1 h-5 w-10" />
+              )}
               {e.detail && (
                 <span className="max-w-full truncate text-[11px] text-zinc-500">
                   {e.detail}
