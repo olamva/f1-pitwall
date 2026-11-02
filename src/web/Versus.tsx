@@ -114,7 +114,7 @@ const Plate = ({ side, right }: { side: Side; right: boolean }) => {
 
 export const Versus = ({ sides, seam, center, caption }: VersusProps) => (
   <div
-    className="relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white sm:h-80"
+    className="relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
     style={{ background: INK }}
   >
     {sides.map((s, i) => (
