@@ -68,7 +68,7 @@ const RaceList = ({ year, season, races, onOpen }: RaceListProps) => {
             <span className="flex items-center gap-2 text-xs text-zinc-400">
               Round {race.round} · {race.date}
               {race.sprint.length > 0 && (
-                <SprintLogo className="-my-0.5 ml-auto h-5 shrink-0 text-zinc-100" />
+                <SprintLogo className="ml-auto h-2.5 shrink-0 text-zinc-100" />
               )}
             </span>
             <span className="font-f1 mt-1 block font-bold">
