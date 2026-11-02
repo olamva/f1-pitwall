@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState } from "react";
+import { Fragment, useContext, useState, type CSSProperties } from "react";
 import { BODY, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { logoSrc } from "./TeamLogo.tsx";
@@ -25,14 +25,23 @@ const clip = (seam: number, right: boolean) =>
     ? `polygon(100% 0, ${seam + SLANT + 0.5}% 0, ${seam - SLANT + 0.5}% 100%, 100% 100%)`
     : `polygon(0% 0, ${seam + SLANT - 0.5}% 0, ${seam - SLANT - 0.5}% 100%, 0% 100%)`;
 
-const useSwap = (side: Side) => {
-  const [last, setLast] = useState(side);
-  const [gone, setGone] = useState<Side>();
-  if (last.id !== side.id) {
-    setLast(side);
-    setGone(last);
+interface Swap {
+  side: Side;
+  edge: number;
+}
+
+const useSwap = (side: Side, seam: number, right: boolean) => {
+  const [last, setLast] = useState({ side, seam });
+  const [swap, setSwap] = useState<Swap>();
+  if (last.side.id !== side.id || last.seam !== seam) {
+    setLast({ side, seam });
+    if (last.side.id !== side.id)
+      setSwap({
+        side: last.side,
+        edge: (right ? Math.min : Math.max)(last.seam, seam),
+      });
   }
-  return [gone, () => setGone(undefined)] as const;
+  return [swap, () => setSwap(undefined)] as const;
 };
 
 interface PanelProps {
@@ -40,13 +49,17 @@ interface PanelProps {
   gone?: Side;
   right: boolean;
   seam: number;
-  onDone?: () => void;
+}
+
+interface WipeProps extends PanelProps {
+  edge?: number;
+  onDone: () => void;
 }
 
 const paint = (color: string, right: boolean) =>
   `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
 
-const Panel = ({ side, gone, right, seam, onDone }: PanelProps) => (
+const Panel = ({ side, gone, right, seam, edge, onDone }: WipeProps) => (
   <div
     className="absolute inset-0 transition-[clip-path] duration-500"
     style={{ clipPath: clip(seam, right) }}
@@ -61,7 +74,12 @@ const Panel = ({ side, gone, right, seam, onDone }: PanelProps) => (
     <div
       key={side.id}
       className={`absolute inset-0 ${gone ? `versus-wipe-${right ? "right" : "left"}` : ""}`}
-      style={{ background: paint(side.color, right) }}
+      style={
+        {
+          background: paint(side.color, right),
+          "--seam": `${edge ?? seam}%`,
+        } as CSSProperties
+      }
       onAnimationEnd={onDone}
     />
   </div>
@@ -159,7 +177,7 @@ const Plate = ({ side, right, motion = "" }: PlateProps) => {
 };
 
 export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
-  const swaps = [useSwap(sides[0]), useSwap(sides[1])];
+  const swaps = [useSwap(sides[0], seam, false), useSwap(sides[1], seam, true)];
   return (
     <div
       className="relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
@@ -169,7 +187,8 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
         <Panel
           key={i}
           side={s}
-          gone={swaps[i]![0]}
+          gone={swaps[i]![0]?.side}
+          edge={swaps[i]![0]?.edge}
           right={i > 0}
           seam={seam}
           onDone={swaps[i]![1]}
@@ -179,7 +198,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
         <Figures
           key={i}
           side={s}
-          gone={swaps[i]![0]}
+          gone={swaps[i]![0]?.side}
           right={i > 0}
           seam={seam}
         />
@@ -189,7 +208,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
         style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
       />
       {sides.map((s, i) => {
-        const gone = swaps[i]![0];
+        const gone = swaps[i]![0]?.side;
         return (
           <Fragment key={i}>
             {gone && (

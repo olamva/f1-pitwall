@@ -1196,11 +1196,11 @@ html:has(dialog[open]) {
 }
 
 .versus-wipe-left {
-  animation: versus-wipe-left 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation: versus-wipe-left 600ms linear both;
 }
 
 .versus-wipe-right {
-  animation: versus-wipe-right 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation: versus-wipe-right 600ms linear both;
 }
 
 .versus-out-left,
@@ -1210,7 +1210,7 @@ html:has(dialog[open]) {
 
 .versus-in-left,
 .versus-in-right {
-  animation: versus-in 400ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+  animation: versus-in 350ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
 }
 
 .versus-out-left,
@@ -1228,24 +1228,40 @@ html:has(dialog[open]) {
 }
 
 .versus-in-plate {
-  animation: versus-in-plate 350ms ease-out 250ms both;
+  animation: versus-in-plate 300ms ease-out 300ms both;
 }
 
 @keyframes versus-wipe-left {
-  from {
+  0%,
+  10% {
     clip-path: polygon(0 0, 0 0, -14% 100%, 0 100%);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
-  to {
-    clip-path: polygon(0 0, 114% 0, 100% 100%, 0 100%);
+  60%,
+  100% {
+    clip-path: polygon(
+      0 0,
+      calc(var(--seam) + 8%) 0,
+      calc(var(--seam) - 6%) 100%,
+      0 100%
+    );
   }
 }
 
 @keyframes versus-wipe-right {
-  from {
+  0%,
+  10% {
     clip-path: polygon(100% 0, 114% 0, 100% 100%, 100% 100%);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
-  to {
-    clip-path: polygon(100% 0, 0 0, -14% 100%, 100% 100%);
+  60%,
+  100% {
+    clip-path: polygon(
+      100% 0,
+      calc(var(--seam) + 6%) 0,
+      calc(var(--seam) - 8%) 100%,
+      100% 100%
+    );
   }
 }
 
