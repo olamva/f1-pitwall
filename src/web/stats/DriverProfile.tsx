@@ -27,12 +27,18 @@ interface PlaceProps {
 }
 
 const Place = ({ result, sprint }: PlaceProps) => (
-  <span
-    className={`font-f1 flex flex-col items-center gap-0.5 font-bold ${sprint ? "mt-1 text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
-    style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
-  >
-    {sprint && <SprintLogo className="h-5 text-zinc-100" />}
-    {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
+    {sprint ? (
+      <SprintLogo className="h-3.5 text-zinc-100" />
+    ) : (
+      <span className="text-zinc-500 uppercase">Race</span>
+    )}
+    <span
+      className={`text-xs ${result?.points ? "" : "text-zinc-500"}`}
+      style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
+    >
+      {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+    </span>
   </span>
 );
 
@@ -65,7 +71,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid auto-rows-fr grid-cols-4 gap-1 min-[400px]:grid-cols-5 sm:grid-cols-6">
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
@@ -75,7 +81,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
                 (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
               ),
             ].join("\n")}
-            className="flex flex-col items-center gap-0.5 rounded-md bg-zinc-800/60 py-1.5 *:mr-0"
+            className="flex flex-col items-center gap-1 rounded-md bg-zinc-800/60 px-1 py-1.5 *:mr-0"
           >
             <Flag country={round.country} />
             {sessions.map((s) => (
