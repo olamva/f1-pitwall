@@ -1028,7 +1028,14 @@ html:has(dialog[open]) {
 }
 
 :root[data-champion] body {
-  background: transparent;
+  background: linear-gradient(
+    transparent var(--champion-end, 100svh),
+    var(--color-zinc-950) 0
+  );
+}
+
+:root[data-champion][data-top]:not(:has(.swipe[data-swiping])) {
+  background-color: color-mix(in oklab, var(--champion) 50%, #09090b);
 }
 
 :root[data-champion]:not(:has(.swipe[data-swiping])),
@@ -1045,20 +1052,6 @@ html:has(dialog[open]) {
       color-mix(in oklab, var(--champion) 18%, #09090b)
     );
   background-repeat: no-repeat;
-
-  @variant light {
-    background-image:
-      radial-gradient(
-        ellipse 120% 50% at 30% 0%,
-        rgb(250 204 21 / 0.3),
-        transparent 70%
-      ),
-      linear-gradient(
-        170deg,
-        color-mix(in oklab, var(--champion) 65%, black),
-        color-mix(in oklab, var(--champion) 35%, black)
-      );
-  }
 }
 
 :root[data-champion]:not(:has(.swipe[data-swiping])) {

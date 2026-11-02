@@ -60,10 +60,15 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
     observer.observe(el);
     observer.observe(document.body);
     if (!active) return () => observer.disconnect();
+    const top = () => root.toggleAttribute("data-top", scrollY < innerHeight);
+    top();
+    addEventListener("scroll", top, { passive: true });
     root.style.setProperty("--champion", color);
     root.dataset.champion = "";
     return () => {
       observer.disconnect();
+      removeEventListener("scroll", top);
+      delete root.dataset.top;
       delete root.dataset.champion;
       for (const p of ["--champion", "--champion-end"])
         root.style.removeProperty(p);
