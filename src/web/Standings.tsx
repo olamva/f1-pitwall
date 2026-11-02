@@ -229,9 +229,7 @@ export const Standings = ({ season }: StandingsProps) => {
               rows={data.constructors}
               season={season}
               teams={names}
-              favourite={
-                team ?? data.drivers.find((row) => row.id === favourite)?.team
-              }
+              favourite={team ?? undefined}
             />
           )
         }
