@@ -1034,6 +1034,10 @@ html:has(dialog[open]) {
   );
 }
 
+:root[data-champion] {
+  overscroll-behavior-y: none;
+}
+
 :root[data-champion][data-top]:not(:has(.swipe[data-swiping])) {
   background-color: color-mix(in oklab, var(--champion) 50%, #09090b);
 }
