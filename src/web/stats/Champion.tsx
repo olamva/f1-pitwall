@@ -5,6 +5,7 @@ import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { useActive } from "../Swipe.tsx";
 import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
@@ -158,10 +159,9 @@ const Portrait = ({ champ, id, season }: PortraitProps) => {
     champ === "drivers" && season.drivers.find((d) => d.id === id)?.portrait;
   return (
     src && (
-      <img
+      <Headshot
         src={src}
-        alt=""
-        className="pointer-events-none relative -z-10 mx-auto -mb-12 w-3/4 mask-b-from-60% opacity-90 sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:w-2/5 sm:max-w-lg"
+        className="pointer-events-none relative -z-10 mx-auto -mb-12 aspect-square w-3/4 mask-b-from-60% opacity-90 sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:w-2/5 sm:max-w-lg"
       />
     )
   );

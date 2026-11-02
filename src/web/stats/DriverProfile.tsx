@@ -8,6 +8,7 @@ import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
@@ -167,9 +168,8 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
             )}
             <div className="relative flex items-center gap-4 sm:gap-5">
               {data.portrait && (
-                <img
+                <Headshot
                   src={data.portrait}
-                  alt=""
                   className="size-24 shrink-0 rounded-full object-cover object-top sm:size-32"
                   style={{ background: `${color}66` }}
                 />
