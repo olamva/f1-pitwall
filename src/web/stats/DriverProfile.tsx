@@ -31,7 +31,7 @@ const Place = ({ result, sprint }: PlaceProps) => (
     className={`font-f1 flex flex-col items-center gap-0.5 font-bold ${sprint ? "mt-1 text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
     style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
   >
-    {sprint && <SprintLogo className="h-4 text-zinc-100" />}
+    {sprint && <SprintLogo className="h-5 text-zinc-100" />}
     {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
   </span>
 );
@@ -65,7 +65,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
+      <ol className="tabular grid auto-rows-fr grid-cols-4 gap-1 min-[400px]:grid-cols-5 sm:grid-cols-6">
         {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
