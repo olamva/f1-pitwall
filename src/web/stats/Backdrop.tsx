@@ -5,8 +5,7 @@ interface BackdropProps {
   line: string;
 }
 
-const GROUPS = Array.from({ length: 10 }, (_, i) => i);
-const LINES = [0, 1, 2];
+const GROUPS = Array.from({ length: 14 }, (_, i) => i);
 
 export const Backdrop = ({ name, line }: BackdropProps) =>
   createPortal(
@@ -15,11 +14,7 @@ export const Backdrop = ({ name, line }: BackdropProps) =>
         {GROUPS.map((g) => (
           <div key={g}>
             <div className="champion-name-row">{`${name} `.repeat(8)}</div>
-            {LINES.map((l) => (
-              <div key={l} className="champion-ticker">
-                {`${line} · `.repeat(6)}
-              </div>
-            ))}
+            <div className="champion-ticker">{`${line} · `.repeat(6)}</div>
           </div>
         ))}
       </div>
