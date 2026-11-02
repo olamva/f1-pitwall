@@ -16,6 +16,7 @@ import {
 } from "../../shared/clinch.ts";
 import { pointsFor } from "../../shared/points.ts";
 import type { Season } from "../../shared/season.ts";
+import { Face } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
 import { Champion } from "./Champion.tsx";
@@ -197,6 +198,25 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   );
 };
 
+interface ContenderProps {
+  label: string;
+  value: string;
+  ids: string[];
+  who: Map<string, Who>;
+  onChange: (id: string) => void;
+}
+
+const Contender = (props: ContenderProps) => (
+  <div className="flex min-w-0 items-end gap-2 [&>label]:flex-1">
+    <Face
+      id={props.value}
+      color={props.who.get(props.value)?.color ?? "#888"}
+      className="size-14 shrink-0"
+    />
+    <Pick {...props} />
+  </div>
+);
+
 export const TitleFight = ({
   champ,
   season,
@@ -304,15 +324,15 @@ export const TitleFight = ({
               <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
                 What it takes at {events[0]!.name}
               </h2>
-              <div className="grid max-w-lg grid-cols-2 gap-3">
-                <Pick
+              <div className="grid max-w-lg grid-cols-2 items-end gap-3">
+                <Contender
                   label={place ? `${place} for` : "Title for"}
                   value={focus}
                   ids={alive}
                   who={who}
                   onChange={setFocus}
                 />
-                <Pick
+                <Contender
                   label="Against"
                   value={rival}
                   ids={alive.filter((id) => id !== focus)}

@@ -1,3 +1,4 @@
+import { Face } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import type { Duel, Who } from "./derive.ts";
 
@@ -60,10 +61,16 @@ export const Teammates = ({
       const faster = d.gap === null ? null : d.gap < 0 ? a : b;
       return (
         <section key={d.team} className="bg-surface space-y-2 rounded-xl p-3">
-          <header className="flex items-center justify-between text-sm font-semibold">
-            <span>{a?.name ?? d.a}</span>
+          <header className="flex items-end justify-between gap-2 text-sm font-semibold">
+            <span className="flex flex-col items-start gap-1">
+              <Face id={d.a} color={color} className="size-16" />
+              {a?.name ?? d.a}
+            </span>
             <span className="text-zinc-500">vs</span>
-            <span>{b?.name ?? d.b}</span>
+            <span className="flex flex-col items-end gap-1 text-right">
+              <Face id={d.b} color={color} className="size-16" />
+              {b?.name ?? d.b}
+            </span>
           </header>
           <div className="text-xs text-zinc-500">Qualifying</div>
           <Split label="Qualifying" pair={d.quali} color={color} />

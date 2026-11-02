@@ -1,0 +1,14 @@
+{
+  "id": "bc4bd6ff",
+  "ts": "2026-11-02T13:04:08+00:00",
+  "text": "api.openf1.org timed out on every request during screenshot capture, so portraits came back empty",
+  "tags": [
+    "api",
+    "openf1"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "37b0ef6f",
+  "where": "https://api.openf1.org/v1/sessions",
+  "branch": "t3/fetch-driver-portraits"
+}

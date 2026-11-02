@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
-import { Headshot } from "./Headshot.tsx";
+import { Face } from "./Headshot.tsx";
 
 export interface PodiumEntry {
   id: string;
@@ -8,7 +8,6 @@ export interface PodiumEntry {
   color: string;
   value: string;
   detail?: string;
-  portrait?: string | null;
 }
 
 interface PodiumProps {
@@ -46,12 +45,11 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
                 />
               )}
-              {e.portrait && (
-                <Headshot
-                  src={e.portrait}
-                  className="mb-1 size-14 rounded-full bg-(--team)/40 object-cover object-top sm:size-16"
-                />
-              )}
+              <Face
+                id={e.id}
+                color={e.color}
+                className="mb-1 size-14 sm:size-16"
+              />
               <Name
                 {...(onSelect && {
                   type: "button" as const,

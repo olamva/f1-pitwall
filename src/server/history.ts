@@ -128,7 +128,10 @@ const wikiPortrait = (url: string) => {
     wiki.get(url) ??
     fetch(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${url.split("/wiki/")[1]}`,
-      { headers: { "User-Agent": "f1.ola-vassbotn.no" } },
+      {
+        headers: { "User-Agent": "f1.ola-vassbotn.no" },
+        signal: AbortSignal.timeout(5000),
+      },
     )
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((page) => page.thumbnail?.source ?? null)

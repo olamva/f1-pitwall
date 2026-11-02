@@ -18,7 +18,10 @@ function get(path: string): Promise<any> {
   if (hit && Date.now() - hit.at < FRESH_MS) return hit.body;
   const body = queue
     .then(() =>
-      fetch(BASE + path, { headers: { "User-Agent": "f1.ola-vassbotn.no" } }),
+      fetch(BASE + path, {
+        headers: { "User-Agent": "f1.ola-vassbotn.no" },
+        signal: AbortSignal.timeout(10_000),
+      }),
     )
     .then((res) => {
       if (!res.ok) throw new Error(`openf1 ${res.status} ${path}`);
@@ -117,11 +120,12 @@ async function headshots(year: number): Promise<Map<string, string>> {
   );
 }
 
-export const portraits = (year: number): Promise<Map<string, string>> =>
-  headshots(year).then(
-    (found) => (faces.set(year, found), found),
-    () => faces.get(year) ?? new Map(),
-  );
+export const portraits = (year: number): Promise<Map<string, string>> => {
+  const last = () => faces.get(year) ?? new Map<string, string>();
+  const fresh = headshots(year).then((found) => faces.set(year, found));
+  const wait = new Promise((r) => setTimeout(r, faces.has(year) ? 0 : 2000));
+  return Promise.race([fresh, wait]).then(last, last);
+};
 
 const outcome = (row: any, laps: number): [string, string] =>
   row.dsq
