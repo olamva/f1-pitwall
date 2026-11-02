@@ -1,0 +1,14 @@
+{
+  "id": "7cbdf48a",
+  "ts": "2026-11-02T23:52:40+00:00",
+  "text": "Headless WebKit hides the champion swipe jump that iOS Safari shows; probe getAnimations() instead of frame diffs",
+  "tags": [
+    "testing",
+    "webkit"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "fe7a00ae",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-24487840",
+  "branch": "t3/fix-champion-swipe-background"
+}
