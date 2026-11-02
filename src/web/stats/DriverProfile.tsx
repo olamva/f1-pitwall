@@ -28,12 +28,10 @@ interface PlaceProps {
 
 const Place = ({ result, sprint }: PlaceProps) => (
   <span
-    className={`font-f1 font-bold ${sprint ? "text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
+    className={`font-f1 flex flex-col items-center gap-0.5 font-bold ${sprint ? "mt-1 text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
     style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
   >
-    {sprint && (
-      <SprintLogo className="mr-0.5 inline h-3 align-[-2px] text-zinc-100" />
-    )}
+    {sprint && <SprintLogo className="h-4 text-zinc-100" />}
     {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
   </span>
 );
