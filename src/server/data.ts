@@ -7,9 +7,10 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
-export const DATA_DIR = process.env.DATA_DIR;
+export const DATA_DIR =
+  process.env.DATA_DIR ?? join(import.meta.dirname, "../../data");
 
 const missing = (e: NodeJS.ErrnoException) =>
   e.code === "ENOENT" ? null : Promise.reject(e);

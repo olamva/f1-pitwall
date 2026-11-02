@@ -72,8 +72,8 @@ if (import.meta.main) {
   process.exitCode = await runDev([
     [
       ...(process.env.DEV_WATCH === "0" ? [] : ["--watch"]),
-      `--env-file-if-exists=${execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim()}/../.env.local`,
-      "--env-file-if-exists=.env.local",
+      `--env-file-if-exists=${execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim()}/../.env`,
+      "--env-file-if-exists=.env",
       "src/server/main.ts",
     ],
     [
