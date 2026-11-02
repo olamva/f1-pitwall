@@ -7,7 +7,7 @@ import {
 } from "../shared/season.ts";
 import champions from "./champions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
-import { pendingRace, provisional } from "./openf1.ts";
+import { pendingRace, portraits, provisional } from "./openf1.ts";
 import { seconds, when } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
@@ -121,6 +121,22 @@ export async function standings(year: number): Promise<SeasonStandings> {
   ).catch(() => table);
 }
 
+const wiki = new Map<string, Promise<string | null>>();
+
+const wikiPortrait = (url: string) => {
+  const hit =
+    wiki.get(url) ??
+    fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${url.split("/wiki/")[1]}`,
+      { headers: { "User-Agent": "f1.ola-vassbotn.no" } },
+    )
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((page) => page.thumbnail?.source ?? null)
+      .catch(() => (wiki.delete(url), null));
+  wiki.set(url, hit);
+  return hit;
+};
+
 export async function driverProfile(id: string): Promise<DriverProfile | null> {
   const [driver, races, sprints, poles] = await Promise.all([
     get(`drivers/${id}.json`, DAY),
@@ -170,15 +186,20 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
           : [];
       }),
   );
+  const url = info.url?.startsWith("http")
+    ? info.url.replace(/^http:/, "https:")
+    : null;
+  const last = seasons[0]?.year ?? 0;
   return {
     id,
     name: `${info.givenName} ${info.familyName}`,
     nationality: info.nationality ?? null,
     dateOfBirth: info.dateOfBirth ?? null,
     number: info.permanentNumber ?? null,
-    url: info.url?.startsWith("http")
-      ? info.url.replace(/^http:/, "https:")
-      : null,
+    url,
+    portrait:
+      (last >= 2023 && (await portraits(last)).get(info.code)) ||
+      (url && (await wikiPortrait(url))),
     firstSeason: seasons.at(-1)?.year ?? null,
     lastSeason: seasons[0]?.year ?? null,
     starts: started.length,

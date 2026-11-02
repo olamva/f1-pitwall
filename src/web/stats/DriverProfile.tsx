@@ -8,6 +8,7 @@ import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
@@ -165,35 +166,44 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                 className="absolute top-5 right-5 flex h-16 items-start text-[4rem] opacity-30 sm:h-24 sm:text-[6rem]"
               />
             )}
-            <div className="relative">
-              <p className="text-sm text-zinc-400">
-                {data.seasons[0]?.teamName}
-              </p>
-              <h2 className="font-f1 text-3xl font-bold sm:text-4xl">
-                {data.name}
-              </h2>
-              <p className="mt-1 text-sm text-zinc-400">
-                {[
-                  data.nationality,
-                  data.dateOfBirth,
-                  data.firstSeason &&
-                    (data.firstSeason === data.lastSeason
-                      ? `${data.firstSeason}`
-                      : `${data.firstSeason}–${data.lastSeason}`),
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-              {data.url && (
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 inline-block text-sm text-zinc-300 underline decoration-zinc-500 underline-offset-4 hover:text-zinc-50 hover:decoration-zinc-50"
-                >
-                  Biography ↗
-                </a>
+            <div className="relative flex items-center gap-4 sm:gap-5">
+              {data.portrait && (
+                <Headshot
+                  src={data.portrait}
+                  className="size-24 shrink-0 rounded-full object-cover object-top sm:size-32"
+                  style={{ background: `${color}66` }}
+                />
               )}
+              <div className="min-w-0">
+                <p className="text-sm text-zinc-400">
+                  {data.seasons[0]?.teamName}
+                </p>
+                <h2 className="font-f1 text-3xl font-bold sm:text-4xl">
+                  {data.name}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-400">
+                  {[
+                    data.nationality,
+                    data.dateOfBirth,
+                    data.firstSeason &&
+                      (data.firstSeason === data.lastSeason
+                        ? `${data.firstSeason}`
+                        : `${data.firstSeason}–${data.lastSeason}`),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                {data.url && (
+                  <a
+                    href={data.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-sm text-zinc-300 underline decoration-zinc-500 underline-offset-4 hover:text-zinc-50 hover:decoration-zinc-50"
+                  >
+                    Biography ↗
+                  </a>
+                )}
+              </div>
             </div>
             <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-5">
               {(

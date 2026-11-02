@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import type { Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useFavourite } from "../favourite.ts";
+import { Headshot } from "../Headshot.tsx";
 import { openDriver } from "../path.ts";
 import type { Who } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
@@ -46,6 +47,13 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               color={color}
               className={`absolute flex items-end transition ${big ? "right-6 bottom-6 h-16 text-7xl opacity-60 group-hover:opacity-80 sm:right-8 sm:bottom-8 sm:h-40 sm:text-[11rem]" : "right-4 bottom-4 h-16 text-7xl opacity-30 group-hover:opacity-50 sm:h-20 sm:text-8xl"}`}
             />
+            {driver.portrait && (
+              <Headshot
+                src={driver.portrait}
+                loading="lazy"
+                className={`absolute right-0 bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "max-h-64 origin-bottom-right max-sm:h-3/4" : "max-h-36 origin-bottom"}`}
+              />
+            )}
             <span className="relative flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400">
               {driver.code}
               {big && (

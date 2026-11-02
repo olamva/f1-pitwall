@@ -5,6 +5,7 @@ import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { useConfetti } from "../confetti.ts";
 import { Flag } from "../Flag.tsx";
+import { Headshot } from "../Headshot.tsx";
 import { useActive } from "../Swipe.tsx";
 import { logoSrc } from "../TeamLogo.tsx";
 import { honours, type Who } from "./derive.ts";
@@ -23,6 +24,12 @@ interface RoadProps {
   champ: Championship;
   season: Season;
   h: ReturnType<typeof honours>;
+}
+
+interface PortraitProps {
+  champ: Championship;
+  id: string;
+  season: Season;
 }
 
 interface TeamProps {
@@ -104,6 +111,7 @@ export const Champion = ({
           line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
         />
       )}
+      <Portrait champ={champ} id={first.id} season={season} />
       <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
         {season.year} {title}
       </p>
@@ -143,6 +151,19 @@ export const Champion = ({
         </button>
       )}
     </section>
+  );
+};
+
+const Portrait = ({ champ, id, season }: PortraitProps) => {
+  const src =
+    champ === "drivers" && season.drivers.find((d) => d.id === id)?.portrait;
+  return (
+    src && (
+      <Headshot
+        src={src}
+        className="pointer-events-none relative -z-10 mx-auto -mb-12 aspect-square w-3/4 mask-b-from-60% opacity-90 sm:absolute sm:top-0 sm:right-0 sm:mb-0 sm:w-2/5 sm:max-w-lg"
+      />
+    )
   );
 };
 

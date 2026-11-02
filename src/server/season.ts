@@ -1,5 +1,5 @@
 import { all, get, json } from "./jolpica.ts";
-import { pendingRace } from "./openf1.ts";
+import { pendingRace, portraits } from "./openf1.ts";
 import type {
   Classified,
   DriverInfo,
@@ -126,12 +126,14 @@ export async function season(): Promise<Season> {
   const driverRows = ds.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
   const teamRows =
     cs.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+  const faces = await portraits(Number(calendar.RaceTable.season));
   const drivers: DriverInfo[] = driverRows.map((d: any) => ({
     id: d.Driver.driverId,
     code: d.Driver.code,
     name: `${d.Driver.givenName} ${d.Driver.familyName}`,
     number: d.Driver.permanentNumber,
     team: d.Constructors.at(-1)?.constructorId ?? "",
+    portrait: faces.get(d.Driver.code) ?? null,
   }));
   results.push(
     ...(await pendingRace(
