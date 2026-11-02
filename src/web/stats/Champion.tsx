@@ -74,7 +74,8 @@ export const Champion = ({
   );
   useConfetti(true, `${champ}-${first.id}`);
   const active = useBackdrop(ref, me?.color ?? "#888");
-  const surname = (me?.name ?? first.id).split(" ").at(-1)!;
+  const full = me?.name ?? first.id;
+  const surname = champ === "drivers" ? full.split(" ").at(-1)! : full;
   const title =
     champ === "drivers" ? "World Champion" : "Constructors' Champion";
   const decider = season.rounds.find((r) => r.round === h.decider);
@@ -101,7 +102,7 @@ export const Champion = ({
         {season.year} {title}
       </p>
       <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black sm:text-7xl">
-        {me?.name ?? first.id}
+        {full}
       </h2>
       {champ === "drivers" && (
         <p className="mt-1 text-base text-zinc-300">{team}</p>
@@ -159,7 +160,7 @@ const Road = ({ champ, season, h }: RoadProps) => (
         return (
           <li
             key={b.round}
-            title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? "no finish" : `P${b.position}`}`}
+            title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? (b.dsq ? "disqualified" : "no finish") : `P${b.position}`}`}
             className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-transparent" : ""}`}
             style={{ "--delay": `${i * 40}ms` } as CSSProperties}
           >
@@ -167,7 +168,11 @@ const Road = ({ champ, season, h }: RoadProps) => (
               <Flag country={r?.country} />
             </span>
             <span className="tabular font-f1 font-bold">
-              {b.position === Infinity ? "DNF" : `P${b.position}`}
+              {b.position !== Infinity
+                ? `P${b.position}`
+                : b.dsq
+                  ? "DSQ"
+                  : "DNF"}
             </span>
           </li>
         );

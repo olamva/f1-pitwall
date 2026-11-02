@@ -136,12 +136,14 @@ export const clinched = (s: Season, champ: Championship): boolean => {
 export function honours(s: Season, champ: Championship, id: string) {
   const mine = (r: { driver: string; team: string }) =>
     (champ === "drivers" ? r.driver : r.team) === id;
-  const best = s.races.map((r) => ({
-    round: r.round,
-    position: Math.min(
-      ...r.results.filter(mine).map((x) => x.position ?? Infinity),
-    ),
-  }));
+  const best = s.races.map((r) => {
+    const rows = r.results.filter(mine);
+    return {
+      round: r.round,
+      position: Math.min(...rows.map((x) => x.position ?? Infinity)),
+      dsq: rows.length > 0 && rows.every((x) => x.status === "Disqualified"),
+    };
+  });
   const decider = [
     ...(champ === "drivers" ? driverTables(s) : teamTables(s)),
   ].find(([round, t]) => hasClinched(t, remaining(s, round), id, champ))?.[0];
