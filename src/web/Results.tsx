@@ -1,12 +1,14 @@
 import { ArrowLeft, EyeOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
 import { useJson, type Loaded } from "./api.ts";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { pathPart, pathSegment } from "./path.ts";
-import { METALS } from "./Podium.tsx";
+import { teamColor } from "../shared/teams.ts";
+import { BUST, Figure, useArt } from "./Headshot.tsx";
+import { METALS, ORDER, POSES } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { fresh, useSeen } from "./spoilers.ts";
@@ -42,6 +44,41 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
 
 const resultsPath = (year: string, part: Part, round: number) =>
   `/results/${year}${part === "Standings" ? "/standings" : round ? `/${round}` : ""}`;
+
+interface FinisherProps {
+  result: Race["results"][number];
+  index: number;
+}
+
+const Finisher = ({ result, index }: FinisherProps) => {
+  const art = useArt(result.driver);
+  return (
+    <span
+      className={`flex min-w-0 flex-col items-center ${ORDER[index]}`}
+      style={{ "--team": teamColor(result.team) } as CSSProperties}
+    >
+      {art?.art && art.team === result.team ? (
+        <Figure
+          id={result.driver}
+          pose={POSES[index]!}
+          transform={BUST(0.6)}
+          loading="lazy"
+          className={`podium-figure mask-b-from-80% ${index ? "h-20" : "h-24"}`}
+        />
+      ) : (
+        <TeamLogo team={result.team} className="mb-2 h-8 w-14" />
+      )}
+      <span className="flex max-w-full items-center gap-1 text-xs">
+        <span className="font-f1 font-black" style={{ color: METALS[index] }}>
+          {index + 1}
+        </span>
+        <span className="truncate font-semibold">
+          {result.code || result.name}
+        </span>
+      </span>
+    </span>
+  );
+};
 
 interface RaceListProps {
   year: string;
@@ -91,23 +128,9 @@ const RaceList = ({ year, season, races, onOpen }: RaceListProps) => {
                 Results hidden
               </span>
             ) : (
-              <span className="mt-3 grid grid-cols-3 gap-2 text-xs">
+              <span className="mt-3 grid grid-cols-3 items-end gap-2">
                 {podium.map((result, index) => (
-                  <span
-                    key={result.driver}
-                    className="flex min-w-0 items-center gap-1.5"
-                  >
-                    <span
-                      className="font-f1 font-black"
-                      style={{ color: METALS[index] }}
-                    >
-                      {index + 1}
-                    </span>
-                    <TeamLogo team={result.team} className="h-4 w-6 shrink-0" />
-                    <span className="truncate font-semibold">
-                      {result.code || result.name}
-                    </span>
-                  </span>
+                  <Finisher key={result.driver} result={result} index={index} />
                 ))}
               </span>
             )}
