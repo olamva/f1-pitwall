@@ -42,7 +42,7 @@ const KEEPALIVE_MS = 20_000;
 
 const app = new Hono();
 app.get(
-  "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest|privacy\\.html}",
+  "/:asset{(?:(?:apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest|privacy\\.html)}",
   serveStatic({ root: DIST }),
 );
 app.route("/", sessions);
@@ -94,7 +94,7 @@ app.get(
     return c.json(await topics[topic](year, round, kind as never));
   },
 );
-app.get("/api/:kind{results|standings}/:year", async (c) => {
+app.get("/api/:kind{(?:results|standings)}/:year", async (c) => {
   const year = Number(c.req.param("year"));
   if (
     !Number.isInteger(year) ||
