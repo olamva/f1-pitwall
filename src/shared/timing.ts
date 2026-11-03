@@ -56,6 +56,8 @@ export type Outline = {
   pitLoss?: PitLoss;
 };
 
+export type Track = Pick<Outline, "x" | "y" | "rotation">;
+
 export type SessionRef = {
   path: string;
   meeting: string;

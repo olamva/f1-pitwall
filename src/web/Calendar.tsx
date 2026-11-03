@@ -1,16 +1,18 @@
 import { ArrowLeft, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
-import type { SessionRef } from "../shared/timing.ts";
+import type { SessionRef, Track } from "../shared/timing.ts";
 import { useJson, type Loaded } from "./api.ts";
+import { Circuit, useTracks } from "./Circuit.tsx";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { CalendarList } from "./live/CalendarList.tsx";
 import { LABEL as NAMES } from "./live/Countdown.tsx";
 import { Replay } from "./live/CurrentSession.tsx";
+import { CardHead } from "./live/Schedule.tsx";
 import { Loading } from "./Loading.tsx";
 import { navigate, pathSegment, standalone } from "./path.ts";
-import { PodiumRow, type Race } from "./Podium.tsx";
+import { Finish, type Race } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { useBack } from "./Swipe.tsx";
@@ -43,33 +45,45 @@ const useHidden = (year: string, season: Season | null) => {
 
 interface RaceListProps {
   races: Race[];
+  tracks: Record<number, Track>;
   hidden: Set<string>;
   onOpen: (round: number) => void;
 }
 
-const RaceList = ({ races, hidden, onOpen }: RaceListProps) => (
-  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
+  <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
     {races.map((race) => (
-      <button
+      <article
         key={race.round}
-        type="button"
-        onClick={() => onOpen(race.round)}
-        className="bg-surface cursor-pointer rounded-xl p-4 text-left ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
+        className="bg-surface relative flex flex-col gap-3 rounded-xl p-4 ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
       >
-        <span className="flex items-center gap-2 text-xs text-zinc-400">
-          Round {race.round} · {race.date}
-          {race.sprint.length > 0 && (
-            <SprintLogo className="ml-auto h-2.5 shrink-0 text-zinc-100" />
-          )}
-        </span>
-        <span className="font-f1 mt-1 block font-bold">
-          <Flag country={race.country} />
-          {race.name}
-        </span>
-        <span className="mt-3 block">
-          <PodiumRow race={race} hidden={hidden} />
-        </span>
-      </button>
+        <button
+          type="button"
+          onClick={() => onOpen(race.round)}
+          aria-label={`Results: ${race.name}`}
+          className="absolute inset-0 cursor-pointer rounded-xl"
+        />
+        <Circuit track={tracks[race.round]} round={race.round} />
+        <CardHead
+          label={
+            <>
+              {new Date(race.date).toLocaleDateString([], {
+                day: "numeric",
+                month: "short",
+                timeZone: "UTC",
+              })}
+              {race.sprint.length > 0 && (
+                <SprintLogo className="h-2.5 shrink-0 text-zinc-100" />
+              )}
+            </>
+          }
+          name={race.name}
+          country={race.country}
+        />
+        <div className="mt-auto">
+          <Finish race={race} hidden={hidden} />
+        </div>
+      </article>
     ))}
   </div>
 );
@@ -178,6 +192,7 @@ interface RacesProps {
   season: Season;
   archive: Loaded<RaceArchive>;
   race: Race | undefined;
+  tracks: Record<number, Track>;
   hidden: Set<string>;
   replays: SessionRef[];
   onOpen: (round: number) => void;
@@ -189,6 +204,7 @@ const Races = ({
   season,
   archive,
   race,
+  tracks,
   hidden,
   replays,
   onOpen,
@@ -210,7 +226,7 @@ const Races = ({
       />
     );
   return races.length ? (
-    <RaceList races={races} hidden={hidden} onOpen={onOpen} />
+    <RaceList races={races} tracks={tracks} hidden={hidden} onOpen={onOpen} />
   ) : (
     <p className="bg-surface rounded-xl p-4 text-sm text-zinc-400">
       No race results are available for {year}.
@@ -250,6 +266,7 @@ export const Calendar = ({ season }: CalendarProps) => {
   const shown = year ?? String(season.data?.year ?? currentYear);
   const current = Number(shown) === season.data?.year;
   const archive = useJson<RaceArchive>(`/api/results/${shown}`);
+  const tracks = useTracks(shown);
   const races = archive.data?.year === Number(shown) ? archive.data.races : [];
   const race = find(races, round, name);
   const hidden = useHidden(shown, season.data);
@@ -329,6 +346,7 @@ export const Calendar = ({ season }: CalendarProps) => {
             sessions={sessions.data}
             season={season.data}
             races={races}
+            tracks={tracks}
             hidden={hidden}
             onStart={replay}
             onOpen={open}
@@ -342,6 +360,7 @@ export const Calendar = ({ season }: CalendarProps) => {
           season={season.data}
           archive={archive}
           race={race}
+          tracks={tracks}
           hidden={hidden}
           replays={sessions.data ?? []}
           onOpen={open}
