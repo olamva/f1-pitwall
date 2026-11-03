@@ -92,9 +92,6 @@ interface FinishProps {
 
 type Result = Race["results"][number];
 
-const start = ({ grid }: Result) =>
-  grid === 1 ? "From pole" : grid ? `From P${grid}` : "From the pit lane";
-
 const Gain = ({ grid, position }: Result) => {
   const gain = grid - position;
   return grid && gain ? (
@@ -124,9 +121,9 @@ export const Finish = ({ race, hidden }: FinishProps) => {
             <p className="font-f1 truncate text-base leading-tight font-bold">
               {winner.name}
             </p>
-            <p className="text-xs text-zinc-400">
-              {sprint && "Sprint winner · "}
-              {start(winner)}
+            <p className="flex h-4 gap-1.5 text-xs text-zinc-400">
+              {sprint && "Sprint winner"}
+              <Gain {...winner} />
             </p>
           </div>
         </div>
