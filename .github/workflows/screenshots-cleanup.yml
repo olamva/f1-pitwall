@@ -1,0 +1,18 @@
+name: Screenshots cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  delete:
+    name: Delete screenshots branch
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REF: repos/${{ github.repository }}/git/refs/heads/screenshots/pr-${{ github.event.pull_request.number }}
+    steps:
+      - run: if gh api "${REF/refs/ref}" --silent; then gh api -X DELETE "$REF"; fi
