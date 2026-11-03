@@ -14,7 +14,6 @@ import {
   Slot,
   time,
   upcoming,
-  Until,
 } from "./Schedule.tsx";
 
 type Entry = SessionRef & { time?: string };
@@ -173,9 +172,6 @@ const Weekend = ({
         country={sessions[0].country}
         featured={featured}
       />
-      {next && next.name !== "Race" && (
-        <Until label={short(next.name)} at={Date.parse(next.start)} />
-      )}
       {podium}
       <div className="pointer-events-none relative mt-auto">
         <Days

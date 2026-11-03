@@ -11,11 +11,6 @@ interface WeekendProps {
   featured?: boolean;
 }
 
-interface UntilProps {
-  label: string;
-  at: number;
-}
-
 interface CardHeadProps {
   label: ReactNode;
   name: string;
@@ -70,12 +65,13 @@ export const time = (at: Date) =>
 
 const until = (ms: number) => {
   const minutes = Math.max(0, Math.ceil(ms / 60_000));
-  const [d, h, m] = [
-    Math.floor(minutes / 1440),
-    Math.floor(minutes / 60) % 24,
-    minutes % 60,
+  const parts: [number, string][] = [
+    [Math.floor(minutes / 1440), "d"],
+    [Math.floor(minutes / 60) % 24, "h"],
+    [minutes % 60, "m"],
   ];
-  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+  const first = minutes >= 1440 ? 0 : minutes >= 60 ? 1 : 2;
+  return parts.slice(first, first + 2);
 };
 
 const useNow = () => {
@@ -90,18 +86,18 @@ const useNow = () => {
 const Left = ({ at }: LeftProps) => {
   const now = useNow();
   return (
-    <span className="text-xs text-zinc-400">
-      in{" "}
-      <span className="tabular font-mono text-zinc-50">{until(at - now)}</span>
+    <span className="font-f1 tabular flex items-baseline gap-1.5 text-lg leading-none font-bold">
+      {until(at - now).map(([n, unit]) => (
+        <span key={unit}>
+          {n}
+          <span className="ml-0.5 font-sans text-xs font-normal text-zinc-400">
+            {unit}
+          </span>
+        </span>
+      ))}
     </span>
   );
 };
-
-export const Until = ({ label, at }: UntilProps) => (
-  <p className="text-xs text-zinc-400">
-    {label} <Left at={at} />
-  </p>
-);
 
 export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
   <header className="min-w-0 pr-14">
@@ -167,9 +163,6 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
         country={round.country}
         featured={featured}
       />
-      {next && next.key !== "race" && (
-        <Until label={short(LABEL[next.key] ?? next.key)} at={+next.at} />
-      )}
       <Days
         days={Object.values(
           Object.groupBy(all, (s) => s.at.toLocaleDateString("sv")),
