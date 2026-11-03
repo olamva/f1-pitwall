@@ -1069,7 +1069,9 @@ html:has(dialog[open]) {
 }
 
 .champion {
-  min-height: calc(100svh - var(--champion-top, 0px));
+  min-height: calc(
+    min(100lvh, 100svh + env(safe-area-inset-top)) - var(--champion-top, 0px)
+  );
   color: #fff;
   --color-zinc-50: #fff;
   --color-zinc-300: rgb(255 255 255 / 0.85);
