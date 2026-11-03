@@ -18,6 +18,87 @@ const git = (cwd: string, ...args: string[]) =>
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
 
+if (process.argv[2] === "--merged") {
+  const merged = new Map(
+    (
+      JSON.parse(
+        execFileSync(
+          "gh",
+          [
+            "pr",
+            "list",
+            "--state",
+            "merged",
+            "--base",
+            "main",
+            "--limit",
+            "1000",
+            "--json",
+            "number,headRefOid",
+          ],
+          { encoding: "utf8" },
+        ),
+      ) as { number: number; headRefOid: string }[]
+    ).map((pr) => [pr.headRefOid, String(pr.number)]),
+  );
+  for (const entry of git(
+    process.cwd(),
+    "worktree",
+    "list",
+    "--porcelain",
+    "-z",
+  )
+    .split("\0\0")
+    .filter(Boolean)) {
+    const lines = entry.split("\0");
+    const target = lines[0]!.slice("worktree ".length);
+    const number = merged.get(lines[1]!.slice("HEAD ".length));
+    if (
+      !number ||
+      (process.argv.includes("--branch-only") &&
+        !lines.some((line) => line.startsWith("branch ")))
+    )
+      continue;
+    const result = spawnSync(
+      process.execPath,
+      [process.argv[1]!, target, number, ...process.argv.slice(3)],
+      { encoding: "utf8" },
+    );
+    console.log(
+      result.status === 0
+        ? result.stdout.trim()
+        : JSON.stringify({
+            target,
+            error: result.stderr.match(/^Error: (.*)$/m)?.[1] ?? result.stderr,
+          }),
+    );
+  }
+  const numbers = new Set(merged.values());
+  const orphans = [
+    ...git(
+      process.cwd(),
+      "for-each-ref",
+      "--merged=refs/remotes/origin/main",
+      "--format=%(worktreepath)%(refname:short)",
+      "refs/heads/t3/",
+    )
+      .split("\n")
+      .filter((name) => name.startsWith("t3/")),
+    ...git(
+      process.cwd(),
+      "for-each-ref",
+      "--format=%(refname:short)",
+      "refs/heads/screenshots/",
+    )
+      .split("\n")
+      .filter((name) => numbers.has(name.slice("screenshots/pr-".length))),
+  ];
+  if (process.argv.includes("--apply") && orphans.length)
+    git(process.cwd(), "branch", "-D", ...orphans);
+  console.log(JSON.stringify({ orphanBranches: orphans }));
+  process.exit(0);
+}
+
 const [path, number, ...flags] = process.argv.slice(2);
 if (
   !path ||
@@ -26,7 +107,7 @@ if (
   new Set(flags).size !== flags.length
 )
   throw new Error(
-    "Use pnpm worktree:cleanup <path> <pr-number> [--branch-only] [--apply].",
+    "Use pnpm worktree:cleanup <path> <pr-number> | --merged [--branch-only] [--apply].",
   );
 
 const apply = flags.includes("--apply");
@@ -147,6 +228,8 @@ if (!branchOnly) {
 
 if (apply) {
   if (hasScreenshots) git(cwd, "push", "origin", "--delete", screenshots);
+  if (git(cwd, "branch", "--list", screenshots))
+    git(cwd, "branch", "-D", screenshots);
   if (local) {
     git(target, "switch", "--detach", head);
     git(target, "branch", "-d", branch);
