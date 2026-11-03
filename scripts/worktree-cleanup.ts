@@ -202,19 +202,12 @@ if (!branchOnly) {
     .filter((name) => name && !regenerable.includes(name));
   if (kept.length)
     throw new Error(`Preserve the ignored paths: ${kept.join(", ")}`);
-  if (process.platform !== "darwin")
-    throw new Error("Automatic activity checks require macOS.");
-  const processes = execFileSync("ps", ["-axo", "args="], {
-    encoding: "utf8",
-  });
-  if (/\/T3 Code[^/]*\.app\/|(?:^|[\s/])t3(?:code)?(?:\s|\/)/m.test(processes))
-    throw new Error("Stop T3 before removing its worktree.");
   const files = spawnSync(
     "lsof",
     ["-n", "-a", "-u", String(process.getuid!()), "-d", "cwd", "-Fn"],
     { encoding: "utf8" },
   );
-  if (files.error || files.status !== 0 || files.stderr.trim())
+  if (files.error || files.status !== 0)
     throw new Error("Cannot verify process working directories.");
   if (
     files.stdout
