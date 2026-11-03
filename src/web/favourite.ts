@@ -21,8 +21,7 @@ export const useFavouriteTeam = () => useSetting<string>("team");
 
 export const FAVOURITE_ROW = "bg-red-600/15";
 
-export const useTeamRow = () => {
+export const useTeamRow = (style = "bg-sky-500/15") => {
   const team = useFavouriteTeam();
-  return (id: string) =>
-    team && teamKey(id) === teamKey(team) ? "bg-sky-500/15" : "";
+  return (id: string) => (team && teamKey(id) === teamKey(team) ? style : "");
 };

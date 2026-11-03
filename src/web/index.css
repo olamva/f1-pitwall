@@ -795,6 +795,7 @@ textarea {
 }
 
 .featured,
+.featured-row,
 section:has(> .spotlight),
 :root[data-tab="Countdown"]:has(.spotlight) header nav,
 :root[data-tab="Countdown"]:has(.spotlight) header > button,
