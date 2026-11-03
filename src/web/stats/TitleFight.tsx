@@ -93,7 +93,7 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-zinc-400">
-        {`Each cell shows ${a}'s lead over ${b} after ${events[0]!.name}. Negative numbers mean ${b} leads.`}
+        {`Each cell shows ${a}'s lead over ${b} after ${events[0]!.name}.${margin(null, 1) < 0 ? ` Negative numbers mean ${b} leads.` : ""}`}
       </p>
       <div className="grid max-w-lg grid-cols-[auto_auto_repeat(11,minmax(0,1fr))] gap-0.5 text-[11px] tracking-tight">
         <span className="col-span-2" />
@@ -148,7 +148,7 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
       </div>
       <p className="text-sm text-zinc-400">
         {blocker
-          ? `${a} cannot secure ${prize} at this event. ${code(blocker.id)} can still take ${prize} with no points here.`
+          ? `${a} cannot secure ${prize} at this event. Even if ${a} wins and ${code(blocker.id)} scores no points, ${code(blocker.id)} can still pass ${a} at later events.`
           : states.has("rival-out") && limits.length > 0
             ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
             : !states.has("clinched") &&
