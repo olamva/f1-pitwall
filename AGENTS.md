@@ -51,11 +51,11 @@ Require explicit visual approval for changes beyond a minor correction.
 Require approval for noticeable layout, navigation, typography, color, component styling, or responsive changes.
 Treat an isolated correction that preserves the existing design as minor.
 Require approval when the classification is unclear.
-Use T3 preview tools first for web UI review and screenshots when they are available.
-Call `mcp__t3_code__preview_snapshot` with `save: true`.
-Embed each returned `screenshotPath` in the review message.
-Copy other images to `~/.t3/userdata/attachments` before you embed them. T3 does not show images from `/tmp`.
-For required review, capture the changed UI in the running app. Include the before and after states.
+Capture web UI screenshots with `pnpm shot`. Follow `.claude/skills/screenshots/SKILL.md`.
+Do not use the T3 preview tools for screenshots. `preview_snapshot` times out on every call.
+Embed images only from `~/.t3/userdata/attachments`. T3 does not show images from `/tmp`.
+For required review, capture the changed UI with `pnpm shot --before origin/main`. Include the before and after states.
+Publish the review images with `pnpm shot:publish`.
 Show the screenshots to the user and ask for approval after the change is complete.
 Do not enable auto-merge before the user approves the reviewed change.
 Treat a missing required approval as a blocker.
