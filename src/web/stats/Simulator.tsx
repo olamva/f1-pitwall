@@ -125,7 +125,11 @@ export const Simulator = ({
     ),
   );
   const result = simulate(table, events, clean, champ);
-  const decided = result.decided;
+  const picked = clean.some((row) =>
+    Object.values(row).some((ps) => ps.length),
+  );
+  const decided = picked ? result.decided : null;
+  const early = decided && decided.index < events.length - 1;
   const owners = (i: number, id: string) =>
     new Map(
       Object.entries(clean[i] ?? {})
@@ -182,11 +186,15 @@ export const Simulator = ({
         <Trophy aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
         <div>
           <p>
-            {decided
-              ? `${name(decided.id)} secures ${prize} after ${events[decided.index]!.name}.`
-              : `With these results, ${prize} is not decided before the final event.`}
+            {!picked
+              ? `Set a finish or use Quick fill to see who secures ${prize}.`
+              : early
+                ? `${name(decided.id)} secures ${prize} after ${events[decided.index]!.name}.`
+                : decided
+                  ? `${name(decided.id)} takes ${prize} at the final event.`
+                  : `With these results, ${prize} is not decided before the final event.`}
           </p>
-          {decided && (
+          {early && (
             <p className="text-xs text-emerald-300/70">{why(decided)}</p>
           )}
         </div>
@@ -195,7 +203,7 @@ export const Simulator = ({
         champ={champ}
         table={result.final}
         field={contenders}
-        out={decided ? contenders.filter((id) => id !== decided.id) : []}
+        out={early ? contenders.filter((id) => id !== decided.id) : []}
         who={who}
         gain={maxGain(events, champ)}
       />
