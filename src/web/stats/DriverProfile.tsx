@@ -208,7 +208,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                 </a>
               )}
             </div>
-            <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-6">
               {(
                 [
                   ["Seasons", data.seasons.length],
@@ -216,6 +216,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                   ["Podiums", data.podiums],
                   ["Poles", data.poles],
                   ["Wins", data.wins],
+                  ["Avg finish", data.averageFinish?.toFixed(1)],
                 ] as const
               ).map(([label, value]) => (
                 <div
@@ -225,7 +226,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                       ? "Qualifying data is incomplete for this driver."
                       : undefined
                   }
-                  className="rounded-lg bg-zinc-800/60 p-3 last:max-sm:col-span-2"
+                  className="rounded-lg bg-zinc-800/60 p-3"
                 >
                   <p className="text-xs text-zinc-400">{label}</p>
                   <p className="tabular font-f1 text-2xl font-bold">
@@ -249,6 +250,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                   <th className="pb-2 pl-3 text-right">Starts</th>
                   <th className="pb-2 pl-3 text-right">Wins</th>
                   <th className="pb-2 pl-3 text-right">Podiums</th>
+                  <th className="pb-2 pl-3 text-right">Avg</th>
                   <th className="pb-2 pl-3 text-right">Points</th>
                 </tr>
               </thead>
@@ -271,6 +273,9 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                     </td>
                     <td className="py-1.5 pl-3 text-right">
                       {season.podiums || ""}
+                    </td>
+                    <td className="py-1.5 pl-3 text-right">
+                      {season.averageFinish?.toFixed(1)}
                     </td>
                     <td className="py-1.5 pl-3 text-right font-semibold">
                       {season.points}
