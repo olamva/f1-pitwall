@@ -1,11 +1,46 @@
+import { useEffect, useState, type ReactNode } from "react";
 import type { Round } from "../../shared/season.ts";
+import type { Track } from "../../shared/timing.ts";
+import { Circuit } from "../Circuit.tsx";
 import { Flag } from "../Flag.tsx";
 import { LABEL } from "./Countdown.tsx";
 
 interface WeekendProps {
   round: Round;
+  track: Track | undefined;
   featured?: boolean;
 }
+
+interface CardHeadProps {
+  label: ReactNode;
+  name: string;
+  country: string;
+  featured?: boolean;
+}
+
+interface DaysProps {
+  days: [string, ReactNode][];
+}
+
+interface SlotProps {
+  name: string;
+  time: string;
+  next?: boolean;
+  race?: number;
+}
+
+interface LeftProps {
+  at: number;
+}
+
+const SHORT: Record<string, string> = {
+  Qualifying: "Quali",
+  "Sprint Qualifying": "SQ",
+  "Sprint Shootout": "SQ",
+};
+
+export const short = (name: string) =>
+  SHORT[name] ?? name.replace(/^Practice /, "FP");
 
 export const sessions = (round: Round) =>
   Object.entries(round.sessions)
@@ -28,59 +63,125 @@ export const time = (at: Date) =>
     minute: "2-digit",
   });
 
-export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
-  <article
-    className={`h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
-  >
-    <header className="flex items-baseline justify-between gap-2">
-      <div className="min-w-0">
-        <p
-          className={`font-f1 text-xs tracking-wider uppercase ${featured ? "text-red-400" : "text-zinc-500"}`}
-        >
-          {featured
-            ? `${+sessions(round)[0].at < Date.now() ? "Current" : "Next"} race weekend`
-            : `Round ${round.round}`}
-        </p>
-        <h2
-          className={`font-f1 line-clamp-2 ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
-        >
-          <Flag country={round.country} />
-          {round.name}
-        </h2>
-        <p className="truncate text-xs text-zinc-400">{round.circuit}</p>
-      </div>
-      <span
-        className={`shrink-0 text-xs ${featured ? "text-zinc-300" : "text-zinc-500"}`}
-      >
-        {dates(round)}
-      </span>
-    </header>
-    <ul
-      className={`space-y-1 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
-    >
-      {sessions(round).map((s) => (
-        <li
-          key={s.key}
-          className={`flex items-baseline gap-2 ${featured ? "sm:block sm:rounded-md sm:bg-zinc-800/60 sm:px-3 sm:py-2" : ""}`}
-        >
-          <span
-            className={`w-8 shrink-0 text-xs ${featured ? "text-zinc-300 sm:block sm:w-auto" : "text-zinc-500"}`}
-          >
-            {s.at.toLocaleDateString([], { weekday: "short" })}
+const until = (ms: number) => {
+  const minutes = Math.max(0, Math.ceil(ms / 60_000));
+  const parts: [number, string][] = [
+    [Math.floor(minutes / 1440), "d"],
+    [Math.floor(minutes / 60) % 24, "h"],
+    [minutes % 60, "m"],
+  ];
+  const first = minutes >= 1440 ? 0 : minutes >= 60 ? 1 : 2;
+  return parts.slice(first, first + 2);
+};
+
+const useNow = () => {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+};
+
+const Left = ({ at }: LeftProps) => {
+  const now = useNow();
+  return (
+    <span className="font-f1 tabular flex items-baseline gap-1.5 text-lg leading-none font-bold">
+      {until(at - now).map(([n, unit]) => (
+        <span key={unit}>
+          {n}
+          <span className="ml-0.5 font-sans text-xs font-normal text-zinc-400">
+            {unit}
           </span>
-          <span className={`grow ${featured ? "sm:block sm:font-medium" : ""}`}>
-            {LABEL[s.key] ?? s.key}
-          </span>
-          <span
-            className={`tabular font-mono text-xs ${featured ? "text-zinc-300 sm:block sm:text-sm" : "text-zinc-400"}`}
-          >
-            {time(s.at)}
-          </span>
-        </li>
+        </span>
       ))}
-    </ul>
-  </article>
+    </span>
+  );
+};
+
+export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
+  <header className="min-w-0 pr-14">
+    <p
+      className={`flex items-center gap-2 text-xs ${featured ? "font-f1 tracking-wider text-red-400 uppercase" : "text-zinc-400"}`}
+    >
+      {label}
+    </p>
+    <h2
+      className={`font-f1 line-clamp-2 font-bold ${featured ? "text-lg sm:text-2xl" : ""}`}
+    >
+      <Flag country={country} />
+      {name}
+    </h2>
+  </header>
 );
+
+export const Days = ({ days }: DaysProps) => (
+  <div className="mt-auto grid max-w-2xl auto-cols-fr grid-flow-col gap-1.5">
+    {days.map(([day, cells]) => (
+      <div
+        key={day}
+        className="flex min-w-0 flex-col gap-1 [&>:last-child]:grow"
+      >
+        <h3 className="text-xs text-zinc-500">{day}</h3>
+        {cells}
+      </div>
+    ))}
+  </div>
+);
+
+export const Slot = ({ name, time, next, race }: SlotProps) => (
+  <span
+    className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
+  >
+    <span className="flex items-baseline justify-between gap-1.5">
+      <span className="truncate">{name}</span>
+      <span
+        className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+      >
+        {time}
+      </span>
+    </span>
+    {race && <Left at={race} />}
+  </span>
+);
+
+export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
+  const all = sessions(round);
+  const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
+  return (
+    <article
+      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+    >
+      <Circuit track={track} round={round.round} />
+      <CardHead
+        label={
+          featured
+            ? `${+all[0].at < Date.now() ? "Current" : "Next"} race weekend · ${dates(round)}`
+            : dates(round)
+        }
+        name={round.name}
+        country={round.country}
+        featured={featured}
+      />
+      <Days
+        days={Object.values(
+          Object.groupBy(all, (s) => s.at.toLocaleDateString("sv")),
+        ).map((group) => [
+          group![0].at.toLocaleDateString([], { weekday: "short" }),
+          group!.map((s) => (
+            <Slot
+              key={s.key}
+              name={short(LABEL[s.key] ?? s.key)}
+              time={time(s.at)}
+              next={s === next}
+              race={s.key === "race" ? +s.at : undefined}
+            />
+          )),
+        ])}
+      />
+    </article>
+  );
+};
 
 export const upcoming = (rounds: Round[], after: number) =>
   rounds.filter((r) => sessions(r).length && +sessions(r)[0].at > after);
