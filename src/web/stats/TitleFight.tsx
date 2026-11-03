@@ -230,6 +230,44 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   );
 };
 
+interface PickersProps {
+  label: string;
+  alive: string[];
+  focus: string;
+  rival: string;
+  who: Map<string, Who>;
+  onFocus: (id: string) => void;
+  onRival: (id: string) => void;
+}
+
+const Pickers = ({
+  label,
+  alive,
+  focus,
+  rival,
+  who,
+  onFocus,
+  onRival,
+}: PickersProps) =>
+  alive.length > 2 && (
+    <div className="grid max-w-lg grid-cols-2 gap-3">
+      <Pick
+        label={label}
+        value={focus}
+        ids={alive}
+        who={who}
+        onChange={onFocus}
+      />
+      <Pick
+        label="Against"
+        value={rival}
+        ids={alive.filter((id) => id !== focus)}
+        who={who}
+        onChange={onRival}
+      />
+    </div>
+  );
+
 export const TitleFight = ({
   champ,
   season,
@@ -352,22 +390,15 @@ export const TitleFight = ({
                 who={who}
                 gain={gain}
               />
-              <div className="grid max-w-lg grid-cols-2 gap-3">
-                <Pick
-                  label={place ? `${place} for` : "Title for"}
-                  value={focus}
-                  ids={alive}
-                  who={who}
-                  onChange={setFocus}
-                />
-                <Pick
-                  label="Against"
-                  value={rival}
-                  ids={alive.filter((id) => id !== focus)}
-                  who={who}
-                  onChange={setRival}
-                />
-              </div>
+              <Pickers
+                label={place ? `${place} for` : "Title for"}
+                alive={alive}
+                focus={focus}
+                rival={rival}
+                who={who}
+                onFocus={setFocus}
+                onRival={setRival}
+              />
               {champ === "drivers" ? (
                 <Matrix
                   table={table}
