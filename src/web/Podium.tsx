@@ -118,13 +118,15 @@ export const Finish = ({ race, hidden }: FinishProps) => {
         <div className="flex items-center gap-2.5">
           <TeamLogo team={winner.team} className="h-6 w-8 shrink-0" />
           <div className="min-w-0">
-            <p className="font-f1 truncate text-base leading-tight font-bold">
-              {winner.name}
-            </p>
-            <p className="flex h-4 gap-1.5 text-xs text-zinc-400">
-              {sprint && "Sprint winner"}
-              <Gain {...winner} />
-            </p>
+            <div className="flex items-baseline gap-1.5">
+              <p className="font-f1 truncate text-base leading-tight font-bold">
+                {winner.name}
+              </p>
+              <span className="shrink-0 text-xs">
+                <Gain {...winner} />
+              </span>
+            </div>
+            {sprint && <p className="text-xs text-zinc-400">Sprint winner</p>}
           </div>
         </div>
         <p className="flex gap-3 text-xs text-zinc-300">

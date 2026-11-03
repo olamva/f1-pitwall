@@ -1079,6 +1079,35 @@ html:has(dialog[open]) {
   --color-zinc-400: rgb(255 255 255 / 0.7);
 }
 
+.champion-card {
+  background-color: #09090b;
+  color: #fff;
+  --color-zinc-50: #fff;
+  --color-zinc-400: rgb(255 255 255 / 0.7);
+  box-shadow:
+    0 0 0 2px #facc15,
+    0 16px 56px -16px rgb(250 204 21 / 0.7);
+}
+
+.champion-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(254 240 138 / 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 300% 100%;
+  animation: champion-shine 6s ease-in-out infinite;
+}
+
+.champion-card .light\:invert {
+  filter: none;
+}
+
 .champion-backdrop {
   position: absolute;
   top: calc(-1 * var(--champion-top, 0px));
@@ -1175,6 +1204,7 @@ html:has(dialog[open]) {
     drop-shadow(0 0 32px rgb(250 204 21 / 0.55));
 }
 
+.swipe > [inert] .champion-card::after,
 .swipe > [inert] :is(.champion-name, .champion-next, .champion-name-row) {
   animation-play-state: paused;
 }
@@ -1193,6 +1223,7 @@ html:has(dialog[open]) {
   .champion-next,
   .champion-name-row,
   .champion-name,
+  .champion-card::after,
   .champion-chip {
     animation: none;
   }

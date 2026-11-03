@@ -32,7 +32,7 @@ interface PosterProps {
   id: string;
 }
 
-const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
+export const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
 
 interface TeamProps {
   id: string;
@@ -169,19 +169,21 @@ const Poster = ({ champ, id }: PosterProps) => {
   return (
     champ === "drivers" &&
     d?.art && (
-      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full overflow-visible sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:h-[36rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85%">
-        <TeamNumber
-          id={d.id}
-          number={d.number}
-          color={GOLD}
-          className="absolute inset-x-0 top-[3%] flex h-[62%] justify-center text-[16rem] opacity-90"
-        />
-        <Figure
-          id={id}
-          pose="front"
-          transform={BUST(0.42)}
-          className="champion-figure absolute left-1/2 h-full max-w-none -translate-x-1/2 mask-b-from-70%"
-        />
+      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full sm:absolute sm:-top-12 sm:right-0 sm:m-0 sm:h-[39rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85% sm:pt-12">
+        <div className="relative h-full">
+          <TeamNumber
+            id={d.id}
+            number={d.number}
+            color={GOLD}
+            className="absolute inset-x-0 top-[3%] flex h-[62%] justify-center text-[16rem] opacity-90"
+          />
+          <Figure
+            id={id}
+            pose="front"
+            transform={BUST(0.42)}
+            className="champion-figure absolute -top-12 left-1/2 h-[calc(100%+3rem)] max-w-none -translate-x-1/2 mask-b-from-[calc(70%+0.9rem)] pt-12"
+          />
+        </div>
       </div>
     )
   );
