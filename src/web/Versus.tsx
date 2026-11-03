@@ -52,48 +52,57 @@ interface PanelProps {
 const paint = (color: string, right: boolean) =>
   `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
 
-const Panel = ({ side, gone, right, seam }: PanelProps) =>
-  [gone, side].map(
-    (s) =>
-      s && (
-        <div
-          key={s.id}
-          className={`absolute inset-0 transition-[clip-path] duration-500 ${gone && s !== gone ? "versus-fade" : ""}`}
-          style={{
-            clipPath: clip(seam, right),
-            background: paint(s.color, right),
-          }}
-        />
-      ),
-  );
+const Panel = ({ side, gone, right, seam }: PanelProps) => (
+  <div
+    className="absolute inset-0 transition-[clip-path] duration-500"
+    style={{ clipPath: clip(seam, right) }}
+  >
+    {[gone, side].map(
+      (s) =>
+        s && (
+          <div
+            key={s.id}
+            className={`absolute inset-0 ${gone && s !== gone ? "versus-fade" : ""}`}
+            style={{ background: paint(s.color, right) }}
+          />
+        ),
+    )}
+  </div>
+);
 
 const Figures = ({ side, gone, right, seam }: PanelProps) => {
   const faces = useContext(Faces);
-  return [gone, side].map((s) => {
-    if (!s) return null;
-    const [lead, mate] = lineup(faces, s.id).map((d) => d.id);
-    const figure = (id: string, back: boolean, extra = "") => (
-      <Figure
-        id={id}
-        pose={right ? "right" : "left"}
-        transform={BODY}
-        className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${extra}`}
-      />
-    );
-    return (
-      <Fragment key={s.id}>
-        {mate && (
-          <div
-            className={`absolute inset-0 transition-[clip-path] duration-500 ${motion(s, gone, right)}`}
-            style={{ clipPath: clip(seam, right) }}
-          >
-            {figure(mate, true)}
-          </div>
-        )}
-        {lead && figure(lead, false, motion(s, gone, right))}
-      </Fragment>
-    );
-  });
+  const cast = [gone, side].flatMap((s) =>
+    s
+      ? [
+          {
+            s,
+            team: lineup(faces, s.id).map((d) => d.id),
+            m: motion(s, gone, right),
+          },
+        ]
+      : [],
+  );
+  const figure = (id: string, back: boolean, extra: string) => (
+    <Figure
+      key={id}
+      id={id}
+      pose={right ? "right" : "left"}
+      transform={BODY}
+      className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${extra}`}
+    />
+  );
+  return (
+    <>
+      <div
+        className="absolute inset-0 transition-[clip-path] duration-500"
+        style={{ clipPath: clip(seam, right) }}
+      >
+        {cast.map(({ team: [, mate], m }) => mate && figure(mate, true, m))}
+      </div>
+      {cast.map(({ team: [lead], m }) => lead && figure(lead, false, m))}
+    </>
+  );
 };
 
 interface PlateProps {
