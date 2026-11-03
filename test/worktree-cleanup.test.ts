@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
 
-test("cleanup keeps an active merged worktree and removes its branches", () => {
+test("cleanup sweep removes merged worktrees and their branches", () => {
   const root = mkdtempSync(join(tmpdir(), "f1-worktree-cleanup-"));
   const remote = join(root, "remote.git");
   const main = join(root, "main");
@@ -123,6 +123,10 @@ test("cleanup keeps an active merged worktree and removes its branches", () => {
     assert.equal(git(task, "branch", "--show-current"), "");
     assert.equal(git(main, "branch", "--list", "t3/task"), "");
     assert.equal(screenshots(), "");
+    const removal = run("MERGED", "--merged", "--apply");
+    assert.equal(removal.status, 0, removal.stderr);
+    assert.equal(JSON.parse(removal.stdout.split("\n")[0]!).removed, true);
+    assert.doesNotMatch(git(main, "worktree", "list"), /task/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
