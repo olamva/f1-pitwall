@@ -72,7 +72,7 @@ Create each temporary checkout, such as a visual review "before" state, with `gi
 Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
 After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in the task worktree.
 This verifies the merged PR, detaches the checkout, and deletes the local task branch.
-It also deletes the remote `screenshots/pr-<pr-number>` branch.
+The `Screenshots cleanup` workflow deletes the remote `screenshots/pr-<pr-number>` branch when the PR closes.
 Keep the active T3 worktree and thread. Remove the worktree only after T3 stops.
 Run `pnpm worktree:cleanup <path> <pr-number> --apply` from another checkout to remove an idle worktree.
 Include the cleanup status in the final response.
