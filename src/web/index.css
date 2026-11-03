@@ -1197,3 +1197,54 @@ html:has(dialog[open]) {
     animation: none;
   }
 }
+
+.versus-out {
+  animation: versus-out 150ms ease-in forwards;
+}
+
+.versus-in-left,
+.versus-in-right {
+  animation: versus-in 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+
+.versus-fade {
+  animation: versus-fade 250ms ease 150ms both;
+}
+
+.versus-in-left {
+  --versus-shift: -100cqw;
+}
+
+.versus-in-right {
+  --versus-shift: 100cqw;
+}
+
+@keyframes versus-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes versus-in {
+  from {
+    translate: var(--versus-shift) 0;
+  }
+}
+
+@keyframes versus-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .versus-fade,
+  .versus-in-left,
+  .versus-in-right {
+    animation: none;
+  }
+
+  .versus-out {
+    display: none;
+  }
+}
