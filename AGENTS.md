@@ -8,6 +8,7 @@ Use one branch and one worktree for each task.
 Start each task in a new T3 thread and its worktree.
 Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
 Let T3 run the action for new worktrees. It updates the new branch to `origin/main` and installs dependencies.
+The action also cleans up the branches of merged tasks with `pnpm worktree:cleanup --merged --branch-only --apply`.
 If T3 skips setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `CI=true pnpm install --frozen-lockfile` before edits.
 Use the branch that T3 creates for the worktree. Rename it with `git branch -m` when needed. Do not create a second branch.
 Create a new branch from the current `origin/main` only in a detached checkout.
@@ -72,8 +73,10 @@ Create each temporary checkout, such as a visual review "before" state, with `gi
 Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
 After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in the task worktree.
 This verifies the merged PR, detaches the checkout, and deletes the local task branch.
-It also deletes the remote `screenshots/pr-<pr-number>` branch.
+It also deletes the local and remote `screenshots/pr-<pr-number>` branches.
+A PR watch does not wake the thread on merge. The next `Setup Worktree` run cleans up a branch that merges after the turn ends.
+The `--merged` sweep also deletes merged `t3/*` branches without a worktree and local `screenshots/pr-*` branches of merged PRs.
 Keep the active T3 worktree and thread. Remove the worktree only after T3 stops.
-Run `pnpm worktree:cleanup <path> <pr-number> --apply` from another checkout to remove an idle worktree.
+Run `pnpm worktree:cleanup --merged --apply` from the main checkout to remove all merged worktrees.
 Include the cleanup status in the final response.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.

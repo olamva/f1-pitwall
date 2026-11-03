@@ -4,6 +4,7 @@ import {
   chmodSync,
   mkdtempSync,
   mkdirSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -44,14 +45,33 @@ test("cleanup keeps an active merged worktree and removes its branches", () => {
     git(main, "push", "origin", "HEAD:refs/heads/screenshots/pr-1");
     const screenshots = () =>
       git(main, "ls-remote", "--heads", "origin", "screenshots/pr-1");
+    const open = git(
+      main,
+      "commit-tree",
+      "-p",
+      merge,
+      "-m",
+      "open",
+      `${head}^{tree}`,
+    );
+    for (const [name, commit] of [
+      ["t3/orphan", head],
+      ["t3/open", open],
+      ["screenshots/pr-1", merge],
+      ["screenshots/pr-2", merge],
+    ])
+      git(main, "branch", name!, commit!);
 
     mkdirSync(bin);
     const gh = join(bin, "gh");
-    writeFileSync(gh, '#!/bin/sh\nprintf "%s" "$MOCK_PR"\n');
+    writeFileSync(
+      gh,
+      `#!/bin/sh\n[ "$2" = list ] && printf '[{"number":1,"headRefOid":"${head}"}]' || printf "%s" "$MOCK_PR"\n`,
+    );
     chmodSync(gh, 0o755);
     const run = (state: string, ...args: string[]) =>
-      spawnSync(process.execPath, [script, task, "1", ...args], {
-        cwd: task,
+      spawnSync(process.execPath, [script, ...args], {
+        cwd: args[0] === "--merged" ? main : task,
         encoding: "utf8",
         env: {
           ...process.env,
@@ -67,12 +87,38 @@ test("cleanup keeps an active merged worktree and removes its branches", () => {
         },
       });
 
-    assert.match(run("MERGED", "--apply").stderr, /another checkout/);
-    assert.match(run("OPEN", "--branch-only", "--apply").stderr, /merged PR/);
+    assert.match(
+      run("MERGED", task, "1", "--apply").stderr,
+      /another checkout/,
+    );
+    assert.match(
+      run("OPEN", task, "1", "--branch-only", "--apply").stderr,
+      /merged PR/,
+    );
     assert.notEqual(screenshots(), "");
-    const result = run("MERGED", "--branch-only", "--apply");
+    const result = run("MERGED", "--merged", "--branch-only", "--apply");
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(result.stdout).branchRemoved, true);
+    assert.deepEqual(
+      result.stdout
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line)),
+      [
+        {
+          target: realpathSync(task),
+          branch: "t3/task",
+          pullRequest: "https://example.com/pr/1",
+          removed: false,
+          branchRemoved: true,
+          screenshotsRemoved: true,
+        },
+        { orphanBranches: ["t3/orphan"] },
+      ],
+    );
+    assert.equal(
+      git(main, "branch", "--list", "t3/*", "screenshots/*"),
+      "screenshots/pr-2\n  t3/open",
+    );
     assert.equal(git(task, "rev-parse", "HEAD"), head);
     assert.equal(git(task, "branch", "--show-current"), "");
     assert.equal(git(main, "branch", "--list", "t3/task"), "");
