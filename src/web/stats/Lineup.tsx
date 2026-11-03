@@ -84,7 +84,7 @@ export const Lineup = ({
                     className="absolute inset-y-0 left-1/2 flex w-32 -translate-x-1/2 justify-center transition-[filter] duration-700"
                     style={{
                       filter: gone
-                        ? "brightness(0) invert(0.3)"
+                        ? "grayscale(1) brightness(0.4)"
                         : `brightness(${1 - 0.45 * depth})`,
                       background: `radial-gradient(closest-side at 50% 35%, ${who.get(s.id)?.color ?? "#888"}80, transparent)`,
                     }}
