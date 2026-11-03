@@ -9,7 +9,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
-import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
+import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
@@ -67,7 +67,7 @@ const ResultsTable = <T extends Entry>({
   columns,
   cells,
 }: ResultsTableProps<T>) => {
-  const teamRow = useTeamRow();
+  const teamRow = useTeamRow("before:bg-sky-500/15");
   return (
     <table className="tabular w-full text-xs sm:text-sm">
       <thead className="text-left text-xs text-zinc-500">
@@ -85,7 +85,7 @@ const ResultsTable = <T extends Entry>({
         {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
           <tr
             key={`${row.driver}:${index}`}
-            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${row.driver === favourite ? FAVOURITE_ROW : teamRow(row.team)}`}
+            className={`relative isolate border-t border-zinc-800 ${row.driver === favourite ? "featured-row" : ""}`}
           >
             <td className="py-2 font-semibold">
               {CODES[row.positionText] ?? row.positionText}
@@ -95,7 +95,7 @@ const ResultsTable = <T extends Entry>({
                 type="button"
                 onClick={() => openDriver(row.driver)}
                 disabled={!row.driver}
-                className="cursor-pointer text-left after:absolute after:inset-0 disabled:cursor-default"
+                className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
               >
                 <TeamLogo
                   team={row.team}
