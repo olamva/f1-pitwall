@@ -126,6 +126,7 @@ export type DriverProfile = {
   starts: number;
   wins: number;
   podiums: number;
+  averageFinish: number | null;
   poles: number | null;
   championships: number[];
   seasons: {
@@ -135,6 +136,7 @@ export type DriverProfile = {
     starts: number;
     wins: number;
     podiums: number;
+    averageFinish: number | null;
     points: number;
   }[];
 };

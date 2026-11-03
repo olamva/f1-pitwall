@@ -153,6 +153,12 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     race.Results.some((result: any) => !NON_START.has(result.status)),
   );
   const podium = (result: any) => ["1", "2", "3"].includes(result.positionText);
+  const average = (results: any[]) => {
+    const places = results.map((r) => Number(r.positionText)).filter(Boolean);
+    return places.length
+      ? places.reduce((a, b) => a + b, 0) / places.length
+      : null;
+  };
   const years = [...new Set(races.map((race) => Number(race.season)))];
   const seasons = years
     .sort((a, b) => b - a)
@@ -167,6 +173,7 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
         starts: started.filter(inYear).length,
         wins: results.filter((result) => result.positionText === "1").length,
         podiums: results.filter(podium).length,
+        averageFinish: average(results),
         points: [
           ...results,
           ...sprints.filter(inYear).flatMap((race) => race.SprintResults),
@@ -208,6 +215,7 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     starts: started.length,
     wins: seasons.reduce((sum, season) => sum + season.wins, 0),
     podiums: seasons.reduce((sum, season) => sum + season.podiums, 0),
+    averageFinish: average(races.flatMap((race) => race.Results)),
     poles: (seasons.at(-1)?.year ?? 0) < 1994 ? null : poles,
     championships: [
       ...listed
