@@ -1174,7 +1174,7 @@ html:has(dialog[open]) {
 }
 
 .swipe > [inert] :is(.champion-name, .champion-next, .champion-name-row) {
-  animation: none;
+  animation-play-state: paused;
 }
 
 @keyframes champion-shine {
