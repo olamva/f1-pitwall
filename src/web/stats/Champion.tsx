@@ -169,7 +169,7 @@ const Poster = ({ champ, id }: PosterProps) => {
   return (
     champ === "drivers" &&
     d?.art && (
-      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full overflow-clip sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:h-[36rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85%">
+      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full overflow-visible sm:absolute sm:top-0 sm:right-0 sm:m-0 sm:h-[36rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85%">
         <TeamNumber
           id={d.id}
           number={d.number}
