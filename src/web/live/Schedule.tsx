@@ -12,6 +12,7 @@ interface WeekendProps {
 }
 
 interface UntilProps {
+  label: string;
   at: number;
 }
 
@@ -29,7 +30,7 @@ interface DaysProps {
 interface SlotProps {
   name: string;
   time: string;
-  next?: number;
+  next?: boolean;
 }
 
 const SHORT: Record<string, string> = {
@@ -72,13 +73,18 @@ const until = (ms: number) => {
   return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
 };
 
-const Until = ({ at }: UntilProps) => {
+export const Until = ({ label, at }: UntilProps) => {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
-  return until(at - now);
+  return (
+    <p className="text-xs text-zinc-400">
+      {label} in{" "}
+      <span className="tabular font-mono text-zinc-50">{until(at - now)}</span>
+    </p>
+  );
 };
 
 export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
@@ -98,7 +104,7 @@ export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
 );
 
 export const Days = ({ days }: DaysProps) => (
-  <div className="grid max-w-2xl auto-cols-fr grid-flow-col gap-1.5">
+  <div className="mt-auto grid max-w-2xl auto-cols-fr grid-flow-col gap-1.5">
     {days.map(([day, cells]) => (
       <div key={day} className="min-w-0 space-y-1">
         <h3 className="text-xs text-zinc-500">{day}</h3>
@@ -110,27 +116,24 @@ export const Days = ({ days }: DaysProps) => (
 
 export const Slot = ({ name, time, next }: SlotProps) => (
   <span
-    className={`block rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
+    className={`flex items-baseline justify-between gap-1.5 rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
   >
-    <span className="block truncate">{name}</span>
-    <span className="tabular block font-mono text-xs text-zinc-400">
+    <span className="truncate">{name}</span>
+    <span
+      className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+    >
       {time}
     </span>
-    {next && (
-      <span className="tabular block font-mono text-xs text-red-400">
-        <Until at={next} />
-      </span>
-    )}
   </span>
 );
 
 export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
   const all = sessions(round);
   const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
-  const race = all.at(-1)!;
+  const shown = next ?? all.at(-1)!;
   return (
     <article
-      className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
     >
       <Circuit track={track} round={round.round} />
       <CardHead
@@ -143,12 +146,7 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
         country={round.country}
         featured={featured}
       />
-      <p className="text-xs text-zinc-400">
-        {LABEL[race.key] ?? race.key} in{" "}
-        <span className="tabular font-mono text-zinc-50">
-          <Until at={+race.at} />
-        </span>
-      </p>
+      <Until label={short(LABEL[shown.key] ?? shown.key)} at={+shown.at} />
       <Days
         days={Object.values(
           Object.groupBy(all, (s) => s.at.toLocaleDateString("sv")),
@@ -159,7 +157,7 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
               key={s.key}
               name={short(LABEL[s.key] ?? s.key)}
               time={time(s.at)}
-              next={s === next ? +s.at : undefined}
+              next={s === next}
             />
           )),
         ])}

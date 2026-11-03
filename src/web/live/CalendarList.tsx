@@ -14,6 +14,7 @@ import {
   Slot,
   time,
   upcoming,
+  Until,
 } from "./Schedule.tsx";
 
 type Entry = SessionRef & { time?: string };
@@ -102,11 +103,7 @@ const dates = (sessions: SessionRef[]) =>
 
 const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
   session.time ? (
-    <Slot
-      name={short(session.name)}
-      time={session.time}
-      next={next ? Date.parse(session.start) : undefined}
-    />
+    <Slot name={short(session.name)} time={session.time} next={next} />
   ) : session.path ? (
     <button
       onClick={() => onStart(session)}
@@ -151,7 +148,7 @@ const Weekend = ({
   const next = featured ? sessions.find((s) => s.time) : undefined;
   return (
     <article
-      className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
     >
       {onOpen && (
         <button
@@ -171,8 +168,9 @@ const Weekend = ({
         country={sessions[0].country}
         featured={featured}
       />
+      {next && <Until label={short(next.name)} at={Date.parse(next.start)} />}
       {podium}
-      <div className="pointer-events-none relative">
+      <div className="pointer-events-none relative mt-auto">
         <Days
           days={Object.values(
             Object.groupBy(sessions, (s) => s.start.slice(0, 10)),

@@ -126,7 +126,7 @@ export const Finish = ({ race, hidden }: FinishProps) => {
             </p>
             <p className="text-xs text-zinc-400">
               {sprint && "Sprint winner · "}
-              {start(winner)} · {winner.points} pts
+              {start(winner)}
             </p>
           </div>
         </div>
