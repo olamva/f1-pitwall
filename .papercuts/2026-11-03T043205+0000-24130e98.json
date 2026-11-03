@@ -1,0 +1,13 @@
+{
+  "id": "24130e98",
+  "ts": "2026-11-03T04:32:05+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call, even after preview_open with open=true",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7f5576bc",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/calendar-winner-gain-loss-right"
+}
