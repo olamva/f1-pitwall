@@ -201,8 +201,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Favourite team</h2>
         <p className="text-sm text-zinc-400">
-          Highlight the drivers of this team in blue, and the team in the
-          constructors standings.
+          Highlight the drivers of this team in blue.
         </p>
         <select
           aria-label="Favourite team"

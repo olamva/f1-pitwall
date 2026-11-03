@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useRef, useState } from "react";
 import type { Championship } from "../shared/clinch.ts";
 import type {
@@ -10,10 +10,10 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
-import { useFavourite, useFavouriteTeam } from "./favourite.ts";
 import { Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
+import { GOLD } from "./stats/Champion.tsx";
 import { clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { Swipe } from "./Swipe.tsx";
@@ -35,13 +35,13 @@ const Portrait = ({ driver, color, big }: PortraitProps) => (
       <Headshot
         src={driver.headshot}
         loading="lazy"
-        className={`absolute bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "right-4 max-h-64 origin-bottom-right max-sm:h-3/4 sm:right-24" : "right-8 max-h-36 origin-bottom"}`}
+        className={`absolute bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "champion-figure right-4 max-h-64 origin-bottom-right max-sm:h-3/4 sm:right-24" : "right-8 max-h-36 origin-bottom"}`}
       />
     )}
     <TeamNumber
       id={driver.id}
       number={driver.number}
-      color={color}
+      color={big ? GOLD : color}
       className={`absolute top-3 right-3 flex transition ${big ? "h-10 text-4xl sm:top-6 sm:right-6 sm:h-16 sm:text-6xl" : "h-7 text-3xl"}`}
     />
   </>
@@ -51,22 +51,17 @@ interface CardsProps {
   rows: StandingRow[];
   season: Season;
   teams: Map<string, string>;
-  favourite?: string;
+  champion?: string;
   onSelect?: (id: string) => void;
 }
 
-const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
+const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
   const info = new Map(season.drivers.map((d) => [d.id, d]));
   const Card = onSelect ? "button" : "div";
-  const order = rows
-    .map((row, place) => ({ row, place }))
-    .sort(
-      (a, b) => Number(b.row.id === favourite) - Number(a.row.id === favourite),
-    );
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-      {order.map(({ row, place }) => {
-        const big = row.id === favourite;
+      {rows.map((row, place) => {
+        const big = place === 0 && !!champion;
         const color = teamColor(row.team);
         const driver = info.get(row.id);
         const team = row.id === row.team;
@@ -74,14 +69,11 @@ const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
           <Card
             key={row.id}
             onClick={() => onSelect?.(row.id)}
-            className={`bg-surface group relative overflow-hidden rounded-xl text-left transition ${onSelect ? "cursor-pointer hover:-translate-y-0.5" : ""} ${big ? "col-span-full p-6 sm:p-8" : `p-4 ring-1 ring-zinc-800 ${onSelect ? "hover:ring-zinc-600" : ""}`}`}
+            className={`group relative overflow-hidden rounded-xl text-left transition ${onSelect ? "cursor-pointer hover:-translate-y-0.5" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : `bg-surface p-4 ring-1 ring-zinc-800 ${onSelect ? "hover:ring-zinc-600" : ""}`}`}
             style={{
               backgroundImage: big
-                ? `linear-gradient(135deg, ${color}99, ${color}26 55%, transparent 85%)`
+                ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
                 : `linear-gradient(135deg, ${color}40, transparent 65%)`,
-              ...(big && {
-                boxShadow: `0 0 0 2px ${color}, 0 12px 48px -12px ${color}`,
-              }),
             }}
           >
             {team ? (
@@ -92,21 +84,19 @@ const Cards = ({ rows, season, teams, favourite, onSelect }: CardsProps) => {
             ) : (
               driver && <Portrait driver={driver} color={color} big={big} />
             )}
-            {(driver || big) && (
-              <span className="relative flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400">
-                <span className="font-f1 font-bold tracking-normal">
-                  {driver?.code}
-                </span>
-                {big && (
-                  <span className="light:bg-white light:shadow-sm inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-yellow-300 uppercase">
-                    <Star aria-hidden="true" className="size-3 fill-current" />
-                    Favourite
-                  </span>
-                )}
+            {big && (
+              <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#fef08a] uppercase sm:text-sm">
+                <Trophy aria-hidden className="size-4" />
+                {champion}
+              </span>
+            )}
+            {driver && !big && (
+              <span className="font-f1 relative block text-xs font-bold text-zinc-400">
+                {driver.code}
               </span>
             )}
             <span
-              className={`font-f1 relative block leading-tight font-bold ${big ? "mt-1 text-3xl sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
+              className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
             >
               {row.name}
             </span>
@@ -169,12 +159,12 @@ export const Standings = ({ season }: StandingsProps) => {
   };
   const [champ, setChamp] = useState<Championship>("drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
-  const favourite = useFavourite()?.id;
-  const team = useFavouriteTeam();
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   const ready = data?.year === Number(year);
   const crowned = (champ: Championship) =>
     season.year === Number(year) && clinched(season, champ);
+  const decided = (champ: Championship) =>
+    Number(year) < season.year || crowned(champ);
   useConfetti(
     ready && data.drivers.length > 0 && CHAMPS.some(crowned),
     Number(year),
@@ -229,7 +219,7 @@ export const Standings = ({ season }: StandingsProps) => {
               rows={data.drivers}
               season={season}
               teams={names}
-              favourite={favourite}
+              champion={decided(c) ? `${year} World Champion` : undefined}
               onSelect={openDriver}
             />
           ) : (
@@ -237,7 +227,9 @@ export const Standings = ({ season }: StandingsProps) => {
               rows={data.constructors}
               season={season}
               teams={names}
-              favourite={team ?? undefined}
+              champion={
+                decided(c) ? `${year} Constructors' Champion` : undefined
+              }
             />
           )
         }
