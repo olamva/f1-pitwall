@@ -31,6 +31,11 @@ interface SlotProps {
   name: string;
   time: string;
   next?: boolean;
+  race?: number;
+}
+
+interface LeftProps {
+  at: number;
 }
 
 const SHORT: Record<string, string> = {
@@ -73,19 +78,30 @@ const until = (ms: number) => {
   return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
 };
 
-export const Until = ({ label, at }: UntilProps) => {
+const useNow = () => {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
+  return now;
+};
+
+const Left = ({ at }: LeftProps) => {
+  const now = useNow();
   return (
-    <p className="text-xs text-zinc-400">
-      {label} in{" "}
+    <span className="text-xs text-zinc-400">
+      in{" "}
       <span className="tabular font-mono text-zinc-50">{until(at - now)}</span>
-    </p>
+    </span>
   );
 };
+
+export const Until = ({ label, at }: UntilProps) => (
+  <p className="text-xs text-zinc-400">
+    {label} <Left at={at} />
+  </p>
+);
 
 export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
   <header className="min-w-0 pr-14">
@@ -106,7 +122,10 @@ export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
 export const Days = ({ days }: DaysProps) => (
   <div className="mt-auto grid max-w-2xl auto-cols-fr grid-flow-col gap-1.5">
     {days.map(([day, cells]) => (
-      <div key={day} className="min-w-0 space-y-1">
+      <div
+        key={day}
+        className="flex min-w-0 flex-col gap-1 [&>:last-child]:grow"
+      >
         <h3 className="text-xs text-zinc-500">{day}</h3>
         {cells}
       </div>
@@ -114,23 +133,25 @@ export const Days = ({ days }: DaysProps) => (
   </div>
 );
 
-export const Slot = ({ name, time, next }: SlotProps) => (
+export const Slot = ({ name, time, next, race }: SlotProps) => (
   <span
-    className={`flex items-baseline justify-between gap-1.5 rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
+    className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
   >
-    <span className="truncate">{name}</span>
-    <span
-      className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
-    >
-      {time}
+    <span className="flex items-baseline justify-between gap-1.5">
+      <span className="truncate">{name}</span>
+      <span
+        className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+      >
+        {time}
+      </span>
     </span>
+    {race && <Left at={race} />}
   </span>
 );
 
 export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
   const all = sessions(round);
   const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
-  const shown = next ?? all.at(-1)!;
   return (
     <article
       className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
@@ -146,7 +167,9 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
         country={round.country}
         featured={featured}
       />
-      <Until label={short(LABEL[shown.key] ?? shown.key)} at={+shown.at} />
+      {next && next.key !== "race" && (
+        <Until label={short(LABEL[next.key] ?? next.key)} at={+next.at} />
+      )}
       <Days
         days={Object.values(
           Object.groupBy(all, (s) => s.at.toLocaleDateString("sv")),
@@ -158,6 +181,7 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
               name={short(LABEL[s.key] ?? s.key)}
               time={time(s.at)}
               next={s === next}
+              race={s.key === "race" ? +s.at : undefined}
             />
           )),
         ])}

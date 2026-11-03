@@ -30,7 +30,7 @@ const Shape = ({ track }: { track: Track }) => {
 export const Circuit = ({ track, round }: CircuitProps) => (
   <span
     aria-hidden
-    className="pointer-events-none absolute top-1 right-1 h-24 w-32 text-zinc-50"
+    className="pointer-events-none absolute top-1 right-1 h-20 w-28 text-zinc-50"
   >
     {track && <Shape track={track} />}
     {round && (

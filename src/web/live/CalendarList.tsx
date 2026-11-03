@@ -103,7 +103,12 @@ const dates = (sessions: SessionRef[]) =>
 
 const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
   session.time ? (
-    <Slot name={short(session.name)} time={session.time} next={next} />
+    <Slot
+      name={short(session.name)}
+      time={session.time}
+      next={next}
+      race={session.name === "Race" ? Date.parse(session.start) : undefined}
+    />
   ) : session.path ? (
     <button
       onClick={() => onStart(session)}
@@ -168,7 +173,9 @@ const Weekend = ({
         country={sessions[0].country}
         featured={featured}
       />
-      {next && <Until label={short(next.name)} at={Date.parse(next.start)} />}
+      {next && next.name !== "Race" && (
+        <Until label={short(next.name)} at={Date.parse(next.start)} />
+      )}
       {podium}
       <div className="pointer-events-none relative mt-auto">
         <Days
