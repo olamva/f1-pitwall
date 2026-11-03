@@ -1204,6 +1204,10 @@ html:has(dialog[open]) {
   animation: versus-in 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
 }
 
+.versus-fade {
+  animation: versus-fade 250ms ease 150ms both;
+}
+
 .versus-in-left {
   --versus-shift: -100cqw;
 }
@@ -1224,7 +1228,14 @@ html:has(dialog[open]) {
   }
 }
 
+@keyframes versus-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .versus-fade,
   .versus-in-left,
   .versus-in-right {
     animation: none;

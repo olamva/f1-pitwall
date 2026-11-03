@@ -52,24 +52,17 @@ interface PanelProps {
 const paint = (color: string, right: boolean) =>
   `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
 
-const Panel = ({
-  side,
-  gone,
-  right,
-  seam,
-  onDone,
-}: PanelProps & { onDone: () => void }) =>
+const Panel = ({ side, gone, right, seam }: PanelProps) =>
   [gone, side].map(
     (s) =>
       s && (
         <div
           key={s.id}
-          className={`absolute inset-0 transition-[clip-path] duration-500 ${s === gone ? "" : motion(s, gone, right)}`}
+          className={`absolute inset-0 transition-[clip-path] duration-500 ${gone && s !== gone ? "versus-fade" : ""}`}
           style={{
             clipPath: clip(seam, right),
             background: paint(s.color, right),
           }}
-          onAnimationEnd={s === side ? onDone : undefined}
         />
       ),
   );
@@ -107,15 +100,17 @@ interface PlateProps {
   side: Side;
   right: boolean;
   motion?: string;
+  onDone?: () => void;
 }
 
-const Plate = ({ side, right, motion = "" }: PlateProps) => {
+const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
   const d = useArt(side.id);
   const name = side.name ?? d?.name ?? side.id;
   const logo = d ? undefined : logoSrc(side.id);
   return (
     <div
       className={`font-f1 absolute bottom-3 z-10 ${right ? "right-4 text-right" : "left-4"} ${motion}`}
+      onAnimationEnd={onDone}
     >
       {d && (
         <p className="text-[10px] font-bold tracking-[0.2em] text-white/70 uppercase sm:text-xs">
@@ -162,14 +157,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
       style={{ background: INK }}
     >
       {sides.map((s, i) => (
-        <Panel
-          key={i}
-          side={s}
-          gone={swaps[i]![0]}
-          right={i > 0}
-          seam={seam}
-          onDone={swaps[i]![1]}
-        />
+        <Panel key={i} side={s} gone={swaps[i]![0]} right={i > 0} seam={seam} />
       ))}
       {sides.map((s, i) => (
         <Figures
@@ -196,6 +184,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
                     side={p}
                     right={i > 0}
                     motion={motion(p, gone, i > 0)}
+                    onDone={p === s ? swaps[i]![1] : undefined}
                   />
                 ),
             )}
