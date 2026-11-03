@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "sessions": "node scripts/sessions.ts",
     "record": "node --env-file-if-exists=.env scripts/record.ts",
+    "shot": "node scripts/shot.ts",
+    "shot:publish": "node scripts/shot-publish.ts",
     "worktree:cleanup": "node scripts/worktree-cleanup.ts"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.85.0",
+    "playwright-core": "1.64.1",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.3.3",
