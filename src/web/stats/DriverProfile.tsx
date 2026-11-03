@@ -275,7 +275,8 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                       {season.podiums || ""}
                     </td>
                     <td className="py-1.5 pl-3 text-right">
-                      {season.averageFinish?.toFixed(1)}
+                      {season.averageFinish &&
+                        `P${season.averageFinish.toFixed(1)}`}
                     </td>
                     <td className="py-1.5 pl-3 text-right font-semibold">
                       {season.points}
