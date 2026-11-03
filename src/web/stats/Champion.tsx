@@ -32,7 +32,7 @@ interface PosterProps {
   id: string;
 }
 
-const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
+export const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
 
 interface TeamProps {
   id: string;

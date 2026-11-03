@@ -1,0 +1,14 @@
+{
+  "id": "e7b561cf",
+  "ts": "2026-11-03T04:34:49+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call, even with the tab shown; preview_evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "4fd4f5a0",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/standings-clinched-champion"
+}
