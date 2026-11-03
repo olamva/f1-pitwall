@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState, type CSSProperties } from "react";
+import { Fragment, useContext, useState } from "react";
 import { BODY, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { logoSrc } from "./TeamLogo.tsx";
@@ -25,24 +25,22 @@ const clip = (seam: number, right: boolean) =>
     ? `polygon(100% 0, ${seam + SLANT + 0.5}% 0, ${seam - SLANT + 0.5}% 100%, 100% 100%)`
     : `polygon(0% 0, ${seam + SLANT - 0.5}% 0, ${seam - SLANT - 0.5}% 100%, 0% 100%)`;
 
-interface Swap {
-  side: Side;
-  edge: number;
-}
-
-const useSwap = (side: Side, seam: number, right: boolean) => {
-  const [last, setLast] = useState({ side, seam });
-  const [swap, setSwap] = useState<Swap>();
-  if (last.side.id !== side.id || last.seam !== seam) {
-    setLast({ side, seam });
-    if (last.side.id !== side.id)
-      setSwap({
-        side: last.side,
-        edge: (right ? Math.min : Math.max)(last.seam, seam),
-      });
+const useSwap = (side: Side) => {
+  const [last, setLast] = useState(side);
+  const [gone, setGone] = useState<Side>();
+  if (last.id !== side.id) {
+    setLast(side);
+    setGone(last);
   }
-  return [swap, () => setSwap(undefined)] as const;
+  return [gone, () => setGone(undefined)] as const;
 };
+
+const motion = (s: Side, gone: Side | undefined, right: boolean) =>
+  !gone
+    ? ""
+    : s === gone
+      ? "versus-out"
+      : `versus-in-${right ? "right" : "left"}`;
 
 interface PanelProps {
   side: Side;
@@ -51,78 +49,58 @@ interface PanelProps {
   seam: number;
 }
 
-interface WipeProps extends PanelProps {
-  edge?: number;
-  onDone: () => void;
-}
-
 const paint = (color: string, right: boolean) =>
   `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
 
-const Panel = ({ side, gone, right, seam, edge, onDone }: WipeProps) => (
-  <div
-    className="absolute inset-0 transition-[clip-path] duration-500"
-    style={{ clipPath: clip(seam, right) }}
-  >
-    {gone && (
-      <div
-        key={gone.id}
-        className="absolute inset-0"
-        style={{ background: paint(gone.color, right) }}
-      />
-    )}
-    <div
-      key={side.id}
-      className={`absolute inset-0 ${gone ? `versus-wipe-${right ? "right" : "left"}` : ""}`}
-      style={
-        {
-          background: paint(side.color, right),
-          "--seam": `${edge ?? seam}%`,
-        } as CSSProperties
-      }
-      onAnimationEnd={onDone}
-    />
-  </div>
-);
+const Panel = ({
+  side,
+  gone,
+  right,
+  seam,
+  onDone,
+}: PanelProps & { onDone: () => void }) =>
+  [gone, side].map(
+    (s) =>
+      s && (
+        <div
+          key={s.id}
+          className={`absolute inset-0 transition-[clip-path] duration-500 ${s === gone ? "" : motion(s, gone, right)}`}
+          style={{
+            clipPath: clip(seam, right),
+            background: paint(s.color, right),
+          }}
+          onAnimationEnd={s === side ? onDone : undefined}
+        />
+      ),
+  );
 
 const Figures = ({ side, gone, right, seam }: PanelProps) => {
   const faces = useContext(Faces);
-  const dir = right ? "right" : "left";
-  const cast = (s: Side, motion: string) => {
+  return [gone, side].map((s) => {
+    if (!s) return null;
     const [lead, mate] = lineup(faces, s.id).map((d) => d.id);
-    const figure = (id: string, back: boolean) => (
+    const figure = (id: string, back: boolean, extra = "") => (
       <Figure
-        key={s === gone ? `${id}-out` : id}
         id={id}
-        pose={dir}
+        pose={right ? "right" : "left"}
         transform={BODY}
-        className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${motion}`}
+        className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${extra}`}
       />
     );
-    return {
-      mate: mate && figure(mate, true),
-      lead: lead && figure(lead, false),
-    };
-  };
-  const [old, now] = [
-    gone && cast(gone, `versus-out-${dir}`),
-    cast(side, gone ? `versus-in-${dir}` : ""),
-  ];
-  return (
-    <>
-      {(old?.mate || now.mate) && (
-        <div
-          className="absolute inset-0 transition-[clip-path] duration-500"
-          style={{ clipPath: clip(seam, right) }}
-        >
-          {old?.mate}
-          {now.mate}
-        </div>
-      )}
-      {old?.lead}
-      {now.lead}
-    </>
-  );
+    return (
+      <Fragment key={s.id}>
+        {mate && (
+          <div
+            className={`absolute inset-0 transition-[clip-path] duration-500 ${motion(s, gone, right)}`}
+            style={{ clipPath: clip(seam, right) }}
+          >
+            {figure(mate, true)}
+          </div>
+        )}
+        {lead && figure(lead, false, motion(s, gone, right))}
+      </Fragment>
+    );
+  });
 };
 
 interface PlateProps {
@@ -177,18 +155,17 @@ const Plate = ({ side, right, motion = "" }: PlateProps) => {
 };
 
 export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
-  const swaps = [useSwap(sides[0], seam, false), useSwap(sides[1], seam, true)];
+  const swaps = [useSwap(sides[0]), useSwap(sides[1])];
   return (
     <div
-      className="relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
+      className="@container relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
       style={{ background: INK }}
     >
       {sides.map((s, i) => (
         <Panel
           key={i}
           side={s}
-          gone={swaps[i]![0]?.side}
-          edge={swaps[i]![0]?.edge}
+          gone={swaps[i]![0]}
           right={i > 0}
           seam={seam}
           onDone={swaps[i]![1]}
@@ -198,7 +175,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
         <Figures
           key={i}
           side={s}
-          gone={swaps[i]![0]?.side}
+          gone={swaps[i]![0]}
           right={i > 0}
           seam={seam}
         />
@@ -208,23 +185,20 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
         style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
       />
       {sides.map((s, i) => {
-        const gone = swaps[i]![0]?.side;
+        const gone = swaps[i]![0];
         return (
           <Fragment key={i}>
-            {gone && (
-              <Plate
-                key={gone.id}
-                side={gone}
-                right={i > 0}
-                motion="versus-out-plate"
-              />
+            {[gone, s].map(
+              (p) =>
+                p && (
+                  <Plate
+                    key={p.id}
+                    side={p}
+                    right={i > 0}
+                    motion={motion(p, gone, i > 0)}
+                  />
+                ),
             )}
-            <Plate
-              key={s.id}
-              side={s}
-              right={i > 0}
-              motion={gone ? "versus-in-plate" : ""}
-            />
           </Fragment>
         );
       })}
