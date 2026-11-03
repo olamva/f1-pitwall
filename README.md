@@ -55,7 +55,7 @@ Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
 Start each task in a new thread and worktree. The action updates the branch and installs dependencies.
 Run `CI=true pnpm install --frozen-lockfile` with network permission if an install requires confirmation without a terminal.
 Keep installation and checks in the same permission context. Keep dependencies separate for each worktree.
-After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree. It also deletes the remote `screenshots/pr-<pr-number>` branch.
+After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree. A workflow deletes the remote `screenshots/pr-<pr-number>` branch when the PR closes.
 The setup action also runs `pnpm worktree:cleanup --merged --branch-only --apply` for tasks that merged after their thread stopped.
 Keep the worktree while its T3 thread is active. Run `pnpm worktree:cleanup --merged --apply` from the main checkout after T3 stops.
 
