@@ -20,6 +20,11 @@ function byRound(rows: any[], key: string): Map<number, any[]> {
   return out;
 }
 
+export const seats = (rows: any[] = []) =>
+  new Map<string, string>(
+    rows.map((r) => [r.Driver.driverId, r.Constructor.constructorId]),
+  );
+
 const position = (text: string): number | null =>
   /^\d+$/.test(text) ? Number(text) : null;
 
@@ -127,12 +132,17 @@ export async function season(): Promise<Season> {
   const teamRows =
     cs.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
   const faces = await portraits(Number(calendar.RaceTable.season));
+  const seat = seats(
+    byRound(results, "Results").get(Number(results.at(-1)?.round)),
+  );
   const drivers: DriverInfo[] = driverRows.map((d: any) => ({
     id: d.Driver.driverId,
     code: d.Driver.code,
     name: `${d.Driver.givenName} ${d.Driver.familyName}`,
     number: d.Driver.permanentNumber,
-    team: d.Constructors.at(-1)?.constructorId ?? "",
+    team:
+      seat.get(d.Driver.driverId) ?? d.Constructors.at(-1)?.constructorId ?? "",
+    reserve: !seat.has(d.Driver.driverId),
     headshot: faces.get(d.Driver.code)?.headshot ?? null,
     art: faces.get(d.Driver.code)?.art ?? null,
   }));
