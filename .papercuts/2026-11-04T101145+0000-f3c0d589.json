@@ -1,0 +1,13 @@
+{
+  "id": "f3c0d589",
+  "ts": "2026-11-04T10:11:45+00:00",
+  "text": "pnpm shot --browser chromium fails: Chromium is not installed for the pinned playwright-core",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "ed5622a6",
+  "where": "scripts/shot.ts",
+  "branch": "t3/title-fight-pwa-background"
+}

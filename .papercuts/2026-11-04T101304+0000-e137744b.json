@@ -1,0 +1,14 @@
+{
+  "id": "e137744b",
+  "ts": "2026-11-04T10:13:04+00:00",
+  "text": "git fetch over SSH fails with publickey in the worktree; HTTPS with the gh credential helper works",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "ed5622a6",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-b896ce76",
+  "branch": "t3/title-fight-pwa-background"
+}
