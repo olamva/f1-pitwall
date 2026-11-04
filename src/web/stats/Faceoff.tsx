@@ -1,26 +1,16 @@
 import type { Standing } from "../../shared/clinch.ts";
-import { usePreload } from "../Headshot.tsx";
 import { Versus } from "../Versus.tsx";
 import type { Who } from "./derive.ts";
 
 interface FaceoffProps {
   focus: string;
   rival: string;
-  pool: string[];
   table: Standing[];
   who: Map<string, Who>;
   gain: number;
 }
 
-export const Faceoff = ({
-  focus,
-  rival,
-  pool,
-  table,
-  who,
-  gain,
-}: FaceoffProps) => {
-  usePreload(pool);
+export const Faceoff = ({ focus, rival, table, who, gain }: FaceoffProps) => {
   const points = (id: string) => table.find((s) => s.id === id)?.points ?? 0;
   const color = (id: string) => who.get(id)?.color ?? "#888";
   const gap = points(focus) - points(rival);

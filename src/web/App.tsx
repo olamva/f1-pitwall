@@ -9,7 +9,7 @@ import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { Calendar } from "./Calendar.tsx";
 import { LiveSession, type LiveInfo } from "./live/CurrentSession.tsx";
-import { Faces } from "./Headshot.tsx";
+import { Faces, usePreload } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { navigate } from "./path.ts";
 import { Settings } from "./Settings.tsx";
@@ -71,6 +71,7 @@ export const App = () => {
       ),
     [season.data],
   );
+  usePreload(season.data?.drivers);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   const tokenHidden = useTokenHidden();
   useEffect(() => {

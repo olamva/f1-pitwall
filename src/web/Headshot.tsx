@@ -19,15 +19,28 @@ export const lineup = (faces: Map<string, DriverInfo>, id: string) =>
     ? [faces.get(id)!]
     : [...new Set(faces.values())].filter((d) => d.team === id);
 
-export const usePreload = (ids: string[]) => {
-  const faces = useContext(Faces);
-  const list = ids.join();
+const VARIANTS: [Pose, string][] = [
+  ["front", BODY],
+  ["left", BODY],
+  ["right", BODY],
+  ["front", BUST(0.42)],
+  ["left", BUST(0.55)],
+  ["right", BUST(0.55)],
+  ["front", BUST(0.6)],
+  ["left", BUST(0.6)],
+  ["right", BUST(0.6)],
+  ["front", "c_thumb,g_face,w_432,h_432,z_0.5"],
+];
+
+export const usePreload = (drivers?: DriverInfo[]) =>
   useEffect(() => {
-    for (const d of list.split(",").flatMap((id) => lineup(faces, id)))
-      for (const pose of ["left", "right"] as const)
-        if (d.art) new Image().src = artSrc(d.art, pose);
-  }, [faces, list]);
-};
+    for (const d of drivers ?? [])
+      for (const src of [
+        d.headshot,
+        ...VARIANTS.map(([pose, t]) => d.art && artSrc(d.art, pose, t)),
+      ])
+        if (src) Object.assign(new Image(), { fetchPriority: "low", src });
+  }, [drivers]);
 
 export const Headshot = (props: ComponentProps<"img">) => (
   <img
