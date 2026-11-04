@@ -47,15 +47,62 @@ const Portrait = ({ driver, color, big }: PortraitProps) => (
   </>
 );
 
+interface NumbersProps {
+  crew: DriverInfo[];
+  color: string;
+  big: boolean;
+}
+
+const Numbers = ({ crew, color, big }: NumbersProps) =>
+  crew.length > 0 && (
+    <span className={`relative flex ${big ? "mt-2 gap-4" : "mt-1 gap-2"}`}>
+      {crew.map((d) => (
+        <TeamNumber
+          key={d.id}
+          id={d.id}
+          number={d.number}
+          color={big ? GOLD : color}
+          className={`flex ${big ? "h-8 text-3xl" : "h-5 text-xl"}`}
+        />
+      ))}
+    </span>
+  );
+
+interface BadgeProps {
+  team: string;
+  teams: Map<string, string>;
+  big: boolean;
+}
+
+const Badge = ({ team, teams, big }: BadgeProps) =>
+  logoSrc(team) ? (
+    <TeamLogo
+      team={team}
+      className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
+    />
+  ) : (
+    <span className="relative block text-sm text-zinc-400">
+      {teams.get(team) ?? team}
+    </span>
+  );
+
 interface CardsProps {
   rows: StandingRow[];
   season: Season;
   teams: Map<string, string>;
   champion?: string;
   onSelect?: (id: string) => void;
+  drivers?: StandingRow[];
 }
 
-const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
+const Cards = ({
+  rows,
+  season,
+  teams,
+  champion,
+  onSelect,
+  drivers = [],
+}: CardsProps) => {
   const info = new Map(season.drivers.map((d) => [d.id, d]));
   const Card = onSelect ? "button" : "div";
   return (
@@ -65,11 +112,14 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
         const color = teamColor(row.team);
         const driver = info.get(row.id);
         const team = row.id === row.team;
+        const crew = drivers
+          .filter((d) => d.team === row.team)
+          .flatMap((d) => info.get(d.id) ?? []);
         return (
           <Card
             key={row.id}
             onClick={() => onSelect?.(row.id)}
-            className={`group relative overflow-hidden rounded-xl text-left transition ${onSelect ? "cursor-pointer hover:-translate-y-0.5" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : `bg-surface p-4 ring-1 ring-zinc-800 ${onSelect ? "hover:ring-zinc-600" : ""}`}`}
+            className={`group relative overflow-hidden rounded-xl text-left transition hover:-translate-y-0.5 ${onSelect ? "cursor-pointer" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : "bg-surface p-4 ring-1 ring-zinc-800 hover:ring-zinc-600"}`}
             style={{
               backgroundImage: big
                 ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
@@ -79,7 +129,7 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
             {team ? (
               <TeamLogo
                 team={row.team}
-                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
+                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
               />
             ) : (
               driver && <Portrait driver={driver} color={color} big={big} />
@@ -100,17 +150,11 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
             >
               {row.name}
             </span>
-            {!team &&
-              (logoSrc(row.team) ? (
-                <TeamLogo
-                  team={row.team}
-                  className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
-                />
-              ) : (
-                <span className="relative block text-sm text-zinc-400">
-                  {teams.get(row.team) ?? row.team}
-                </span>
-              ))}
+            {team ? (
+              <Numbers crew={crew} color={color} big={big} />
+            ) : (
+              <Badge team={row.team} teams={teams} big={big} />
+            )}
             <span
               className={`tabular relative flex text-xs text-zinc-400 ${big ? "mt-8 gap-5 sm:gap-8" : "mt-4 gap-5"}`}
             >
@@ -225,6 +269,7 @@ export const Standings = ({ season }: StandingsProps) => {
           ) : (
             <Cards
               rows={data.constructors}
+              drivers={data.drivers}
               season={season}
               teams={names}
               champion={

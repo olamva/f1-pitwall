@@ -1104,7 +1104,7 @@ html:has(dialog[open]) {
   animation: champion-shine 6s ease-in-out infinite;
 }
 
-.champion-card .light\:invert {
+.champion-card .light\:invert:not(.champion-figure) {
   filter: none;
 }
 
