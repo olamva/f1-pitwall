@@ -53,22 +53,32 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
     const root = document.documentElement;
     let end = 0;
     const top = () => root.toggleAttribute("data-top", scrollY < end);
-    const observer = new ResizeObserver(() => {
+    const measure = () => {
       const r = el.getBoundingClientRect();
       el.style.setProperty("--champion-top", `${r.top + scrollY}px`);
       if (!active) return;
       end = r.bottom + scrollY;
       root.style.setProperty("--champion-end", `${end}px`);
       top();
+    };
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
     });
+    measure();
     observer.observe(el);
     observer.observe(document.body);
-    if (!active) return () => observer.disconnect();
+    const stop = () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+    if (!active) return stop;
     addEventListener("scroll", top, { passive: true });
     root.style.setProperty("--champion", color);
     root.dataset.champion = "";
     return () => {
-      observer.disconnect();
+      stop();
       removeEventListener("scroll", top);
       delete root.dataset.top;
       delete root.dataset.champion;

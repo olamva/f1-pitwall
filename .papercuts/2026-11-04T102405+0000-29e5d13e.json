@@ -1,0 +1,13 @@
+{
+  "id": "29e5d13e",
+  "ts": "2026-11-04T10:24:05+00:00",
+  "text": "refs/remotes/origin/main disappears between fetches in the shared repo; fetch reports [new branch] each time",
+  "tags": [
+    "git"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "260f35ef",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-c650fc54",
+  "branch": "t3/fix-title-fight-resizeobserver"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "f938d1e7",
+  "ts": "2026-11-04T10:22:36+00:00",
+  "text": "pnpm shot does not wait for the Faces art context; champion poster is missing in some captures, so before/after diffs flap",
+  "tags": [
+    "screenshots",
+    "shot"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "260f35ef",
+  "where": "scripts/shot.ts",
+  "branch": "t3/fix-title-fight-resizeobserver"
+}
