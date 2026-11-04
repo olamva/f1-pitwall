@@ -119,10 +119,10 @@ export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
 export const OpenHint = () => (
   <p
     aria-hidden
-    className="flex items-center justify-end gap-0.5 text-xs text-zinc-400 transition group-hover:text-zinc-50"
+    className="flex items-center justify-between rounded-lg bg-zinc-800 px-3 py-2 font-medium text-zinc-50 transition group-hover:bg-red-600 group-hover:text-white"
   >
     Full results & stats
-    <ChevronRight className="size-3.5" />
+    <ChevronRight className="size-4 text-red-500 group-hover:text-white" />
   </p>
 );
 
