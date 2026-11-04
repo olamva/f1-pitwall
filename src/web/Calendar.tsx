@@ -9,7 +9,7 @@ import { Flag } from "./Flag.tsx";
 import { CalendarList } from "./live/CalendarList.tsx";
 import { LABEL as NAMES } from "./live/Countdown.tsx";
 import { Replay } from "./live/CurrentSession.tsx";
-import { CardHead } from "./live/Schedule.tsx";
+import { CardHead, OpenHint } from "./live/Schedule.tsx";
 import { Loading } from "./Loading.tsx";
 import { navigate, pathSegment, standalone } from "./path.ts";
 import { Finish, type Race } from "./Podium.tsx";
@@ -55,7 +55,7 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
     {races.map((race) => (
       <article
         key={race.round}
-        className="bg-surface relative flex flex-col gap-3 rounded-xl p-4 ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
+        className="group bg-surface relative flex flex-col gap-3 rounded-xl p-4 ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
       >
         <button
           type="button"
@@ -83,6 +83,7 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
         <div className="mt-auto">
           <Finish race={race} hidden={hidden} />
         </div>
+        <OpenHint />
       </article>
     ))}
   </div>

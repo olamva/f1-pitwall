@@ -8,6 +8,7 @@ import { LABEL } from "./Countdown.tsx";
 import {
   CardHead,
   Days,
+  OpenHint,
   ScheduleWeekend,
   sessions as schedule,
   short,
@@ -152,7 +153,7 @@ const Weekend = ({
   const next = featured ? sessions.find((s) => s.time) : undefined;
   return (
     <article
-      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+      className={`group relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
     >
       {onOpen && (
         <button
@@ -190,6 +191,7 @@ const Weekend = ({
           ])}
         />
       </div>
+      {onOpen && <OpenHint />}
     </article>
   );
 };
