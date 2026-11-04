@@ -42,9 +42,24 @@ If a check fails, fix the failure and push the correction. Auto-merge stays enab
 If the state is `BEHIND`, merge `origin/main` into the task branch, resolve conflicts, and push.
 Do not force-push, bypass branch protection, or merge with blocked checks. Do not use `gh pr merge --admin`.
 
+## Findings
+
+Implement a fix that an investigation shows is worth doing. Do not end with a list of options and a question.
+Ask only about decisions that change the design or need visual approval.
+
 ## Live timing
 
 Test live timing changes with a recorded session. Follow `.claude/skills/live-replay/SKILL.md`.
+Measure live screen performance in Playwright WebKit at 3x density, and also in Chrome. The user watches live timing on an iPhone, as an installed PWA.
+Count the CPU time of the WebKit WebContent and GPU processes with `ps`.
+Delete `window.PushManager` in an init script for WebKit runs. WebKit kills its content process silently on `pushManager.getSubscription()`.
+For an A/B test, start two replay servers at the same time with the same `LIVE_REPLAY_FROM` and different `DIST_DIR`.
+
+## UI code
+
+Search `src/web` for an existing component before you write a new control. Use `Tabs` from `src/web/Tabs.tsx` with `small` for toggles.
+Do not use a see-through red tint or glow in light mode. The user sees it as pink.
+Use a solid red surface (`#e10600` to `#7f1d1d`) with white content in light mode. Redefine the zinc tokens on the red element, as `.featured` in `src/web/index.css` does.
 
 ## Visual review
 
@@ -61,6 +76,7 @@ Show the screenshots to the user and ask for approval after the change is comple
 Do not enable auto-merge before the user approves the reviewed change.
 Treat a missing required approval as a blocker.
 Request renewed approval if later changes materially alter the reviewed appearance.
+Crop a reference image at 6 to 8 times zoom. Put your result next to it at the same zoom before you claim a match.
 
 ## Deployment and cleanup
 

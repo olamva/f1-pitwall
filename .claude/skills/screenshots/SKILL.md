@@ -86,7 +86,8 @@ pnpm shot:publish <pr-number> ~/.t3/userdata/attachments/<branch>/*.png
 
 ## Motion, touch, and iOS
 
-- A screenshot does not show a transition. To check motion, record a video with Playwright `recordVideo` or with the iOS Simulator. Then check the frames one by one.
+- A screenshot does not show a transition. To check motion, record a video with Playwright `recordVideo` or with the iOS Simulator. Then check the frames one by one before you report the motion as correct. Check the frames around each release and state change.
+- Paused animation frames (`getAnimations()` with a set `currentTime`) miss CSS transitions that start in the same frame. Check the real recording at full size, cropped to the moving edge. Also check the case where the layout moves.
 - Desktop WebKit has no `Touch` constructor. Use Chromium with the CDP command `Input.dispatchTouchEvent` for touch gestures.
 - Headless WebKit does not show iOS swipe, overscroll, and home-screen app artifacts. Use the iOS Simulator through the T3 device tools for these bugs.
 - To open the home-screen app in the simulator, run `open com.apple.springboard`, then `press 'label="F1 Pitwall"'`. A tap on the icon by coordinates can open Safari instead.
