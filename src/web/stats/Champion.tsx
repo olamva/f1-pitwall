@@ -51,18 +51,19 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
     const el = ref.current;
     if (!el) return;
     const root = document.documentElement;
+    let end = 0;
+    const top = () => root.toggleAttribute("data-top", scrollY < end);
     const observer = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
       el.style.setProperty("--champion-top", `${r.top + scrollY}px`);
-      if (active)
-        root.style.setProperty("--champion-end", `${r.bottom + scrollY}px`);
+      if (!active) return;
+      end = r.bottom + scrollY;
+      root.style.setProperty("--champion-end", `${end}px`);
+      top();
     });
     observer.observe(el);
     observer.observe(document.body);
     if (!active) return () => observer.disconnect();
-    const top = () =>
-      root.toggleAttribute("data-top", scrollY < innerHeight / 2);
-    top();
     addEventListener("scroll", top, { passive: true });
     root.style.setProperty("--champion", color);
     root.dataset.champion = "";
