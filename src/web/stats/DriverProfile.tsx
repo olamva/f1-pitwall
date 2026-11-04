@@ -1,8 +1,7 @@
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trophy } from "lucide-react";
 import type {
   Classified,
   DriverProfile as Profile,
-  QualiResult,
   Season,
 } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
@@ -22,44 +21,33 @@ const SHORT: Record<string, string> = {
   Disqualified: "DSQ",
 };
 
-const GROUPS = [
-  [
-    ["SQ", "sprintQualifying"],
-    ["Sprint", "sprints"],
-  ],
-  [
-    ["Quali", "qualifying"],
-    ["Race", "races"],
-  ],
-] as const;
-
 interface PlaceProps {
-  name: string;
-  result: Classified | QualiResult | undefined;
+  result: Classified | undefined;
+  quali: number | undefined;
+  sprint: boolean;
 }
 
-const Place = ({ name, result }: PlaceProps) => {
-  const quali = name === "SQ" || name === "Quali";
-  return (
-    <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-      <span
-        className={`uppercase ${quali ? "text-zinc-500" : "text-zinc-100"}`}
-      >
-        {name}
-      </span>
-      {result && "status" in result ? (
-        <span
-          className={`text-xs ${result.points ? "" : "text-zinc-500"}`}
-          style={{ color: ink(METALS[(result.position ?? 0) - 1]) }}
-        >
-          {result.position ?? SHORT[result.status] ?? "DNF"}
-        </span>
-      ) : (
-        <span className="text-xs text-zinc-500">{result?.position ?? "–"}</span>
-      )}
+const Place = ({ result, quali, sprint }: PlaceProps) => (
+  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
+    <span className="text-zinc-100 uppercase">
+      {sprint ? "Sprint" : "Race"}
     </span>
-  );
-};
+    <span className="flex items-center text-xs">
+      {quali && (
+        <>
+          {quali}
+          <ArrowRight aria-hidden className="size-3 text-zinc-500" />
+        </>
+      )}
+      <span
+        className={result?.points ? "" : "text-zinc-500"}
+        style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
+      >
+        {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+      </span>
+    </span>
+  </span>
+);
 
 interface SeasonResultsProps {
   id: string;
@@ -70,50 +58,54 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
   const weekends = season.rounds
     .map((round) => ({
       round,
-      groups: GROUPS.map((group) =>
-        group.flatMap(([name, key]) => {
-          const rows: (Classified | QualiResult)[] | undefined = season[
-            key
-          ].find((s) => s.round === round.round)?.results;
-          return rows
-            ? [{ name, result: rows.find((r) => r.driver === id) }]
-            : [];
-        }),
-      ).filter((sessions) => sessions.length),
+      sessions: (
+        [
+          ["Race", season.races, season.qualifying],
+          ["Sprint", season.sprints, season.sprintQualifying],
+        ] as const
+      ).flatMap(([name, all, qualifying]) => {
+        const rows = all.find((s) => s.round === round.round)?.results;
+        return rows
+          ? [
+              {
+                name,
+                result: rows.find((r) => r.driver === id),
+                quali: qualifying
+                  .find((s) => s.round === round.round)
+                  ?.results.find((r) => r.driver === id)?.position,
+              },
+            ]
+          : [];
+      }),
     }))
-    .filter((weekend) => weekend.groups.length);
-  if (!weekends.some(({ groups }) => groups.flat().some((s) => s.result)))
+    .filter((weekend) => weekend.sessions.length);
+  if (!weekends.some((weekend) => weekend.sessions.some((s) => s.result)))
     return null;
   return (
     <section className="bg-surface rounded-xl p-3 sm:p-4">
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
-        {weekends.map(({ round, groups }) => (
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-1">
+        {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
             title={[
               round.name,
-              ...groups
-                .flat()
-                .map(
-                  (s) =>
-                    `${s.name}: ${s.result ? ("status" in s.result ? s.result.status : `P${s.result.position}`) : "Did not race"}`,
-                ),
+              ...sessions.map(
+                (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
+              ),
             ].join("\n")}
             className="flex flex-col items-center gap-1 rounded-md bg-zinc-800/60 px-1 py-1.5 *:mr-0"
           >
             <Flag country={round.country} />
-            {groups.map((group, i) => (
-              <div
-                key={group[0].name}
-                className={`flex w-full flex-col gap-1 last:mt-auto ${i ? "border-t border-zinc-700 pt-1" : ""}`}
-              >
-                {group.map((s) => (
-                  <Place key={s.name} name={s.name} result={s.result} />
-                ))}
-              </div>
+            {sessions.map((s) => (
+              <Place
+                key={s.name}
+                result={s.result}
+                quali={s.quali}
+                sprint={s.name === "Sprint"}
+              />
             ))}
           </li>
         ))}
