@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+  &:active {
+    @slot;
+  }
+}
+
 @custom-variant light {
   &:where([data-theme="light"] *) {
     @slot;
