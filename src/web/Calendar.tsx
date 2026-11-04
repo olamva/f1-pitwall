@@ -16,7 +16,6 @@ import { Finish, type Race } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { useBack } from "./Swipe.tsx";
-import { SprintLogo } from "./SprintLogo.tsx";
 import { fresh, useSeen } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
 import { currentYear, YEARS, YearSelect } from "./YearSelect.tsx";
@@ -65,20 +64,14 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
         />
         <Circuit track={tracks[race.round]} round={race.round} />
         <CardHead
-          label={
-            <>
-              {new Date(race.date).toLocaleDateString([], {
-                day: "numeric",
-                month: "short",
-                timeZone: "UTC",
-              })}
-              {race.sprint.length > 0 && (
-                <SprintLogo className="h-2.5 shrink-0 text-zinc-100" />
-              )}
-            </>
-          }
+          label={new Date(race.date).toLocaleDateString([], {
+            day: "numeric",
+            month: "short",
+            timeZone: "UTC",
+          })}
           name={race.name}
           country={race.country}
+          sprint={race.sprint.length > 0}
         />
         <div className="mt-auto">
           <Finish race={race} hidden={hidden} />

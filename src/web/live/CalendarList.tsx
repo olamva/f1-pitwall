@@ -43,6 +43,7 @@ interface WeekendProps {
   onOpen?: () => void;
   podium?: ReactNode;
   featured?: boolean;
+  sprint: boolean;
 }
 
 const day = (s: SessionRef) => new Date(s.start.slice(0, 10));
@@ -149,6 +150,7 @@ const Weekend = ({
   onOpen,
   podium,
   featured,
+  sprint,
 }: WeekendProps) => {
   const next = featured ? sessions.find((s) => s.time) : undefined;
   return (
@@ -172,6 +174,7 @@ const Weekend = ({
         name={sessions[0].meeting}
         country={sessions[0].country}
         featured={featured}
+        sprint={sprint}
       />
       {podium}
       <div className="relative mt-auto">
@@ -255,7 +258,8 @@ export const CalendarList = ({
       {past.map((w) => {
         const round = started(season, w);
         const race = races.find((r) => r.round === round);
-        const number = roundOf(season, w)?.round;
+        const info = roundOf(season, w);
+        const number = info?.round;
         return (
           <li key={w[0].start} {...item(w[0].start)}>
             <Weekend
@@ -266,6 +270,7 @@ export const CalendarList = ({
               onOpen={round ? () => onOpen(round) : undefined}
               podium={race && <Finish race={race} hidden={hidden} />}
               featured={w[0].start === anchor}
+              sprint={!!info?.sessions.sprint}
             />
           </li>
         );
