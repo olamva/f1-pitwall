@@ -22,6 +22,7 @@ import { DATA_DIR } from "./data.ts";
 import * as live from "./live.ts";
 import {
   circuitFacts,
+  constructorProfile,
   driverProfile,
   raceArchive,
   standings,
@@ -115,6 +116,13 @@ app.get("/api/drivers/:id", async (c) => {
   if (!/^[a-z0-9_]+$/.test(id))
     return c.json({ error: "Invalid driver." }, 400);
   const profile = await driverProfile(id);
+  return profile ? c.json(profile) : c.notFound();
+});
+app.get("/api/constructors/:id", async (c) => {
+  const id = c.req.param("id");
+  if (!/^[a-z0-9_-]+$/.test(id))
+    return c.json({ error: "Invalid constructor." }, 400);
+  const profile = await constructorProfile(id);
   return profile ? c.json(profile) : c.notFound();
 });
 

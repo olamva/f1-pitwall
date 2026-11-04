@@ -16,6 +16,7 @@ import {
   teamTables,
   teams,
 } from "./derive.ts";
+import { ConstructorProfile } from "./ConstructorProfile.tsx";
 import { DriverProfile } from "./DriverProfile.tsx";
 import { RacePace } from "./RacePace.tsx";
 import { SeasonCharts } from "./SeasonCharts.tsx";
@@ -50,13 +51,20 @@ export const Stats = ({ season }: StatsProps) => {
   const [view, setView] = useState<View>(
     () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings",
   );
-  const [driver, setDriver] = useState(() =>
-    pathPart("stats") === "drivers" ? pathSegment("stats", 3) : null,
+  const [profile, setProfile] = useState(() => {
+    const kind = pathPart("stats");
+    const id = pathSegment("stats", 3);
+    return id && (kind === "drivers" || kind === "constructors")
+      ? { kind, id }
+      : null;
+  });
+  const [table] = useState<Championship>(
+    profile?.kind === "constructors" ? "constructors" : "drivers",
   );
   const show = (v: View) => {
     setPathPart("stats", slug(v));
     setView(v);
-    setDriver(null);
+    setProfile(null);
   };
   const [champ, setChamp] = useState<Championship>("drivers");
   const viewBlob = useRef<(offset: number, held: boolean) => void>(null);
@@ -93,15 +101,22 @@ export const Stats = ({ season }: StatsProps) => {
         render={(v) => (
           <>
             {v === "Standings" &&
-              (driver ? (
+              (profile?.kind === "drivers" ? (
                 <DriverProfile
-                  key={driver}
-                  id={driver}
+                  key={profile.id}
+                  id={profile.id}
+                  season={season}
+                  onBack={() => show("Standings")}
+                />
+              ) : profile ? (
+                <ConstructorProfile
+                  key={profile.id}
+                  id={profile.id}
                   season={season}
                   onBack={() => show("Standings")}
                 />
               ) : (
-                <Standings season={season} />
+                <Standings season={season} champ={table} />
               ))}
             {v === "Title fight" && (
               <div className="space-y-4">
