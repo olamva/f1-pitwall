@@ -113,13 +113,13 @@ const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className="pointer-events-auto flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
+      className="flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       <span className="truncate">{short(session.name)}</span>
     </button>
   ) : (
-    <span className="group/pending pointer-events-auto relative flex">
+    <span className="group/pending relative flex">
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
@@ -174,7 +174,7 @@ const Weekend = ({
         featured={featured}
       />
       {podium}
-      <div className="pointer-events-none relative mt-auto">
+      <div className="relative mt-auto">
         <Days
           days={Object.values(
             Object.groupBy(sessions, (s) => s.start.slice(0, 10)),
