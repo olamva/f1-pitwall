@@ -1,11 +1,13 @@
 import {
   SESSION_MS,
+  type ConstructorProfile,
   type DriverProfile,
   type Fact,
   type RaceArchive,
   type SeasonStandings,
 } from "../shared/season.ts";
 import champions from "./champions.json" with { type: "json" };
+import constructorChampions from "./constructorChampions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
 import { pendingRace, portraits, provisional } from "./openf1.ts";
 import { seats, seconds, when } from "./season.ts";
@@ -17,6 +19,46 @@ const NON_START = new Set([
   "Did not prequalify",
   "Withdrew",
 ]);
+
+const podium = (result: any) => ["1", "2", "3"].includes(result.positionText);
+
+const average = (results: any[]) => {
+  const places = results.map((r) => Number(r.positionText)).filter(Boolean);
+  return places.length
+    ? places.reduce((a, b) => a + b, 0) / places.length
+    : null;
+};
+
+const titles = async (
+  listed: Record<string, string>,
+  kind: "Driver" | "Constructor",
+  id: string,
+  years: number[],
+) => {
+  const known = Object.entries(listed);
+  const recent = await Promise.all(
+    years
+      .filter(
+        (year) =>
+          year > Number(known.at(-1)![0]) && year < new Date().getUTCFullYear(),
+      )
+      .map(async (year) => {
+        const data = await get(
+          `${year}/${kind.toLowerCase()}standings/1.json`,
+          DAY,
+        );
+        const [row] =
+          data.StandingsTable.StandingsLists[0]?.[`${kind}Standings`] ?? [];
+        return row?.[kind][`${kind.toLowerCase()}Id`] === id ? [year] : [];
+      }),
+  );
+  return [
+    ...known
+      .filter(([, champion]) => champion === id)
+      .map(([year]) => Number(year)),
+    ...recent.flat(),
+  ].sort((a, b) => a - b);
+};
 
 type Result = RaceArchive["races"][number]["results"][number];
 
@@ -157,13 +199,6 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
   const started = races.filter((race) =>
     race.Results.some((result: any) => !NON_START.has(result.status)),
   );
-  const podium = (result: any) => ["1", "2", "3"].includes(result.positionText);
-  const average = (results: any[]) => {
-    const places = results.map((r) => Number(r.positionText)).filter(Boolean);
-    return places.length
-      ? places.reduce((a, b) => a + b, 0) / places.length
-      : null;
-  };
   const years = [...new Set(races.map((race) => Number(race.season)))];
   const seasons = years
     .sort((a, b) => b - a)
@@ -185,22 +220,6 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
         ].reduce((sum, result) => sum + Number(result.points), 0),
       };
     });
-  const listed = Object.entries(champions);
-  const recent = await Promise.all(
-    years
-      .filter(
-        (year) =>
-          year > Number(listed.at(-1)![0]) &&
-          year < new Date().getUTCFullYear(),
-      )
-      .map(async (year) => {
-        const data = await get(`${year}/driverstandings/1.json`, DAY);
-        return data.StandingsTable.StandingsLists[0]?.DriverStandings[0]?.Driver
-          .driverId === id
-          ? [year]
-          : [];
-      }),
-  );
   const url = info.url?.startsWith("http")
     ? info.url.replace(/^http:/, "https:")
     : null;
@@ -222,12 +241,87 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     podiums: seasons.reduce((sum, season) => sum + season.podiums, 0),
     averageFinish: average(races.flatMap((race) => race.Results)),
     poles: (seasons.at(-1)?.year ?? 0) < 1994 ? null : poles,
-    championships: [
-      ...listed
-        .filter(([, champion]) => champion === id)
-        .map(([year]) => Number(year)),
-      ...recent.flat(),
-    ].sort((a, b) => a - b),
+    championships: await titles(champions, "Driver", id, years),
+    seasons,
+  };
+}
+
+export async function constructorProfile(
+  id: string,
+): Promise<ConstructorProfile | null> {
+  const [team, races, sprints] = await Promise.all([
+    get(`constructors/${id}.json`, DAY),
+    all<any>(
+      `constructors/${id}/results.json`,
+      (data) => data.RaceTable.Races,
+      DAY,
+    ),
+    all<any>(
+      `constructors/${id}/sprint.json`,
+      (data) => data.RaceTable.Races,
+      DAY,
+    ),
+  ]);
+  const info = team.ConstructorTable.Constructors[0];
+  if (!info) return null;
+  const results = races.flatMap((race) =>
+    race.Results.map((result: any) => ({
+      ...result,
+      year: Number(race.season),
+      round: Number(race.round),
+    })),
+  );
+  const starts = (rows: any[]) =>
+    new Set(
+      rows
+        .filter((result) => !NON_START.has(result.status))
+        .map((result) => `${result.year}-${result.round}`),
+    ).size;
+  const drivers = (rows: any[]) => [
+    ...new Map(
+      rows.map((result) => [
+        result.Driver.driverId,
+        {
+          id: result.Driver.driverId,
+          name: `${result.Driver.givenName} ${result.Driver.familyName}`,
+        },
+      ]),
+    ).values(),
+  ];
+  const years = [...new Set(results.map((result) => result.year))];
+  const seasons = years
+    .sort((a, b) => b - a)
+    .map((year) => {
+      const inYear = results.filter((result) => result.year === year);
+      return {
+        year,
+        starts: starts(inYear),
+        wins: inYear.filter((result) => result.positionText === "1").length,
+        podiums: inYear.filter(podium).length,
+        points: [
+          ...inYear,
+          ...sprints
+            .filter((race) => Number(race.season) === year)
+            .flatMap((race) => race.SprintResults),
+        ].reduce((sum, result) => sum + Number(result.points), 0),
+        drivers: drivers(inYear),
+      };
+    });
+  return {
+    id,
+    name: info.name,
+    nationality: info.nationality ?? null,
+    url: info.url?.startsWith("http")
+      ? info.url.replace(/^http:/, "https:")
+      : null,
+    firstSeason: seasons.at(-1)?.year ?? null,
+    lastSeason: seasons[0]?.year ?? null,
+    starts: starts(results),
+    wins: seasons.reduce((sum, season) => sum + season.wins, 0),
+    podiums: seasons.reduce((sum, season) => sum + season.podiums, 0),
+    poles: results.filter((result) => result.grid === "1").length,
+    drivers: drivers(results).length,
+    championships: await titles(constructorChampions, "Constructor", id, years),
     seasons,
   };
 }

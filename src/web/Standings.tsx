@@ -12,7 +12,7 @@ import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
 import { Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
-import { openDriver, pathPart, pathSegment } from "./path.ts";
+import { openConstructor, openDriver, pathPart, pathSegment } from "./path.ts";
 import { GOLD } from "./stats/Champion.tsx";
 import { clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
@@ -184,9 +184,10 @@ const Cards = ({
 
 interface StandingsProps {
   season: Season;
+  champ?: Championship;
 }
 
-export const Standings = ({ season }: StandingsProps) => {
+export const Standings = ({ season, champ: initial }: StandingsProps) => {
   const [year, setYear] = useState(() => {
     const path = pathSegment("stats", 3);
     return pathPart("stats") === "standings" && YEARS.includes(path ?? "")
@@ -201,7 +202,7 @@ export const Standings = ({ season }: StandingsProps) => {
       `/stats/standings${next === String(season.year) ? "" : `/${next}`}`,
     );
   };
-  const [champ, setChamp] = useState<Championship>("drivers");
+  const [champ, setChamp] = useState<Championship>(initial ?? "drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   const ready = data?.year === Number(year);
@@ -275,6 +276,7 @@ export const Standings = ({ season }: StandingsProps) => {
               champion={
                 decided(c) ? `${year} Constructors' Champion` : undefined
               }
+              onSelect={openConstructor}
             />
           )
         }

@@ -100,7 +100,7 @@ interface ChampionshipsProps {
   years: number[];
 }
 
-const Championships = ({ years }: ChampionshipsProps) => (
+export const Championships = ({ years }: ChampionshipsProps) => (
   <section className="bg-surface rounded-xl p-3 sm:p-4">
     <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
       Championships
