@@ -79,5 +79,5 @@ A PR watch does not wake the thread on merge. The next `Setup Worktree` run clea
 The `--merged` sweep removes each merged worktree unless a process uses it as its working directory.
 The sweep also deletes merged `t3/*` branches without a worktree and local `screenshots/pr-*` branches of merged PRs.
 Run `pnpm worktree:cleanup --merged --apply` from any checkout to remove all merged worktrees. T3 can keep running.
-Include the cleanup status in the final response.
+Report cleanup in the final response only when you ran it, or when it failed or is blocked.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
