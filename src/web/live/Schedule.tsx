@@ -4,6 +4,7 @@ import type { Round } from "../../shared/season.ts";
 import type { Track } from "../../shared/timing.ts";
 import { Circuit } from "../Circuit.tsx";
 import { Flag } from "../Flag.tsx";
+import { SprintLogo } from "../SprintLogo.tsx";
 import { LABEL } from "./Countdown.tsx";
 
 interface WeekendProps {
@@ -17,6 +18,7 @@ interface CardHeadProps {
   name: string;
   country: string;
   featured?: boolean;
+  sprint?: boolean;
 }
 
 interface DaysProps {
@@ -100,12 +102,19 @@ const Left = ({ at }: LeftProps) => {
   );
 };
 
-export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
+export const CardHead = ({
+  label,
+  name,
+  country,
+  featured,
+  sprint,
+}: CardHeadProps) => (
   <header className="min-w-0 pr-14">
     <p
       className={`flex items-center gap-2 text-xs ${featured ? "font-f1 tracking-wider text-red-400 uppercase" : "text-zinc-400"}`}
     >
       {label}
+      {sprint && <SprintLogo className="h-2.5 shrink-0 text-zinc-100" />}
     </p>
     <h2
       className={`font-f1 line-clamp-2 font-bold ${featured ? "text-lg sm:text-2xl" : ""}`}
@@ -173,6 +182,7 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
         name={round.name}
         country={round.country}
         featured={featured}
+        sprint={!!round.sessions.sprint}
       />
       <Days
         days={Object.values(
