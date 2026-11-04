@@ -33,7 +33,7 @@ const files: Record<string, unknown> = {
       { ...team("red_bull", "Red Bull"), points: "355", wins: "2" },
     ],
   ),
-  [`${JOLPICA}/last/results.json?limit=1`]: {
+  [`${JOLPICA}/last/results.json?limit=100`]: {
     MRData: {
       RaceTable: { Races: [{ date: "2026-10-25", time: "20:00:00Z" }] },
     },
@@ -96,4 +96,47 @@ test("standings take OpenF1 totals once a race that Jolpica lacks has ended", as
     "mercedes 630 12",
     "red_bull 380 3",
   ]);
+});
+
+test("standings seat each driver in the team of the last race", async (t) => {
+  const SEASON = "https://api.jolpi.ca/ergast/f1/2025";
+  const seated = (driverId: string, constructorId: string) => ({
+    Driver: { driverId },
+    Constructor: { constructorId },
+  });
+  const swap: Record<string, unknown> = {
+    [`${SEASON}/driverstandings.json?limit=100`]: lists("DriverStandings", [
+      {
+        ...driver("lawson", "LAW", "rb"),
+        Constructors: [{ constructorId: "rb" }, { constructorId: "red_bull" }],
+      },
+      driver("arvid_lindblad", "LIN", "rb"),
+      driver("tsunoda", "TSU", "rb"),
+    ]),
+    [`${SEASON}/constructorstandings.json?limit=100`]: lists(
+      "ConstructorStandings",
+      [],
+    ),
+    [`${SEASON}/last/results.json?limit=100`]: {
+      MRData: {
+        RaceTable: {
+          Races: [
+            {
+              Results: [seated("lawson", "rb"), seated("arvid_lindblad", "rb")],
+            },
+          ],
+        },
+      },
+    },
+  };
+  t.mock.method(globalThis, "fetch", async (url: string) =>
+    swap[url] ? Response.json(swap[url]) : new Response("", { status: 404 }),
+  );
+
+  const s = await standings(2025);
+
+  assert.deepEqual(
+    s.drivers.map((d) => `${d.id} ${d.team} ${d.reserve}`),
+    ["lawson rb false", "arvid_lindblad rb false", "tsunoda rb true"],
+  );
 });
