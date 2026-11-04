@@ -55,13 +55,13 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
     {races.map((race) => (
       <article
         key={race.round}
-        className="group bg-surface relative flex flex-col gap-3 rounded-xl p-4 ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
+        className="bg-surface relative flex flex-col gap-3 rounded-xl p-4 ring-1 ring-zinc-800 transition hover:-translate-y-0.5 hover:ring-zinc-600"
       >
         <button
           type="button"
           onClick={() => onOpen(race.round)}
           aria-label={`Results: ${race.name}`}
-          className="absolute inset-0 cursor-pointer rounded-xl"
+          className="peer absolute inset-0 cursor-pointer rounded-xl"
         />
         <Circuit track={tracks[race.round]} round={race.round} />
         <CardHead
