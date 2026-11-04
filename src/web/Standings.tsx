@@ -113,7 +113,7 @@ const Cards = ({
         const driver = info.get(row.id);
         const team = row.id === row.team;
         const crew = drivers
-          .filter((d) => d.team === row.team)
+          .filter((d) => d.team === row.team && !d.reserve)
           .flatMap((d) => info.get(d.id) ?? []);
         return (
           <Card

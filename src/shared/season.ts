@@ -41,6 +41,7 @@ export type DriverInfo = {
   name: string;
   number: string;
   team: string;
+  reserve: boolean;
   headshot: string | null;
   art: string | null;
 };
@@ -145,6 +146,7 @@ export type StandingRow = {
   id: string;
   name: string;
   team: string;
+  reserve?: boolean;
   points: number;
   wins: number;
 };

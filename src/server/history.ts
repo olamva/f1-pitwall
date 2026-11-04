@@ -8,7 +8,7 @@ import {
 import champions from "./champions.json" with { type: "json" };
 import { all, get, total } from "./jolpica.ts";
 import { pendingRace, portraits, provisional } from "./openf1.ts";
-import { seconds, when } from "./season.ts";
+import { seats, seconds, when } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
 const NON_START = new Set([
@@ -90,17 +90,23 @@ export async function standings(year: number): Promise<SeasonStandings> {
   const [drivers, constructors, last] = await Promise.all([
     get(`${year}/driverstandings.json?limit=100`, freshMs),
     get(`${year}/constructorstandings.json?limit=100`, freshMs),
-    current ? get(`${year}/last/results.json?limit=1`) : null,
+    get(`${year}/last/results.json?limit=100`, freshMs),
   ]);
   const rows = (data: any, key: string): any[] =>
     data.StandingsTable.StandingsLists[0]?.[key] ?? [];
   const driverRows = rows(drivers, "DriverStandings");
+  const race = last.RaceTable.Races[0];
+  const seat = seats(race?.Results);
   const table: SeasonStandings = {
     year,
     drivers: driverRows.map((row) => ({
       id: row.Driver.driverId,
       name: `${row.Driver.givenName} ${row.Driver.familyName}`,
-      team: row.Constructors.at(-1)?.constructorId ?? "",
+      team:
+        seat.get(row.Driver.driverId) ??
+        row.Constructors.at(-1)?.constructorId ??
+        "",
+      reserve: !seat.has(row.Driver.driverId),
       points: Number(row.points),
       wins: Number(row.wins),
     })),
@@ -113,7 +119,6 @@ export async function standings(year: number): Promise<SeasonStandings> {
     })),
   };
   if (!current) return table;
-  const race = last.RaceTable.Races[0];
   return provisional(
     table,
     new Map(driverRows.map((row) => [row.Driver.code, row.Driver.driverId])),

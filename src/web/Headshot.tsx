@@ -17,7 +17,7 @@ export const artSrc = (art: string, pose: Pose, transform = BODY) =>
 export const lineup = (faces: Map<string, DriverInfo>, id: string) =>
   faces.has(id)
     ? [faces.get(id)!]
-    : [...new Set(faces.values())].filter((d) => d.team === id);
+    : [...new Set(faces.values())].filter((d) => d.team === id && !d.reserve);
 
 const VARIANTS: [Pose, string][] = [
   ["front", BODY],
