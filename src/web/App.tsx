@@ -92,7 +92,7 @@ export const App = () => {
     setTab(t);
   };
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 overflow-x-clip p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [&>.swipe]:grow [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
+    <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [&>.swipe]:grow [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="flex flex-wrap items-center gap-1.5 sm:h-13.5">
         <button
           ref={logo}

@@ -60,7 +60,8 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
     observer.observe(el);
     observer.observe(document.body);
     if (!active) return () => observer.disconnect();
-    const top = () => root.toggleAttribute("data-top", scrollY < innerHeight);
+    const top = () =>
+      root.toggleAttribute("data-top", scrollY < innerHeight / 2);
     top();
     addEventListener("scroll", top, { passive: true });
     root.style.setProperty("--champion", color);
@@ -137,13 +138,13 @@ export const Champion = ({
             ` with ${h.left} ${h.left === 1 ? "race" : "races"} to spare`}
         </p>
       )}
-      <dl className="mt-5 grid max-w-2xl grid-cols-4 gap-2 border-t border-white/20 pt-3">
+      <dl className="mt-5 grid max-w-2xl grid-cols-4 gap-2 border-t border-white/20 pt-3 xl:mt-8 xl:max-w-3xl xl:pt-4">
         {stats.map(([label, value]) => (
           <div key={label} className="min-w-0">
-            <dt className="text-[10px] tracking-wider text-zinc-400 uppercase">
+            <dt className="text-[10px] tracking-wider text-zinc-400 uppercase xl:text-xs">
               {label}
             </dt>
-            <dd className="tabular font-f1 text-2xl font-bold sm:text-4xl">
+            <dd className="tabular font-f1 text-2xl font-bold sm:text-4xl xl:text-6xl">
               {value}
             </dd>
           </div>
@@ -199,17 +200,17 @@ const Team = ({ id, name }: TeamProps) => {
 };
 
 const Road = ({ champ, season, h }: RoadProps) => (
-  <div className="mt-5 max-w-2xl">
-    <h3 className="font-f1 text-xs tracking-wider text-zinc-300 uppercase">
+  <div className="mt-5 max-w-2xl xl:mt-8 xl:max-w-3xl">
+    <h3 className="font-f1 text-xs tracking-wider text-zinc-300 uppercase xl:text-sm">
       Road to the title
     </h3>
-    <p className="mb-3 text-sm text-zinc-400">
+    <p className="mb-3 text-sm text-zinc-400 xl:text-base">
       {champ === "drivers"
         ? "The finish in each Grand Prix."
         : "The best finish in each Grand Prix."}{" "}
       {h.poles > 0 && `${h.poles} ${h.poles === 1 ? "pole" : "poles"}.`}
     </p>
-    <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5">
+    <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5 xl:grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] xl:gap-2">
       {h.best.map((b, i) => {
         const r = season.rounds.find((x) => x.round === b.round);
         const won = b.round === h.decider;
@@ -217,7 +218,7 @@ const Road = ({ champ, season, h }: RoadProps) => (
           <li
             key={b.round}
             title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? (b.dsq ? "disqualified" : "no finish") : `P${b.position}`}`}
-            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-transparent" : ""}`}
+            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs xl:py-1.5 xl:text-sm ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-transparent" : ""}`}
             style={{ "--delay": `${i * 40}ms` } as CSSProperties}
           >
             <span className="text-sm leading-tight [&>span]:mr-0">

@@ -316,7 +316,7 @@ export const TitleFight = ({
       {done > 0 && fight && (
         <h2
           ref={nextRef}
-          className="font-f1 scroll-mt-6 px-1 pt-2 text-lg font-bold"
+          className="font-f1 scroll-mt-3 px-1 pt-2 text-lg font-bold"
         >
           The fight for {place}
         </h2>
