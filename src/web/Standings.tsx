@@ -47,15 +47,57 @@ const Portrait = ({ driver, color, big }: PortraitProps) => (
   </>
 );
 
+interface CrewProps {
+  headshots: string[];
+}
+
+const Crew = ({ headshots }: CrewProps) =>
+  [...headshots]
+    .reverse()
+    .map((src, i) => (
+      <Headshot
+        key={src}
+        src={src}
+        loading="lazy"
+        className={`champion-figure absolute bottom-0 h-full max-h-64 object-contain object-bottom max-sm:h-2/3 ${i ? "right-4 sm:right-24" : "right-16 sm:right-56"}`}
+      />
+    ));
+
+interface BadgeProps {
+  team: string;
+  teams: Map<string, string>;
+  big: boolean;
+}
+
+const Badge = ({ team, teams, big }: BadgeProps) =>
+  logoSrc(team) ? (
+    <TeamLogo
+      team={team}
+      className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
+    />
+  ) : (
+    <span className="relative block text-sm text-zinc-400">
+      {teams.get(team) ?? team}
+    </span>
+  );
+
 interface CardsProps {
   rows: StandingRow[];
   season: Season;
   teams: Map<string, string>;
   champion?: string;
   onSelect?: (id: string) => void;
+  drivers?: StandingRow[];
 }
 
-const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
+const Cards = ({
+  rows,
+  season,
+  teams,
+  champion,
+  onSelect,
+  drivers = [],
+}: CardsProps) => {
   const info = new Map(season.drivers.map((d) => [d.id, d]));
   const Card = onSelect ? "button" : "div";
   return (
@@ -65,6 +107,14 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
         const color = teamColor(row.team);
         const driver = info.get(row.id);
         const team = row.id === row.team;
+        const crew = drivers
+          .filter((d) => big && team && d.team === row.team)
+          .slice(0, 2)
+          .flatMap((d) => {
+            const i = info.get(d.id);
+            return i?.team === row.team && i.headshot ? [i.headshot] : [];
+          });
+        const duo = crew.length === 2;
         return (
           <Card
             key={row.id}
@@ -76,10 +126,12 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
                 : `linear-gradient(135deg, ${color}40, transparent 65%)`,
             }}
           >
-            {team ? (
+            {duo ? (
+              <Crew headshots={crew} />
+            ) : team ? (
               <TeamLogo
                 team={row.team}
-                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
+                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-28 w-40 sm:right-12 sm:h-40 sm:w-64" : "right-5 h-14 w-24"}`}
               />
             ) : (
               driver && <Portrait driver={driver} color={color} big={big} />
@@ -100,17 +152,9 @@ const Cards = ({ rows, season, teams, champion, onSelect }: CardsProps) => {
             >
               {row.name}
             </span>
-            {!team &&
-              (logoSrc(row.team) ? (
-                <TeamLogo
-                  team={row.team}
-                  className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
-                />
-              ) : (
-                <span className="relative block text-sm text-zinc-400">
-                  {teams.get(row.team) ?? row.team}
-                </span>
-              ))}
+            {(!team || duo) && (
+              <Badge team={row.team} teams={teams} big={big} />
+            )}
             <span
               className={`tabular relative flex text-xs text-zinc-400 ${big ? "mt-8 gap-5 sm:gap-8" : "mt-4 gap-5"}`}
             >
@@ -225,6 +269,7 @@ export const Standings = ({ season }: StandingsProps) => {
           ) : (
             <Cards
               rows={data.constructors}
+              drivers={data.drivers}
               season={season}
               teams={names}
               champion={
