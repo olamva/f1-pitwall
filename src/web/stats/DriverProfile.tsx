@@ -2,6 +2,7 @@ import { ArrowLeft, Trophy } from "lucide-react";
 import type {
   Classified,
   DriverProfile as Profile,
+  QualiResult,
   Season,
 } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
@@ -21,24 +22,44 @@ const SHORT: Record<string, string> = {
   Disqualified: "DSQ",
 };
 
+const GROUPS = [
+  [
+    ["SQ", "sprintQualifying"],
+    ["Sprint", "sprints"],
+  ],
+  [
+    ["Quali", "qualifying"],
+    ["Race", "races"],
+  ],
+] as const;
+
 interface PlaceProps {
-  result: Classified | undefined;
-  sprint: boolean;
+  name: string;
+  result: Classified | QualiResult | undefined;
 }
 
-const Place = ({ result, sprint }: PlaceProps) => (
-  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-    <span className="text-zinc-100 uppercase">
-      {sprint ? "Sprint" : "Race"}
+const Place = ({ name, result }: PlaceProps) => {
+  const quali = name === "SQ" || name === "Quali";
+  return (
+    <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
+      <span
+        className={`uppercase ${quali ? "text-zinc-500" : "text-zinc-100"}`}
+      >
+        {name}
+      </span>
+      {result && "status" in result ? (
+        <span
+          className={`text-xs ${result.points ? "" : "text-zinc-500"}`}
+          style={{ color: ink(METALS[(result.position ?? 0) - 1]) }}
+        >
+          {result.position ?? SHORT[result.status] ?? "DNF"}
+        </span>
+      ) : (
+        <span className="text-xs text-zinc-500">{result?.position ?? "–"}</span>
+      )}
     </span>
-    <span
-      className={`text-xs ${result?.points ? "" : "text-zinc-500"}`}
-      style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
-    >
-      {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
-    </span>
-  </span>
-);
+  );
+};
 
 interface SeasonResultsProps {
   id: string;
@@ -49,20 +70,19 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
   const weekends = season.rounds
     .map((round) => ({
       round,
-      sessions: (
-        [
-          ["Race", season.races],
-          ["Sprint", season.sprints],
-        ] as const
-      ).flatMap(([name, all]) => {
-        const rows = all.find((s) => s.round === round.round)?.results;
-        return rows
-          ? [{ name, result: rows.find((r) => r.driver === id) }]
-          : [];
-      }),
+      groups: GROUPS.map((group) =>
+        group.flatMap(([name, key]) => {
+          const rows: (Classified | QualiResult)[] | undefined = season[
+            key
+          ].find((s) => s.round === round.round)?.results;
+          return rows
+            ? [{ name, result: rows.find((r) => r.driver === id) }]
+            : [];
+        }),
+      ).filter((sessions) => sessions.length),
     }))
-    .filter((weekend) => weekend.sessions.length);
-  if (!weekends.some((weekend) => weekend.sessions.some((s) => s.result)))
+    .filter((weekend) => weekend.groups.length);
+  if (!weekends.some(({ groups }) => groups.flat().some((s) => s.result)))
     return null;
   return (
     <section className="bg-surface rounded-xl p-3 sm:p-4">
@@ -70,24 +90,30 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
         {season.year} results
       </h3>
       <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
-        {weekends.map(({ round, sessions }) => (
+        {weekends.map(({ round, groups }) => (
           <li
             key={round.round}
             title={[
               round.name,
-              ...sessions.map(
-                (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
-              ),
+              ...groups
+                .flat()
+                .map(
+                  (s) =>
+                    `${s.name}: ${s.result ? ("status" in s.result ? s.result.status : `P${s.result.position}`) : "Did not race"}`,
+                ),
             ].join("\n")}
             className="flex flex-col items-center gap-1 rounded-md bg-zinc-800/60 px-1 py-1.5 *:mr-0"
           >
             <Flag country={round.country} />
-            {sessions.map((s) => (
-              <Place
-                key={s.name}
-                result={s.result}
-                sprint={s.name === "Sprint"}
-              />
+            {groups.map((group, i) => (
+              <div
+                key={group[0].name}
+                className={`flex w-full flex-col gap-1 last:mt-auto ${i ? "border-t border-zinc-700 pt-1" : ""}`}
+              >
+                {group.map((s) => (
+                  <Place key={s.name} name={s.name} result={s.result} />
+                ))}
+              </div>
             ))}
           </li>
         ))}
