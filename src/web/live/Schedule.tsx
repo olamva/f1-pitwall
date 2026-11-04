@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Round } from "../../shared/season.ts";
 import type { Track } from "../../shared/timing.ts";
@@ -113,6 +114,16 @@ export const CardHead = ({ label, name, country, featured }: CardHeadProps) => (
       {name}
     </h2>
   </header>
+);
+
+export const OpenHint = () => (
+  <p
+    aria-hidden
+    className="flex items-center justify-between rounded-lg bg-zinc-800 px-3 py-2 font-medium text-zinc-50 transition group-hover:bg-red-600 group-hover:text-white"
+  >
+    Full results & stats
+    <ChevronRight className="size-4 text-red-500 group-hover:text-white" />
+  </p>
 );
 
 export const Days = ({ days }: DaysProps) => (
