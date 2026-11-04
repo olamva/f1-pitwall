@@ -153,13 +153,13 @@ const Weekend = ({
   const next = featured ? sessions.find((s) => s.time) : undefined;
   return (
     <article
-      className={`group relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
     >
       {onOpen && (
         <button
           onClick={onOpen}
           aria-label={`Results: ${sessions[0].meeting}`}
-          className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
+          className="peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
         />
       )}
       <Circuit track={track} round={round} />
