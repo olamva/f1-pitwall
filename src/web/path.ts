@@ -31,6 +31,9 @@ export const openPath = (url: string) => {
 export const openDriver = (id: string) =>
   openPath(`/stats/drivers/${encodeURIComponent(id)}`);
 
+export const openConstructor = (id: string) =>
+  openPath(`/stats/constructors/${encodeURIComponent(id)}`);
+
 export const setSearchParam = (key: string, value: string | null) => {
   const url = new URL(location.href);
   if (value === null) url.searchParams.delete(key);

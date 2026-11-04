@@ -141,6 +141,29 @@ export type DriverProfile = {
   }[];
 };
 
+export type ConstructorProfile = {
+  id: string;
+  name: string;
+  nationality: string | null;
+  url: string | null;
+  firstSeason: number | null;
+  lastSeason: number | null;
+  starts: number;
+  wins: number;
+  podiums: number;
+  poles: number;
+  drivers: number;
+  championships: number[];
+  seasons: {
+    year: number;
+    starts: number;
+    wins: number;
+    podiums: number;
+    points: number;
+    drivers: { id: string; name: string }[];
+  }[];
+};
+
 export type StandingRow = {
   id: string;
   name: string;
