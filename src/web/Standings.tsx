@@ -47,21 +47,26 @@ const Portrait = ({ driver, color, big }: PortraitProps) => (
   </>
 );
 
-interface CrewProps {
-  headshots: string[];
+interface NumbersProps {
+  crew: DriverInfo[];
+  color: string;
+  big: boolean;
 }
 
-const Crew = ({ headshots }: CrewProps) =>
-  [...headshots]
-    .reverse()
-    .map((src, i) => (
-      <Headshot
-        key={src}
-        src={src}
-        loading="lazy"
-        className={`champion-figure absolute bottom-0 h-full max-h-64 object-contain object-bottom max-sm:h-2/3 ${i ? "right-4 sm:right-24" : "right-16 sm:right-56"}`}
-      />
-    ));
+const Numbers = ({ crew, color, big }: NumbersProps) =>
+  crew.length > 0 && (
+    <span className={`relative flex ${big ? "mt-2 gap-4" : "mt-1 gap-2"}`}>
+      {crew.map((d) => (
+        <TeamNumber
+          key={d.id}
+          id={d.id}
+          number={d.number}
+          color={big ? GOLD : color}
+          className={`flex ${big ? "h-8 text-3xl" : "h-5 text-xl"}`}
+        />
+      ))}
+    </span>
+  );
 
 interface BadgeProps {
   team: string;
@@ -108,30 +113,23 @@ const Cards = ({
         const driver = info.get(row.id);
         const team = row.id === row.team;
         const crew = drivers
-          .filter((d) => big && team && d.team === row.team)
-          .slice(0, 2)
-          .flatMap((d) => {
-            const i = info.get(d.id);
-            return i?.team === row.team && i.headshot ? [i.headshot] : [];
-          });
-        const duo = crew.length === 2;
+          .filter((d) => d.team === row.team)
+          .flatMap((d) => info.get(d.id) ?? []);
         return (
           <Card
             key={row.id}
             onClick={() => onSelect?.(row.id)}
-            className={`group relative overflow-hidden rounded-xl text-left transition ${onSelect ? "cursor-pointer hover:-translate-y-0.5" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : `bg-surface p-4 ring-1 ring-zinc-800 ${onSelect ? "hover:ring-zinc-600" : ""}`}`}
+            className={`group relative overflow-hidden rounded-xl text-left transition hover:-translate-y-0.5 ${onSelect ? "cursor-pointer" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : "bg-surface p-4 ring-1 ring-zinc-800 hover:ring-zinc-600"}`}
             style={{
               backgroundImage: big
                 ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
                 : `linear-gradient(135deg, ${color}40, transparent 65%)`,
             }}
           >
-            {duo ? (
-              <Crew headshots={crew} />
-            ) : team ? (
+            {team ? (
               <TeamLogo
                 team={row.team}
-                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-28 w-40 sm:right-12 sm:h-40 sm:w-64" : "right-5 h-14 w-24"}`}
+                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
               />
             ) : (
               driver && <Portrait driver={driver} color={color} big={big} />
@@ -152,7 +150,9 @@ const Cards = ({
             >
               {row.name}
             </span>
-            {(!team || duo) && (
+            {team ? (
+              <Numbers crew={crew} color={color} big={big} />
+            ) : (
               <Badge team={row.team} teams={teams} big={big} />
             )}
             <span
