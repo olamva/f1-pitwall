@@ -1,0 +1,14 @@
+{
+  "id": "38aab58e",
+  "ts": "2026-11-04T10:19:22+00:00",
+  "text": "git fetch origin over SSH fails with publickey denied; HTTPS with gh credential helper works",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "260f35ef",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-c650fc54",
+  "branch": "t3/fix-title-fight-resizeobserver"
+}
