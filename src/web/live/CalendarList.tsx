@@ -1,5 +1,5 @@
 import { Play } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef, Track } from "../../shared/timing.ts";
 import { Circuit } from "../Circuit.tsx";
@@ -114,13 +114,13 @@ const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className="flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
+      className="pointer-events-auto flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       <span className="truncate">{short(session.name)}</span>
     </button>
   ) : (
-    <span className="group/pending relative flex">
+    <span className="group/pending pointer-events-auto relative flex">
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
@@ -153,6 +153,8 @@ const Weekend = ({
   sprint,
 }: WeekendProps) => {
   const next = featured ? sessions.find((s) => s.time) : undefined;
+  const [calm, setCalm] = useState(false);
+  const timer = useRef(0);
   return (
     <article
       className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
@@ -161,7 +163,7 @@ const Weekend = ({
         <button
           onClick={onOpen}
           aria-label={`Results: ${sessions[0].meeting}`}
-          className="peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
+          className={`peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5 ${calm ? "pointer-events-none" : ""}`}
         />
       )}
       <Circuit track={track} round={round} />
@@ -177,7 +179,16 @@ const Weekend = ({
         sprint={sprint}
       />
       {podium}
-      <div className="relative mt-auto">
+      <div
+        className="pointer-events-none relative mt-auto"
+        onPointerOver={() => {
+          clearTimeout(timer.current);
+          setCalm(true);
+        }}
+        onPointerOut={() => {
+          timer.current = window.setTimeout(() => setCalm(false), 150);
+        }}
+      >
         <Days
           days={Object.values(
             Object.groupBy(sessions, (s) => s.start.slice(0, 10)),
