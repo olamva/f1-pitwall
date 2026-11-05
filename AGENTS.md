@@ -91,6 +91,8 @@ After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in 
 This verifies the merged PR, detaches the checkout, and deletes the local task branch.
 It also deletes the local `screenshots/pr-<pr-number>` branch.
 The `Screenshots cleanup` workflow deletes the remote `screenshots/pr-<pr-number>` branch when the PR closes.
+Do not file a papercut after the merge. The merged branch cannot bring it to `main`, and it blocks worktree removal.
+Report that friction in the final response.
 A PR watch does not wake the thread on merge. The next `Setup Worktree` run cleans up a task that merges after the turn ends.
 The `--merged` sweep removes each merged worktree unless a process uses it as its working directory.
 The sweep also deletes merged `t3/*` branches without a worktree and local `screenshots/pr-*` branches of merged PRs.
