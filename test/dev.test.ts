@@ -7,6 +7,7 @@ import { createServer } from "node:net";
 import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { test } from "node:test";
+import { setTimeout as delay } from "node:timers/promises";
 
 for (const host of ["127.0.0.1", "::"])
   test(
@@ -36,7 +37,16 @@ for (const host of ["127.0.0.1", "::"])
     },
   );
 
-for (const signal of ["SIGINT", "SIGTERM", null] as const)
+const alive = (pid: number) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+for (const signal of ["SIGINT", "SIGTERM", "SIGKILL", null] as const)
   test(
     `dev stops watchers and children after ${signal ?? "a child failure"}`,
     { timeout: 10_000, skip: process.platform === "win32" },
@@ -80,8 +90,15 @@ for (const signal of ["SIGINT", "SIGTERM", null] as const)
         const [code] = await exit;
         assert.equal(
           code,
-          signal === "SIGINT" ? 130 : signal === "SIGTERM" ? 143 : 7,
+          signal === "SIGINT"
+            ? 130
+            : signal === "SIGTERM"
+              ? 143
+              : signal
+                ? null
+                : 7,
         );
+        while (signal === "SIGKILL" && alive(appPid)) await delay(50);
         assert.throws(() => process.kill(appPid, 0), { code: "ESRCH" });
       } finally {
         child.kill("SIGTERM");
