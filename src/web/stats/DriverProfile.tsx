@@ -41,7 +41,7 @@ const Place = ({ result, quali, sprint }: PlaceProps) => (
           >
             {quali}
           </span>
-          <ArrowRight aria-hidden className="size-3 text-zinc-500" />
+          <ArrowRight aria-hidden className="size-3 text-zinc-100" />
         </>
       )}
       <span
