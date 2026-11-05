@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState } from "react";
+import { Fragment, useContext, useState, type CSSProperties } from "react";
 import { BODY, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { logoSrc } from "./TeamLogo.tsx";
@@ -116,6 +116,7 @@ const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
   const d = useArt(side.id);
   const name = side.name ?? d?.name ?? side.id;
   const logo = d ? undefined : logoSrc(side.id);
+  const title = d ? name.split(" ").at(-1)! : name;
   return (
     <div
       className={`font-f1 absolute bottom-3 z-10 ${right ? "right-4 text-right" : "left-4"} ${motion}`}
@@ -126,8 +127,11 @@ const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
           {name.split(" ").slice(0, -1).join(" ")}
         </p>
       )}
-      <p className="text-xl leading-none font-black tracking-wide uppercase sm:text-3xl">
-        {d ? name.split(" ").at(-1) : name}
+      <p
+        className="text-[min(1.25rem,var(--fit))] leading-none font-black tracking-wide whitespace-nowrap uppercase sm:text-[min(1.875rem,var(--fit))]"
+        style={{ "--fit": `${44 / title.length}cqw` } as CSSProperties}
+      >
+        {title}
       </p>
       <div
         className={`mt-1.5 flex items-center gap-2 ${right ? "flex-row-reverse" : ""}`}
