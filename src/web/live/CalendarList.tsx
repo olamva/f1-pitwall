@@ -186,7 +186,7 @@ const Weekend = ({
           setCalm(true);
         }}
         onPointerOut={() => {
-          timer.current = window.setTimeout(() => setCalm(false), 150);
+          timer.current = window.setTimeout(() => setCalm(false), 50);
         }}
       >
         <Days
