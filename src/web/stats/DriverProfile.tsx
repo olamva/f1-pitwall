@@ -1,4 +1,4 @@
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trophy } from "lucide-react";
 import type {
   Classified,
   DriverProfile as Profile,
@@ -23,19 +23,33 @@ const SHORT: Record<string, string> = {
 
 interface PlaceProps {
   result: Classified | undefined;
+  quali: number | undefined;
   sprint: boolean;
 }
 
-const Place = ({ result, sprint }: PlaceProps) => (
+const Place = ({ result, quali, sprint }: PlaceProps) => (
   <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
     <span className="text-zinc-100 uppercase">
       {sprint ? "Sprint" : "Race"}
     </span>
-    <span
-      className={`text-xs ${result?.points ? "" : "text-zinc-500"}`}
-      style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
-    >
-      {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+    <span className="flex items-center text-xs">
+      {quali && (
+        <>
+          <span
+            className={quali > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
+            style={{ color: ink(METALS[quali - 1]) }}
+          >
+            {quali}
+          </span>
+          <ArrowRight aria-hidden className="size-3 text-zinc-100" />
+        </>
+      )}
+      <span
+        className={result?.points ? "" : "text-zinc-500"}
+        style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
+      >
+        {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+      </span>
     </span>
   </span>
 );
@@ -51,13 +65,21 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       round,
       sessions: (
         [
-          ["Race", season.races],
-          ["Sprint", season.sprints],
+          ["Race", season.races, season.qualifying],
+          ["Sprint", season.sprints, season.sprintQualifying],
         ] as const
-      ).flatMap(([name, all]) => {
+      ).flatMap(([name, all, qualifying]) => {
         const rows = all.find((s) => s.round === round.round)?.results;
         return rows
-          ? [{ name, result: rows.find((r) => r.driver === id) }]
+          ? [
+              {
+                name,
+                result: rows.find((r) => r.driver === id),
+                quali: qualifying
+                  .find((s) => s.round === round.round)
+                  ?.results.find((r) => r.driver === id)?.position,
+              },
+            ]
           : [];
       }),
     }))
@@ -69,7 +91,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
@@ -86,6 +108,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
               <Place
                 key={s.name}
                 result={s.result}
+                quali={s.quali}
                 sprint={s.name === "Sprint"}
               />
             ))}
