@@ -8,6 +8,8 @@ import { fresh, KINDS, onLiveTab, setSeen, useSeen } from "./spoilers.ts";
 import { useActive } from "./Swipe.tsx";
 import { useVisible } from "./visible.ts";
 
+let waiting: string | undefined;
+
 export const useLiveSpoiler = (rounds: Round[] | undefined, live: boolean) => {
   const seen = useSeen();
   const active = useActive();
@@ -20,12 +22,15 @@ export const useLiveSpoiler = (rounds: Round[] | undefined, live: boolean) => {
       ? seen[session.id]
       : "shown";
   const ahead = !!session && session.at > now;
+  const watched = !!session && waiting === session.id;
   useEffect(() => {
-    if (active && visible && session && !state && (ahead || live))
-      setSeen([session], ahead ? "shown" : "hidden");
+    if (!active || !visible) waiting = undefined;
+    else if (session && !state && ahead) waiting = session.id;
+    else if (session && !state && live)
+      setSeen([session], watched ? "shown" : "hidden");
   });
   return {
-    hidden: live && !ahead && state !== "shown",
+    hidden: live && !ahead && state !== "shown" && !watched,
     reveal: () => session && setSeen([session], "shown"),
   };
 };
