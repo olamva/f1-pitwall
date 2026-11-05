@@ -35,7 +35,12 @@ const Place = ({ result, quali, sprint }: PlaceProps) => (
     <span className="flex items-center text-xs">
       {quali && (
         <>
-          {quali}
+          <span
+            className={quali > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
+            style={{ color: ink(METALS[quali - 1]) }}
+          >
+            {quali}
+          </span>
           <ArrowRight aria-hidden className="size-3 text-zinc-500" />
         </>
       )}
