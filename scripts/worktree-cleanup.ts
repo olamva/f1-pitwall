@@ -18,29 +18,29 @@ const git = (cwd: string, ...args: string[]) =>
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
 
+const contains = (cwd: string, commit: string, tip: string) =>
+  spawnSync("git", ["merge-base", "--is-ancestor", commit, tip], { cwd })
+    .status === 0;
+
 if (process.argv[2] === "--merged") {
-  const merged = new Map(
-    (
-      JSON.parse(
-        execFileSync(
-          "gh",
-          [
-            "pr",
-            "list",
-            "--state",
-            "merged",
-            "--base",
-            "main",
-            "--limit",
-            "1000",
-            "--json",
-            "number,headRefOid",
-          ],
-          { encoding: "utf8" },
-        ),
-      ) as { number: number; headRefOid: string }[]
-    ).map((pr) => [pr.headRefOid, String(pr.number)]),
-  );
+  const merged = JSON.parse(
+    execFileSync(
+      "gh",
+      [
+        "pr",
+        "list",
+        "--state",
+        "merged",
+        "--base",
+        "main",
+        "--limit",
+        "1000",
+        "--json",
+        "number,headRefName,headRefOid",
+      ],
+      { encoding: "utf8" },
+    ),
+  ) as { number: number; headRefName: string; headRefOid: string }[];
   for (const entry of git(
     process.cwd(),
     "worktree",
@@ -52,16 +52,19 @@ if (process.argv[2] === "--merged") {
     .filter(Boolean)) {
     const lines = entry.split("\0");
     const target = lines[0]!.slice("worktree ".length);
-    const number = merged.get(lines[1]!.slice("HEAD ".length));
-    if (
-      !number ||
-      (process.argv.includes("--branch-only") &&
-        !lines.some((line) => line.startsWith("branch ")))
-    )
-      continue;
+    const head = lines[1]!.slice("HEAD ".length);
+    const branch = lines
+      .find((line) => line.startsWith("branch "))
+      ?.slice("branch refs/heads/".length);
+    const pr = merged.find(
+      (pr) =>
+        pr.headRefOid === head ||
+        (pr.headRefName === branch && contains(target, head, pr.headRefOid)),
+    );
+    if (!pr || (process.argv.includes("--branch-only") && !branch)) continue;
     const result = spawnSync(
       process.execPath,
-      [process.argv[1]!, target, number, ...process.argv.slice(3)],
+      [process.argv[1]!, target, String(pr.number), ...process.argv.slice(3)],
       { encoding: "utf8" },
     );
     console.log(
@@ -73,7 +76,7 @@ if (process.argv[2] === "--merged") {
           }),
     );
   }
-  const numbers = new Set(merged.values());
+  const numbers = new Set(merged.map((pr) => String(pr.number)));
   const orphans = [
     ...git(
       process.cwd(),
@@ -122,7 +125,14 @@ const current = realpathSync(cwd);
 if (!branchOnly && (current === target || current.startsWith(target + sep)))
   throw new Error("Run worktree removal from another checkout.");
 
-git(cwd, "fetch", "--prune", "origin");
+git(
+  cwd,
+  "-c",
+  "url.https://github.com/.insteadOf=git@github.com:",
+  "fetch",
+  "--prune",
+  "origin",
+);
 const pr = JSON.parse(
   execFileSync(
     "gh",
@@ -161,8 +171,8 @@ if (
   branch === "main" ||
   pr.state !== "MERGED" ||
   pr.baseRefName !== "main" ||
-  pr.headRefOid !== head ||
-  !pr.mergeCommit
+  !pr.mergeCommit ||
+  !contains(cwd, head, pr.headRefOid)
 )
   throw new Error("The worktree does not match the merged PR.");
 git(cwd, "merge-base", "--is-ancestor", head, "refs/remotes/origin/main");
@@ -173,21 +183,15 @@ git(
   pr.mergeCommit.oid,
   "refs/remotes/origin/main",
 );
-if (git(target, "status", "--porcelain", "--untracked-files=all"))
-  throw new Error("Preserve uncommitted or untracked files.");
-if (git(cwd, "ls-remote", "--heads", "origin", `refs/heads/${pr.headRefName}`))
-  throw new Error("Wait for remote branch deletion.");
+const dirty = git(target, "status", "--porcelain", "--untracked-files=all");
+if (dirty)
+  throw new Error(
+    `Preserve uncommitted or untracked files: ${dirty.split("\n").join(", ")}`,
+  );
 const local = git(cwd, "branch", "--list", branch);
 if (local && git(cwd, "rev-parse", `refs/heads/${branch}`) !== head)
   throw new Error("Preserve the changed local branch.");
 const screenshots = `screenshots/pr-${number}`;
-const hasScreenshots = !!git(
-  cwd,
-  "ls-remote",
-  "--heads",
-  "origin",
-  `refs/heads/${screenshots}`,
-);
 
 if (!branchOnly) {
   const kept = git(
@@ -220,11 +224,10 @@ if (!branchOnly) {
 }
 
 if (apply) {
-  if (hasScreenshots) git(cwd, "push", "origin", "--delete", screenshots);
   if (git(cwd, "branch", "--list", screenshots))
     git(cwd, "branch", "-D", screenshots);
   if (local) {
-    git(target, "switch", "--detach", head);
+    git(target, "switch", "--detach", pr.headRefOid);
     git(target, "branch", "-d", branch);
   }
   if (!branchOnly) git(main, "worktree", "remove", target);
@@ -236,6 +239,5 @@ console.log(
     pullRequest: pr.url,
     removed: apply && !branchOnly,
     branchRemoved: apply && !!local,
-    screenshotsRemoved: apply && hasScreenshots,
   }),
 );

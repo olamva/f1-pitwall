@@ -23,6 +23,18 @@ export async function runDev(commands: string[][]): Promise<number> {
       env: { ...process.env, DEV_NO_AUTH: "1" },
     }),
   );
+  const watchdog = spawn(
+    process.execPath,
+    [
+      "-e",
+      'process.stdin.on("close", () => { for (const pid of process.argv.slice(1)) try { process.kill(-pid, "SIGKILL"); } catch {} }).resume();',
+      ...children.map((child) => String(child.pid)),
+    ],
+    {
+      detached: process.platform !== "win32",
+      stdio: ["pipe", "ignore", "ignore"],
+    },
+  );
   let stop: (code: number) => void;
   const stopped = new Promise<number>((resolve) => {
     stop = resolve;
@@ -59,6 +71,7 @@ export async function runDev(commands: string[][]): Promise<number> {
   await Promise.all(exits);
   clearTimeout(timer);
   signal("SIGKILL");
+  watchdog.kill("SIGKILL");
   process.removeListener("SIGINT", interrupt);
   process.removeListener("SIGTERM", terminate);
   return code;
