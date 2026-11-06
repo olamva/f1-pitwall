@@ -22,6 +22,7 @@ pnpm shot /calendar/2026/19 --favourite piastri:PIA --team williams --before ori
 - The command waits for open `/api/` requests, the loading indicators, the fonts, and the visible images. Do not add fixed sleeps.
 - CSS animations and transitions show their end state. The command cancels infinite animations when they start, because each repaint is slow in headless WebKit. Add `--animate` to keep them running and capture their current frame.
 - A failed step stops after 10 seconds. The capture itself stops after 30 seconds. The error names the step and the path of a `-error.png` capture of the page state.
+- A selector that matches nothing gives the closest visible labels. A selector that matches only hidden elements gives the number of matches. Correct the selector from this output.
 - Run the command again after each edit. Each run takes about 5 to 30 seconds.
 
 Options:
@@ -32,6 +33,8 @@ Options:
 | `--size phone\|ipad\|desktop\|WxH` | Viewport. `phone` is 430×932, `ipad` is 1024×1366, `desktop` is 1440×900.  |
 | `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.        |
 | `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                          |
+| `--replay <file>`, `--from <min>`  | Replay a recording from a minute. See the live-replay skill.               |
+| `--play <seconds>`                 | Capture this many seconds after the replay start.                          |
 | `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps. |
 | `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.               |
 | `--wait <selector>`                | Wait for a visible element.                                                |
@@ -42,7 +45,7 @@ Options:
 | `--animate`                        | Keep animations running, such as the live-dot pulse.                       |
 | `--name`, `--out`                  | File name prefix and output directory.                                     |
 
-A full `http://` URL uses a server that already runs. Then `--before` is not available.
+A full `http://` URL uses a server that already runs. Then `--before` and `--replay` are not available.
 
 ## App state
 
