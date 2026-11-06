@@ -158,6 +158,9 @@ export const EditBar = ({
   const width = useRef(0);
   const [open, setOpen] = useState(false);
   const [away, setAway] = useState(false);
+  const float = useRef<HTMLDivElement>(null);
+  const on = useRef(false);
+  const last = useRef<DOMRect>(undefined);
 
   useLayoutEffect(() => {
     const el = box.current!;
@@ -190,21 +193,43 @@ export const EditBar = ({
   done.current = onDone;
 
   useEffect(() => {
-    if (!editing) return setAway(false);
-    const observer = new IntersectionObserver(([entry]) =>
-      setAway(!entry!.isIntersecting),
-    );
-    observer.observe(box.current!);
+    if (!editing) return setAway((on.current = false));
+    const check = () => {
+      const next =
+        box.current!.getBoundingClientRect().top <
+        float.current!.getBoundingClientRect().top;
+      if (next === on.current) return;
+      last.current = (
+        on.current ? float : box
+      ).current!.firstElementChild!.getBoundingClientRect();
+      setAway((on.current = next));
+    };
+    check();
     const key = (e: KeyboardEvent) =>
       e.key === "Escape" &&
       !document.querySelector("dialog[open]") &&
       done.current();
+    addEventListener("scroll", check, { passive: true });
     addEventListener("keydown", key);
     return () => {
-      observer.disconnect();
+      removeEventListener("scroll", check);
       removeEventListener("keydown", key);
     };
   }, [editing]);
+
+  useLayoutEffect(() => {
+    const from = last.current;
+    const el = (away ? float : box).current!;
+    if (!from || !editing || still()) return;
+    const to = el.firstElementChild!.getBoundingClientRect();
+    el.animate(
+      [
+        { translate: `${from.left - to.left}px ${from.top - to.top}px` },
+        { translate: "0 0" },
+      ],
+      { duration: 320, easing: EASE },
+    );
+  }, [away]);
 
   const controls = (
     <>
@@ -245,7 +270,7 @@ export const EditBar = ({
     <>
       <div
         ref={box}
-        className="-my-1 flex shrink-0 items-center justify-end gap-2"
+        className={`-my-1 flex shrink-0 items-center justify-end gap-2 ${away ? "invisible" : ""}`}
       >
         {editing ? (
           controls
@@ -261,10 +286,13 @@ export const EditBar = ({
           </button>
         )}
       </div>
-      {away &&
+      {editing &&
         createPortal(
-          <div className="glass-panel motion-safe:animate-drop-in fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(1rem,env(safe-area-inset-right))] z-50 flex items-center gap-2 rounded-full p-1.5 shadow-xl">
-            {controls}
+          <div
+            ref={float}
+            className={`glass-panel fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(1rem,env(safe-area-inset-right))] z-50 flex items-center gap-2 rounded-full p-1.5 shadow-xl ${away ? "" : "invisible"}`}
+          >
+            {away && controls}
           </div>,
           document.body,
         )}
