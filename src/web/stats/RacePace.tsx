@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Pace, Season } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { BoxPlot, type Box } from "../charts/Bars.tsx";
 import { lapTime, summary } from "../charts/summary.ts";
+import { Flag } from "../Flag.tsx";
 import { Panel } from "../live/Panels.tsx";
 import { Loading } from "../Loading.tsx";
+import { Swipe } from "../Swipe.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { CarPace } from "./CarPace.tsx";
 import type { Who } from "./derive.ts";
+import { kindLabel, PaceSeek, type PaceEvent } from "./PaceSeek.tsx";
 
 interface RacePaceProps {
   season: Season;
@@ -17,31 +20,48 @@ interface RacePaceProps {
 
 const SLOW = 1.07;
 const VIEWS = ["Drivers", "Constructors"] as const;
+type View = (typeof VIEWS)[number];
 
 const byMedian = (a: Box, b: Box) =>
   summary(a.values).median - summary(b.values).median;
 
+const NOTES: Record<View, string> = {
+  Drivers:
+    "The box shows the middle half of the laps, and the line is the median.",
+  Constructors:
+    "Each car sits at the median lap of both drivers. The fastest team is on the right.",
+};
+
 export const RacePace = ({ season, who }: RacePaceProps) => {
-  const events = [
-    ...season.races.map((r) => ({ ...r, kind: "race" as const })),
-    ...season.sprints.map((r) => ({ ...r, kind: "sprint" as const })),
-  ].sort((a, b) => a.round - b.round || (a.kind === "sprint" ? -1 : 1));
-  const [view, setView] = useState<(typeof VIEWS)[number]>("Drivers");
+  const events: PaceEvent[] = [
+    ...season.races.map((r) => ({ round: r.round, kind: "race" as const })),
+    ...season.sprints.map((r) => ({ round: r.round, kind: "sprint" as const })),
+  ]
+    .sort((a, b) => a.round - b.round || (a.kind === "sprint" ? -1 : 1))
+    .map((e) => {
+      const round = season.rounds.find((x) => x.round === e.round);
+      return {
+        ...e,
+        name: round?.name ?? `Round ${e.round}`,
+        country: round?.country,
+      };
+    });
+  const [view, setView] = useState<View>("Drivers");
+  const blob = useRef<(offset: number, held: boolean) => void>(null);
   const [at, setAt] = useState(events.length - 1);
-  const [settled, setSettled] = useState(at);
+  const [settled, setSettled] = useState({ at, dir: 0 });
+  const settle = (i: number) =>
+    setSettled((s) => (s.at === i ? s : { at: i, dir: Math.sign(i - s.at) }));
   useEffect(() => {
-    const id = setTimeout(() => setSettled(at), 250);
+    const id = setTimeout(() => settle(at), 160);
     return () => clearTimeout(id);
   }, [at]);
-  const event = events[settled];
+  const event = events[settled.at];
   const pace = useJson<Pace>(
     event ? `/api/pace/${season.year}/${event.round}/${event.kind}` : null,
   );
   const [shown, setShown] = useState<Pace | null>(null);
   if (pace.data && pace.data !== shown) setShown(pace.data);
-  const label = (i: number) =>
-    events[i] &&
-    `${season.rounds.find((x) => x.round === events[i]!.round)?.name ?? `Round ${events[i]!.round}`} ${events[i]!.kind === "sprint" ? "Sprint" : "Race"}`;
   const laps = Object.entries(pace.error ? {} : (shown ?? {}));
   const cut =
     Math.min(
@@ -64,45 +84,68 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
     values: group.flatMap((b) => b.values),
   }));
   return (
-    <Panel title="Race and sprint pace: lap times">
-      <div className="mb-3 space-y-3">
-        <Tabs items={VIEWS} value={view} onChange={setView} small stretch />
-        <label className="block">
-          <span className="flex justify-between gap-2 text-sm">
-            <span className="font-semibold">{label(at)}</span>
-            <span className="tabular text-zinc-500">
-              {at + 1}/{events.length}
-            </span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={Math.max(0, events.length - 1)}
-            value={at}
-            onChange={(e) => setAt(Number(e.target.value))}
-            aria-valuetext={label(at)}
-            className="mt-1 w-full accent-[#e10600]"
-          />
-        </label>
-      </div>
-      <p className="mb-2 text-xs text-zinc-500">
-        Lap 1, in-laps, out-laps and laps slower than 107% of the best median
-        are left out.{" "}
-        {view === "Drivers"
-          ? "The box shows the middle half of the laps, and the line is the median."
-          : "Each car sits at the median lap of both drivers. The fastest team is on the right."}
-      </p>
-      {laps.length ? (
-        <div className={`transition-opacity ${pace.data ? "" : "opacity-50"}`}>
-          {view === "Drivers" ? (
-            <BoxPlot boxes={boxes.sort(byMedian)} format={lapTime} />
-          ) : (
-            <CarPace teams={teams.sort(byMedian)} format={lapTime} />
-          )}
-        </div>
-      ) : (
-        <Loading label="Loading lap times…" error={pace.error} />
-      )}
-    </Panel>
+    <div className="space-y-4">
+      <Tabs
+        items={VIEWS}
+        value={view}
+        onChange={setView}
+        small
+        stretch
+        drive={blob}
+      />
+      <Swipe
+        items={VIEWS}
+        value={view}
+        onChange={setView}
+        drive={blob}
+        render={(v) => (
+          <Panel title="Race and sprint pace: lap times">
+            <div className="mb-3">
+              <p className="flex justify-between gap-2 overflow-hidden text-sm">
+                {event && (
+                  <span
+                    key={settled.at}
+                    className="animate-roll truncate font-semibold motion-reduce:animate-none"
+                    style={
+                      { "--roll": `${settled.dir * 0.9}em` } as CSSProperties
+                    }
+                  >
+                    <Flag country={event.country} />
+                    {event.name} {kindLabel(event)}
+                  </span>
+                )}
+                <span className="tabular shrink-0 text-zinc-500">
+                  {at + 1}/{events.length}
+                </span>
+              </p>
+              <PaceSeek
+                events={events}
+                value={at}
+                onChange={setAt}
+                onCommit={settle}
+              />
+            </div>
+            <p className="mb-2 text-xs text-zinc-500">
+              Lap 1, in-laps, out-laps and laps slower than 107% of the best
+              median are left out. {NOTES[v]}
+            </p>
+            {laps.length ? (
+              <div
+                data-pending={!pace.data}
+                className="group transition-opacity duration-300 data-[pending=true]:opacity-60"
+              >
+                {v === "Drivers" ? (
+                  <BoxPlot boxes={boxes.sort(byMedian)} format={lapTime} />
+                ) : (
+                  <CarPace teams={teams.sort(byMedian)} format={lapTime} />
+                )}
+              </div>
+            ) : (
+              <Loading label="Loading lap times…" error={pace.error} />
+            )}
+          </Panel>
+        )}
+      />
+    </div>
   );
 };

@@ -1,0 +1,14 @@
+{
+  "id": "a09b7184",
+  "ts": "2026-11-06T04:23:57+00:00",
+  "text": "Local /api/pace for an uncached round hangs over 60 s on Jolpica, so motion tests need pre-warmed rounds",
+  "tags": [
+    "data",
+    "dev"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "2adcbc03",
+  "where": "src/server/pace.ts",
+  "branch": "t3/racepace-seek-transition-tabs"
+}

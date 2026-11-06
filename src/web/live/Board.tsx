@@ -201,7 +201,20 @@ export const Board = ({
         </div>
         <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))] items-start gap-4">
           <div className="flex min-w-0 flex-col gap-4">
-            {race && <Battle rows={rows} />}
+            {race && (
+              <Battle
+                rows={rows}
+                laps={laps}
+                periods={periods}
+                until={feed.t}
+                left={
+                  state.LapCount
+                    ? state.LapCount.TotalLaps - state.LapCount.CurrentLap
+                    : Infinity
+                }
+                selected={driver}
+              />
+            )}
             {!hideMap && (
               <TrackMap
                 outline={outline}

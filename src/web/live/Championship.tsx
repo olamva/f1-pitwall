@@ -24,7 +24,7 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
   const crowned = title !== "open" && rows[0];
   return (
     <div className="min-w-0">
-      <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase max-md:hidden">
+      <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase @max-2xl:hidden">
         {champ}
       </h3>
       {crowned && (
@@ -114,9 +114,9 @@ export const Championship = ({ standings }: ChampionshipProps) => {
     </div>
   );
   return (
-    <Panel title="Live championship" className="col-span-full">
+    <Panel title="Live championship" className="@container col-span-full">
       {items.length > 1 && (
-        <div className="mb-3 md:hidden">
+        <div className="mb-3 @2xl:hidden">
           <Tabs
             items={items}
             value={champ}
@@ -127,7 +127,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
           />
         </div>
       )}
-      <div className="md:hidden">
+      <div className="@2xl:hidden">
         <Swipe
           items={items}
           value={items.length > 1 ? champ : "drivers"}
@@ -137,7 +137,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
           render={table}
         />
       </div>
-      <div className="grid grid-cols-2 gap-6 max-md:hidden">
+      <div className="grid grid-cols-2 gap-6 @max-2xl:hidden">
         {items.map((c) => (
           <Table key={c} champ={c} standing={standings[c]} />
         ))}
