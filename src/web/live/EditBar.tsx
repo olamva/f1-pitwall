@@ -262,9 +262,13 @@ export const EditBar = ({
         createPortal(
           <div
             ref={float}
-            className={`glass-panel fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(calc(0.625rem-1px),env(safe-area-inset-right))] z-50 flex items-center gap-2 rounded-full p-1.5 shadow-xl ${away ? "" : "invisible"}`}
+            className={`fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(0.625rem,env(safe-area-inset-right))] z-50 flex items-center gap-2 p-1.5 ${away ? "" : "invisible"}`}
           >
             {controls}
+            <span
+              aria-hidden="true"
+              className={`glass-panel pointer-events-none absolute inset-0 -z-10 rounded-full shadow-xl motion-reduce:transition-none ${away ? "transition-opacity duration-700 ease-in-out" : "opacity-0"}`}
+            />
           </div>,
           document.body,
         )}
