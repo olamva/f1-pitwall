@@ -134,7 +134,8 @@ export const Swipe = <T extends string>({
 
   if (previous !== value) {
     setPrevious(value);
-    setEpochs((e) => ({ ...e, [previous]: (e[previous] ?? 0) + 1 }));
+    if (!keep?.includes(previous))
+      setEpochs((e) => ({ ...e, [previous]: (e[previous] ?? 0) + 1 }));
   }
 
   const panels = () =>
@@ -349,7 +350,7 @@ export const Swipe = <T extends string>({
         const Panel = depth ? "div" : "main";
         return (
           <Panel
-            key={`${item}:${keep?.includes(item) ? 0 : (epochs[item] ?? 0)}`}
+            key={`${item}:${epochs[item] ?? 0}`}
             data-side={near ? side : undefined}
             hidden={side !== 0 && !near}
             inert={side !== 0}

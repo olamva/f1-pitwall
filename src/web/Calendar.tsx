@@ -239,9 +239,10 @@ const find = (races: Race[], round: number, name?: string) =>
 
 interface CalendarProps {
   season: Loaded<Season>;
+  onPlaying: (playing: boolean) => void;
 }
 
-export const Calendar = ({ season }: CalendarProps) => {
+export const Calendar = ({ season, onPlaying }: CalendarProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions", 10 * 60_000);
   const [start] = useState(fromPath);
   const [year, setYear] = useState(start.year);
@@ -292,6 +293,7 @@ export const Calendar = ({ season }: CalendarProps) => {
   }, [race]);
   const chosen = sessions.data?.find((s) => s.path === path);
   useBack(race && !chosen ? back : undefined);
+  useEffect(() => onPlaying(!!chosen), [!!chosen]);
   if (!season.data || (path && !sessions.data))
     return (
       <Loading
