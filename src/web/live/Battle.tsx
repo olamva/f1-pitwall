@@ -86,13 +86,6 @@ const usePass = (rows: Row[], until: number) => {
   return pass && until >= pass.at && until - pass.at < HOLD ? pass.pair : null;
 };
 
-const heading = (view: View | null, pass: Pair | null, lead?: Row) =>
-  pass
-    ? `Overtake for P${pass.ahead.position}`
-    : !lead
-      ? "Battle"
-      : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`;
-
 export const Battle = ({
   rows,
   laps,
@@ -110,7 +103,6 @@ export const Battle = ({
   if (tapped && !ongoing(groups, next, tapped)) setTapped(null);
   const fan = rows.find((r) => r.tla === favourite?.code)?.number;
   const view = choose(groups, next, selected, tapped, fan, fresh);
-  const pass = (view?.group && within(view.group, fresh)) ?? null;
   if (view?.group) last.current = view.pair;
   const nextChip = next && `Next ${lapsText(next.laps)}`;
   const key = [...groups.map(label), nextChip].filter(Boolean).join("\n");
@@ -120,7 +112,9 @@ export const Battle = ({
   return (
     <section className="bg-surface space-y-2 rounded-xl p-3">
       <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-        {heading(view, pass, lead)}
+        {!lead
+          ? "Battle"
+          : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`}
       </h2>
       <div className="-mx-3 h-[50px] [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3 py-1">
         <div className="w-max">
@@ -140,7 +134,7 @@ export const Battle = ({
           )}
         </div>
       </div>
-      <Stage view={view} last={last.current} pass={pass} />
+      <Stage view={view} last={last.current} fresh={fresh} />
     </section>
   );
 };
@@ -150,13 +144,14 @@ const interval = (p: Pair) => p.chaser.interval.replace(/^\+/, "");
 const Stage = ({
   view,
   last,
-  pass,
+  fresh,
 }: {
   view: View | null;
   last: Pair | null;
-  pass: Pair | null;
+  fresh: Pair | null;
 }) => {
   if (view?.group) {
+    const pass = within(view.group, fresh);
     const focus = pass ?? view.pair;
     const { pairs, more } = contenders(view.group, focus);
     return pairs.length > 1 ? (
