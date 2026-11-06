@@ -11,6 +11,7 @@ const SIZES = {
   ipad: { width: 1024, height: 1366, deviceScaleFactor: 2, isMobile: true },
   desktop: { width: 1440, height: 900, deviceScaleFactor: 2, isMobile: false },
 };
+const SNAPSHOT = 30_000;
 
 process.on("uncaughtException", (error) => {
   console.error(error.message);
@@ -57,7 +58,7 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --eval <js>         Run this in the page before the capture
   --element <selector>  Capture only this element, without the tab bar
   --full              Capture the full page
-  --confetti          Keep the confetti canvas
+  --confetti          Show the confetti (off by default, as it slows WebKit)
   --name <name>       File name prefix (default from the path)
   --out <dir>         Output directory (default the T3 attachments directory)
 
@@ -144,7 +145,9 @@ const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
         { timeout: 20_000 },
       )
       .catch(() => warn("still loading"));
-    await page.evaluate(() => document.fonts.ready);
+    await page
+      .waitForFunction(() => document.fonts.status === "loaded")
+      .catch(() => warn("fonts still loading"));
   };
   await settle();
   for (const target of o.click!) {
@@ -154,6 +157,7 @@ const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
   await page.mouse.move(size.width - 1, 0);
   if (o.wait) await visible(o.wait).waitFor();
   if (o.eval) await page.evaluate(o.eval);
+  if (o.element) await visible(o.element).scrollIntoViewIfNeeded();
   await page
     .waitForFunction(() =>
       [...document.images]
@@ -175,12 +179,11 @@ const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
   const shot = {
     path: file,
     animations: "disabled" as const,
-    style: [
-      o.confetti ? "" : "body > canvas { display: none !important; }",
-      o.element ? "header nav { visibility: hidden !important; }" : "",
-    ].join("\n"),
+    timeout: SNAPSHOT,
+    style: o.element ? "header nav { visibility: hidden !important; }" : "",
   };
-  if (o.element) await visible(o.element).screenshot(shot);
+  if (o.element)
+    await (await visible(o.element).elementHandle()).screenshot(shot);
   else await page.screenshot({ ...shot, fullPage: o.full });
 };
 
@@ -205,7 +208,22 @@ const capture = async (browser: Browser, base: string, label: string) => {
         colorScheme: theme as "dark" | "light",
       });
       context.setDefaultTimeout(10_000);
-      await context.addInitScript(() => localStorage.setItem("spoilers", "0"));
+      await context.addInitScript((confetti) => {
+        localStorage.setItem("spoilers", "0");
+        addEventListener(
+          "animationstart",
+          () =>
+            document
+              .getAnimations()
+              .filter((a) => a.effect?.getTiming().iterations === Infinity)
+              .forEach((a) => a.cancel()),
+          true,
+        );
+        const media = matchMedia;
+        if (!confetti)
+          window.matchMedia = (query) =>
+            media(query === "(prefers-reduced-motion)" ? "all" : query);
+      }, o.confetti);
       await context.route("**/api/settings", (route) =>
         route.request().method() === "GET"
           ? route.fulfill({ json: settings })
@@ -219,13 +237,18 @@ const capture = async (browser: Browser, base: string, label: string) => {
           warn(`${r.status()} ${r.url()}`);
       });
       try {
-        await page.goto(url);
+        await page.goto(url, { waitUntil: "domcontentloaded" });
         await shoot(page, file, warn);
         files.push(file);
       } catch (error) {
         const failed = file.replace(/\.png$/, "-error.png");
-        await page.screenshot({ path: failed }).catch(() => undefined);
-        throw new Error(`${(error as Error).message}\nState: ${failed}`);
+        const state = await page
+          .screenshot({ path: failed, timeout: SNAPSHOT })
+          .then(
+            () => failed,
+            (e: Error) => `not captured: ${e.message}`,
+          );
+        throw new Error(`${(error as Error).message}\nState: ${state}`);
       } finally {
         await context.close();
       }
@@ -248,12 +271,13 @@ const servers = full
   : await Promise.all([serve("."), ...(before ? [serve(before)] : [])]);
 const browser = await engine.launch();
 try {
-  const files = (
-    await Promise.all([
-      capture(browser, servers[0]?.url ?? "", before ? "after" : ""),
-      ...(servers[1] ? [capture(browser, servers[1].url, "before")] : []),
-    ])
-  ).flat();
+  const files = await capture(
+    browser,
+    servers[0]?.url ?? "",
+    before ? "after" : "",
+  );
+  if (servers[1])
+    files.push(...(await capture(browser, servers[1].url, "before")));
   for (const file of files.sort()) console.log(file);
 } finally {
   await browser.close();
