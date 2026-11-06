@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { BUST, Figure, Headshot, useArt } from "./Headshot.tsx";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -54,11 +55,13 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
                 />
               )}
-              <span
-                className={`max-w-full text-xs font-semibold wrap-break-word sm:text-sm ${onSelect ? "group-hover:text-red-400" : ""}`}
-              >
-                {e.name}
-              </span>
+              <DriverHover id={onSelect ? e.id : ""} className="max-w-full">
+                <span
+                  className={`max-w-full text-xs font-semibold wrap-break-word sm:text-sm ${onSelect ? "group-hover:text-red-400" : ""}`}
+                >
+                  {e.name}
+                </span>
+              </DriverHover>
               {e.team && <TeamLogo team={e.team} className="mt-1 h-5 w-10" />}
             </span>
             <Figure
@@ -85,11 +88,15 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
   </div>
 );
 
-const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
+export const Face = ({
+  id,
+  color,
+  size = "size-10",
+}: Pick<PodiumEntry, "id" | "color"> & { size?: string }) => {
   const src = useArt(id)?.headshot;
   return (
     <span
-      className="size-10 shrink-0 overflow-hidden rounded-lg"
+      className={`${size} shrink-0 overflow-hidden rounded-lg`}
       style={{
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}

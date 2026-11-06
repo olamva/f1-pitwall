@@ -1,75 +1,95 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 
 interface HoverCardProps {
   card: ReactNode;
+  at?: number;
+  interactive?: boolean;
   className?: string;
   children: ReactNode;
 }
 
 const WIDTH = 288;
 const MARGIN = 12;
+const GAP = 8;
 
-export const HoverCard = ({ card, className, children }: HoverCardProps) => {
+export const HoverCard = ({
+  card,
+  at,
+  interactive = false,
+  className,
+  children,
+}: HoverCardProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
+  const pop = useRef<HTMLDivElement>(null);
   const timer = useRef(0);
-  const [open, setOpen] = useState(false);
-  const [rect, setRect] = useState<DOMRect>();
-  const [top, setTop] = useState(0);
+  const [box, setBox] = useState<DOMRect>();
+  const [edge, setEdge] = useState<{ top?: number; bottom?: number }>();
   useLayoutEffect(() => {
-    if (!open || !rect) return;
-    const height = panel.current!.offsetHeight;
-    const above = rect.top - 8 - height;
-    const wanted =
-      above >= MARGIN || rect.top > innerHeight - rect.bottom
-        ? above
-        : rect.bottom + 8;
-    setTop(
-      scrollY +
-        Math.min(Math.max(wanted, MARGIN), innerHeight - height - MARGIN),
+    if (!box) return;
+    pop.current!.showPopover();
+    const height = pop.current!.offsetHeight;
+    setEdge(
+      box.top >= height
+        ? { bottom: innerHeight - box.top }
+        : innerHeight - box.bottom >= height
+          ? { top: box.bottom }
+          : {
+              top: Math.max(
+                MARGIN - GAP,
+                Math.min(
+                  box.top > innerHeight - box.bottom
+                    ? box.top - height
+                    : box.bottom,
+                  innerHeight - height - MARGIN + GAP,
+                ),
+              ),
+            },
     );
-  }, [open, rect]);
+  }, [box]);
+  const close = () => {
+    clearTimeout(timer.current);
+    timer.current = 0;
+    pop.current?.hidePopover();
+  };
+  if (!card) return children;
   return (
     <div
       ref={ref}
+      data-hover
       className={className}
-      onPointerEnter={(e) => {
-        if (e.pointerType !== "mouse" || !card) return;
-        timer.current = window.setTimeout(() => {
-          setRect(ref.current!.getBoundingClientRect());
-          setOpen(true);
-        }, 300);
+      onPointerOver={(e) => {
+        if (e.pointerType !== "mouse") return;
+        if ((e.target as Element).closest("[data-hover]") !== ref.current)
+          return close();
+        timer.current ||= window.setTimeout(
+          () => setBox(ref.current!.getBoundingClientRect()),
+          300,
+        );
       }}
-      onPointerLeave={() => {
-        clearTimeout(timer.current);
-        setOpen(false);
-      }}
+      onPointerLeave={close}
     >
       {children}
-      {rect &&
-        card &&
-        createPortal(
-          <div
-            ref={panel}
-            aria-hidden="true"
-            hidden={!open}
-            className={`bg-surface pointer-events-none absolute z-30 overflow-hidden rounded-xl p-3 text-left text-zinc-50 shadow-2xl ring-1 ring-zinc-700`}
-            style={{
-              width: WIDTH,
-              left:
-                scrollX +
-                Math.min(
-                  Math.max(rect.left + rect.width / 2 - WIDTH / 2, MARGIN),
-                  innerWidth - WIDTH - MARGIN,
-                ),
-              top,
-            }}
-          >
+      {box && (
+        <div
+          ref={pop}
+          popover="manual"
+          aria-hidden={!interactive}
+          className={`fixed inset-auto m-0 overflow-visible bg-transparent text-zinc-100 ${interactive ? "" : "pointer-events-none"}`}
+          style={{
+            width: WIDTH,
+            left: Math.min(
+              Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
+              innerWidth - WIDTH - MARGIN,
+            ),
+            ...edge,
+            paddingBlock: GAP,
+          }}
+        >
+          <div className="bg-surface overflow-hidden rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
             {card}
-          </div>,
-          document.body,
-        )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

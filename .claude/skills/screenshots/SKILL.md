@@ -16,12 +16,12 @@ pnpm shot /calendar/2026/19 --favourite piastri:PIA --team williams --before ori
 ```
 
 - The command starts its own dev server on unused ports and stops it at the end. You do not need `pnpm dev`.
-- `--before <ref>` also captures the ref from a temporary checkout under `/tmp`. The command removes the checkout at the end.
+- `--before <ref>` also captures the ref from a temporary checkout under `/tmp`. The command captures the two states one after the other, and removes the checkout at the end.
 - The command prints one PNG path for each capture. The default directory is `~/.t3/userdata/attachments/<branch>`, so you can embed the files directly.
 - The file name is `<path>-[before|after]-<theme>.png`.
 - The command waits for the loading indicators, the fonts, and the visible images. Do not add fixed sleeps.
-- CSS animations and transitions show their end state.
-- A failed step stops after 10 seconds. The error names the step and the path of a `-error.png` capture of the page state.
+- CSS animations and transitions show their end state. The command cancels infinite animations when they start, because each repaint is slow in headless WebKit.
+- A failed step stops after 10 seconds. The capture itself stops after 30 seconds. The error names the step and the path of a `-error.png` capture of the page state.
 - Run the command again after each edit. Each run takes about 5 to 30 seconds.
 
 Options:
@@ -37,7 +37,7 @@ Options:
 | `--eval <js>`                      | Run JavaScript in the page before the capture.                             |
 | `--element <selector>`             | Capture one element. The tab bar is hidden.                                |
 | `--full`                           | Capture the full page.                                                     |
-| `--confetti`                       | Keep the confetti canvas. The command hides it by default.                 |
+| `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.     |
 | `--name`, `--out`                  | File name prefix and output directory.                                     |
 
 A full `http://` URL uses a server that already runs. Then `--before` is not available.

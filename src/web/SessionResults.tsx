@@ -9,6 +9,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
@@ -144,20 +145,22 @@ const ResultsTable = <T extends Entry>({
               {CODES[row.positionText] ?? row.positionText}
             </td>
             <td className="py-2">
-              <button
-                type="button"
-                onClick={() => openDriver(row.driver)}
-                disabled={!row.driver}
-                className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
-              >
-                <TeamHover
-                  team={row.team}
-                  className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
+              <DriverHover id={row.driver} className="w-fit">
+                <button
+                  type="button"
+                  onClick={() => openDriver(row.driver)}
+                  disabled={!row.driver}
+                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
                 >
-                  <TeamLogo team={row.team} className="block h-4 w-6" />
-                </TeamHover>
-                {row.name}
-              </button>
+                  <TeamHover
+                    team={row.team}
+                    className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
+                  >
+                    <TeamLogo team={row.team} className="block h-4 w-6" />
+                  </TeamHover>
+                  {row.name}
+                </button>
+              </DriverHover>
             </td>
             {cells(row)}
           </tr>

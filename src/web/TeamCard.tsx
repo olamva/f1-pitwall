@@ -5,7 +5,7 @@ import { teamColor } from "../shared/teams.ts";
 import { BUST, Figure } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
 import { ink } from "./ink.ts";
-import { fresh, KINDS, useSeen } from "./spoilers.ts";
+import { useHidden } from "./spoilers.ts";
 import { qualifyingHeadToHead } from "./stats/derive.ts";
 import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 
@@ -22,12 +22,7 @@ interface TeamCardProps {
 }
 
 const TeamCard = ({ season, team }: TeamCardProps) => {
-  const seen = useSeen();
-  const hidden =
-    !!seen &&
-    fresh(season.rounds, Date.now()).some(
-      (s) => KINDS.includes(s.kind) && seen[s.id] !== "shown",
-    );
+  const hidden = useHidden(String(season.year), season).size > 0;
   const color = teamColor(team);
   const table = season.constructorStandings;
   const place = table.findIndex((t) => t.id === team);
@@ -171,16 +166,14 @@ interface TeamHoverProps {
 
 export const TeamHover = ({ team, className, children }: TeamHoverProps) => {
   const season = useContext(TeamSeason);
-  return (
+  return season?.constructorStandings.some((t) => t.id === team) ? (
     <HoverCard
       className={className}
-      card={
-        season?.constructorStandings.some((t) => t.id === team) && (
-          <TeamCard season={season} team={team} />
-        )
-      }
+      card={<TeamCard season={season} team={team} />}
     >
       {children}
     </HoverCard>
+  ) : (
+    <div className={className}>{children}</div>
   );
 };
