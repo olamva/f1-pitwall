@@ -138,7 +138,7 @@ const Cards = ({
               <Portrait driver={driver} color={color} big={big} />
             )}
             {big && (
-              <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#fef08a] uppercase sm:text-sm">
+              <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#ebd08a] uppercase sm:text-sm">
                 <Trophy aria-hidden className="size-4" />
                 {champion}
               </span>

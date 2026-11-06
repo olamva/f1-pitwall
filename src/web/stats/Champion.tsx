@@ -32,10 +32,10 @@ interface PosterProps {
   id: string;
 }
 
-export const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
+export const GOLD = "linear-gradient(180deg, #f7e7a1, #d4af37 45%, #8b6914)";
 
 export const ChampionMark = () => (
-  <span aria-label="Champion" className="font-f1 font-black text-yellow-300">
+  <span aria-label="Champion" className="font-f1 text-gold font-black">
     C
   </span>
 );
@@ -46,7 +46,7 @@ interface TeamProps {
 }
 
 const CHIP = [
-  "bg-[#facc15] text-black",
+  "bg-[#d4af37] text-black",
   "bg-[#d4d4d8] text-black",
   "bg-[#d97706] text-white",
 ];
@@ -140,7 +140,7 @@ export const Champion = ({
         line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
       />
       <Poster champ={champ} id={first.id} />
-      <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#fef08a] uppercase sm:text-sm">
+      <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#ebd08a] uppercase sm:text-sm">
         {season.year} {title}
       </p>
       <h2 className="champion-name font-f1 mt-2 text-[2.75rem] leading-none font-black sm:text-7xl">
@@ -235,7 +235,7 @@ const Road = ({ champ, season, h }: RoadProps) => (
           <li
             key={b.round}
             title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? (b.dsq ? "disqualified" : "no finish") : `P${b.position}`}`}
-            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs xl:py-1.5 xl:text-sm ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#facc15] ring-offset-2 ring-offset-transparent" : ""}`}
+            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs xl:py-1.5 xl:text-sm ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#d4af37] ring-offset-2 ring-offset-transparent" : ""}`}
             style={{ "--delay": `${i * 40}ms` } as CSSProperties}
           >
             <span className="text-sm leading-tight [&>span]:mr-0">

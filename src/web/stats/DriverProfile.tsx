@@ -131,7 +131,7 @@ export const Championships = ({ years }: ChampionshipsProps) => (
     <div className="flex items-center gap-3">
       <Trophy
         aria-hidden
-        className="size-8 shrink-0 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
+        className="text-gold size-8 shrink-0 drop-shadow-[0_0_6px_rgb(212_175_55_/_0.6)]"
       />
       <p className="tabular font-f1 text-3xl font-bold">{years.length}</p>
       <ol className="tabular flex flex-wrap gap-1">
