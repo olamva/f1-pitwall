@@ -13,6 +13,11 @@ export const Faces = createContext(new Map<string, DriverInfo>());
 export const useArt = (id: string) => useContext(Faces).get(id);
 export const artSrc = (art: string, pose: Pose, transform = BODY) =>
   `https://media.formula1.com/image/upload/${transform}/q_auto/${art}${pose}.webp`;
+export const FALLBACK = artSrc(
+  "common/f1/2026/fallback/driver/2026fallbackdriver",
+  "right",
+  "c_crop,g_north,w_0.75,h_0.32/c_scale,h_432",
+);
 
 export const carSrc = (art: string, pose: Pose, transform = "c_lfill,w_800") =>
   art.replace(

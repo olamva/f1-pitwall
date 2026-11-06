@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
-import { BUST, Figure, Headshot, useArt } from "./Headshot.tsx";
+import { BUST, FALLBACK, Figure, Headshot, useArt } from "./Headshot.tsx";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
@@ -90,7 +90,7 @@ interface FaceProps extends Pick<PodiumEntry, "id" | "color"> {
 }
 
 const Face = ({ id, color, faded }: FaceProps) => {
-  const src = useArt(id)?.headshot;
+  const src = useArt(id)?.headshot ?? FALLBACK;
   return (
     <span
       className={`size-10 shrink-0 overflow-hidden rounded-lg ${faded ? "grayscale-35" : ""}`}
@@ -98,9 +98,7 @@ const Face = ({ id, color, faded }: FaceProps) => {
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}
     >
-      {src && (
-        <Headshot src={src} className="size-full object-cover object-top" />
-      )}
+      <Headshot src={src} className="size-full object-cover object-top" />
     </span>
   );
 };
