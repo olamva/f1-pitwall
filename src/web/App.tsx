@@ -95,7 +95,7 @@ export const App = () => {
   };
   return (
     <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 p-4 pt-(--page-top) pb-24 sm:pb-4 2xl:has-[main:not([inert])_.board]:max-w-none [&>.swipe]:grow">
-      <div className="fixed inset-x-0 top-0 z-30 h-(--top-bar) bg-zinc-950 [:root[data-champion]_&]:hidden [:root[data-tab=Countdown]:has(.spotlight)_&]:hidden" />
+      <div className="top-band fixed inset-x-0 top-0 z-30 h-(--top-bar) bg-zinc-950 [:root[data-champion]_&]:hidden [:root[data-tab=Countdown]:has(.spotlight)_&]:hidden" />
       <header className="flex flex-wrap items-center gap-1.5 sm:h-13.5">
         <button
           ref={logo}
