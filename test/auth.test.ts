@@ -33,7 +33,7 @@ test("any verified Google account reaches the token routes", async () => {
   const status = async (path: string, email?: string, secret?: string) =>
     (await request(path, email, secret)).status;
   assert.equal(await status("/api/token"), 401);
-  assert.equal(await status("/api/token", ""), 403);
+  assert.equal(await status("/api/token", ""), 401);
   assert.equal(await status("/api/token", "someone@example.com"), 200);
   assert.equal(
     await status(
