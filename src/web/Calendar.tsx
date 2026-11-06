@@ -18,6 +18,7 @@ import { Spoiler } from "./Spoiler.tsx";
 import { useBack } from "./Swipe.tsx";
 import { useHidden } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
+import { TeamSeason } from "./TeamCard.tsx";
 import { currentYear, YEARS, YearSelect } from "./YearSelect.tsx";
 
 const LABELS = {
@@ -158,13 +159,15 @@ const RaceDetail = ({
         kinds={[shown]}
         round={race.round}
       >
-        <SessionResults
-          year={year}
-          race={race}
-          races={races}
-          kind={shown}
-          favourite={favourite?.id}
-        />
+        <TeamSeason value={Number(year) === season.year ? season : null}>
+          <SessionResults
+            year={year}
+            race={race}
+            races={races}
+            kind={shown}
+            favourite={favourite?.id}
+          />
+        </TeamSeason>
       </Spoiler>
     </section>
   );
