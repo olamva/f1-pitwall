@@ -92,16 +92,16 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
                 <div className="mb-1 text-center text-[11px] text-zinc-400">
                   Qualifying head-to-head
                 </div>
-                <div className="flex h-4.5 overflow-hidden rounded-[5px] text-[11px] font-extrabold">
+                <div className="flex h-4.5 overflow-hidden rounded-[5px] text-[11px] font-extrabold whitespace-nowrap">
                   <span
                     className="flex items-center px-1.5 text-white"
-                    style={{ flex: quali[0], background: solid(color) }}
+                    style={{ flexGrow: quali[0], background: solid(color) }}
                   >
                     {a.code} {quali[0]}
                   </span>
                   <span
                     className="flex items-center justify-end bg-zinc-600 px-1.5"
-                    style={{ flex: quali[1] }}
+                    style={{ flexGrow: quali[1] }}
                   >
                     {quali[1]} {b.code}
                   </span>
@@ -115,7 +115,6 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
                 name: name(t.id),
               }))}
               self={team}
-              color={color}
               champion={champion}
             />
           </div>
