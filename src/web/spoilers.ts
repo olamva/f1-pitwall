@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { Round } from "../shared/season.ts";
+import type { Round, Season } from "../shared/season.ts";
 
 export const KINDS = ["sprintQualifying", "sprint", "qualifying", "race"];
 const EARLY = 30 * 60_000;
@@ -60,6 +60,17 @@ export const fresh = (rounds: Round[], now: number) => {
     (s) => KINDS.includes(s.kind) && s.at <= now,
   );
   return past.filter((s) => s.round === past.at(-1)?.round);
+};
+
+export const useHidden = (year: string, season: Season | null) => {
+  const seen = useSeen();
+  return new Set(
+    seen && season && Number(year) === season.year
+      ? fresh(season.rounds, Date.now())
+          .filter((s) => seen[s.id] !== "shown")
+          .map((s) => `${s.round.round}/${s.kind}`)
+      : [],
+  );
 };
 
 export const onLiveTab = (rounds: Round[], now: number, live: boolean) => {

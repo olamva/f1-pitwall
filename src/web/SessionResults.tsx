@@ -9,11 +9,12 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium, PodiumList, type PodiumEntry } from "./Podium.tsx";
+import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -143,18 +144,20 @@ const ResultsTable = <T extends Entry>({
               {CODES[row.positionText] ?? row.positionText}
             </td>
             <td className="py-2">
-              <button
-                type="button"
-                onClick={() => openDriver(row.driver)}
-                disabled={!row.driver}
-                className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
-              >
-                <TeamLogo
-                  team={row.team}
-                  className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
-                />
-                {row.name}
-              </button>
+              <DriverHover id={row.driver} className="w-fit">
+                <button
+                  type="button"
+                  onClick={() => openDriver(row.driver)}
+                  disabled={!row.driver}
+                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
+                >
+                  <TeamLogo
+                    team={row.team}
+                    className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
+                  />
+                  {row.name}
+                </button>
+              </DriverHover>
             </td>
             {cells(row)}
           </tr>
@@ -374,8 +377,6 @@ interface SessionPodiumProps {
   past?: boolean;
 }
 
-const start = ({ grid }: Result) => (grid ? `from P${grid}` : "from pit lane");
-
 export const SessionPodium = ({
   year,
   round,
@@ -398,11 +399,8 @@ export const SessionPodium = ({
     : practiced
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race &&
-        podium(
-          kind === "sprint" ? race.sprint : race.results,
-          past && kind === "race"
-            ? start
-            : (result) => result.time || result.status,
+        podium(kind === "sprint" ? race.sprint : race.results, (r) =>
+          past && kind === "race" ? start(r) : r.time || r.status,
         );
   return top && top.length >= 3 ? (
     <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />

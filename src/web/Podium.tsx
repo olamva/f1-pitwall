@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { BUST, FALLBACK, Figure, Headshot, useArt } from "./Headshot.tsx";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -54,11 +55,13 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
                 />
               )}
-              <span
-                className={`max-w-full text-xs font-semibold wrap-break-word sm:text-sm ${onSelect ? "group-hover:text-red-400" : ""}`}
-              >
-                {e.name}
-              </span>
+              <DriverHover id={onSelect ? e.id : ""} className="max-w-full">
+                <span
+                  className={`max-w-full text-xs font-semibold wrap-break-word sm:text-sm ${onSelect ? "group-hover:text-red-400" : ""}`}
+                >
+                  {e.name}
+                </span>
+              </DriverHover>
               {e.team && <TeamLogo team={e.team} className="mt-1 h-5 w-10" />}
             </span>
             <Figure
@@ -147,6 +150,9 @@ interface FinishProps {
 }
 
 type Result = Race["results"][number];
+
+export const start = ({ grid }: Result) =>
+  grid ? `from P${grid}` : "from pit lane";
 
 const Gain = ({ grid, position }: Result) => {
   const gain = grid - position;
