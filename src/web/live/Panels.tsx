@@ -8,7 +8,6 @@ import {
   Wind,
   type LucideIcon,
 } from "lucide-react";
-import { useJson } from "../api.ts";
 import { ink } from "../ink.ts";
 import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import {
@@ -20,6 +19,7 @@ import {
   type Row,
   type Tone,
 } from "./view.ts";
+import { Transcript, type Clip } from "./Transcript.tsx";
 
 const clock = new Intl.DateTimeFormat([], {
   hourCycle: "h23",
@@ -231,41 +231,13 @@ export const Weather = ({ weather, trend }: WeatherProps) => (
 );
 
 interface TeamRadioProps {
-  radios: Radio[];
+  radios: Clip[];
   rows: Row[];
   selected: Set<string>;
 }
 
 export const clip = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-
-const Transcript = ({ url, color }: { url: string; color: string }) => {
-  const { data, error } = useJson<{
-    turns: { speaker: "driver" | "engineer"; text: string }[];
-  }>(`/api/radio/transcript?url=${encodeURIComponent(url)}`);
-  if (error) return null;
-  if (!data)
-    return (
-      <p className="animate-pulse text-sm font-semibold tracking-wide text-zinc-500 uppercase">
-        Transcribing…
-      </p>
-    );
-  return (
-    <blockquote className="font-f1 space-y-1 text-lg leading-snug font-bold uppercase">
-      {data.turns.map((t, i) => (
-        <p
-          key={i}
-          className={t.speaker === "driver" ? "text-right" : ""}
-          style={{
-            color: t.speaker === "driver" ? ink(color) : "var(--color-zinc-50)",
-          }}
-        >
-          {t.text}
-        </p>
-      ))}
-    </blockquote>
-  );
-};
 
 const BANDS = [150, 400, 1000, 2200, 4500];
 const analysers = new WeakMap<HTMLAudioElement, AnalyserNode>();
@@ -447,7 +419,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
             />
           </div>
           <div className="flex min-h-28 flex-col justify-between gap-2 px-3 py-3">
-            <Transcript key={current.url} url={current.url} color={color} />
+            <Transcript key={current.url} clip={current} color={color} />
             <p className="tabular font-mono text-xs text-zinc-500">
               {time(current.utc)} · {clip(at.t)} / {at.d ? clip(at.d) : "–:––"}
             </p>

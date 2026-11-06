@@ -20,6 +20,7 @@ import {
 import { createPortal } from "react-dom";
 import { Tabs } from "../Tabs.tsx";
 import type { Size } from "./layout.ts";
+import { sampleTiles } from "./sample.tsx";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
 
 const Landscape = ((props: LucideProps) => (
@@ -36,24 +37,17 @@ interface EditBarProps {
   size: Size;
   onSize: (size: Size) => void;
   missing: WidgetId[];
-  preview: (id: WidgetId) => ReactNode;
   onAdd: (id: WidgetId) => void;
   onReset: () => void;
   onEdit: () => void;
   onDone: () => void;
 }
 
-const Preview = ({ id, children }: { id: WidgetId; children: ReactNode }) => (
+const Preview = ({ children }: { children: ReactNode }) => (
   <span className="bg-surface pointer-events-none relative block h-36 overflow-hidden rounded-xl ring-1 ring-zinc-800">
-    {children ? (
-      <span inert className="block w-[250%] origin-top-left [zoom:0.4]">
-        {children}
-      </span>
-    ) : (
-      <span className="grid h-full place-items-center px-3 text-center text-xs text-zinc-500">
-        {WIDGETS[id].only}
-      </span>
-    )}
+    <span inert className="block w-[250%] origin-top-left [zoom:0.4]">
+      {children}
+    </span>
   </span>
 );
 
@@ -61,7 +55,6 @@ interface SheetProps {
   sheet: RefObject<HTMLDialogElement | null>;
   open: boolean;
   missing: WidgetId[];
-  preview: (id: WidgetId) => ReactNode;
   onAdd: (id: WidgetId) => void;
   onReset: () => void;
   onClose: () => void;
@@ -71,7 +64,6 @@ const Sheet = ({
   sheet,
   open,
   missing,
-  preview,
   onAdd,
   onReset,
   onClose,
@@ -120,7 +112,7 @@ const Sheet = ({
                 className="group w-full cursor-pointer space-y-2 text-left"
               >
                 <span className="block transition-transform group-active:scale-95">
-                  <Preview id={id}>{open && preview(id)}</Preview>
+                  <Preview>{open && sampleTiles()[id]()}</Preview>
                 </span>
                 <span className="block px-1">
                   <span className="block font-semibold">
@@ -147,7 +139,6 @@ export const EditBar = ({
   size,
   onSize,
   missing,
-  preview,
   onAdd,
   onReset,
   onEdit,
@@ -272,7 +263,6 @@ export const EditBar = ({
         sheet={sheet}
         open={open}
         missing={missing}
-        preview={preview}
         onAdd={onAdd}
         onReset={onReset}
         onClose={() => setOpen(false)}
