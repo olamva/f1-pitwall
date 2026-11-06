@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ink } from "../ink.ts";
 import { tyreColor } from "../Tyre.tsx";
 
@@ -29,9 +29,11 @@ interface LineChartProps {
   height?: number;
   bands?: Band[];
   endLabels?: boolean;
+  fill?: boolean;
 }
 
 const W = 800;
+const MIN_HEIGHT = 160;
 const M = { top: 16, right: 56, bottom: 32, left: 52 };
 
 const ticks = (lo: number, hi: number, n = 5): number[] => {
@@ -73,17 +75,47 @@ export const Legend = ({ series }: LegendProps) => (
   </ul>
 );
 
+const FILL = {
+  outer: "filled:flex filled:min-h-0 filled:flex-1 filled:flex-col",
+  box: "filled:min-h-0 filled:flex-1",
+  svg: "filled:absolute filled:inset-0 filled:h-full",
+};
+const NO_FILL = { outer: "", box: "", svg: "" };
+
+const useFilled = () => {
+  const [filled, setFilled] = useState<number | null>(null);
+  const frame = useCallback((el: HTMLDivElement) => {
+    const observer = new ResizeObserver(() =>
+      setFilled(
+        el.closest("[data-fill]") && el.clientWidth
+          ? Math.max(
+              MIN_HEIGHT,
+              Math.round((W * el.clientHeight) / el.clientWidth),
+            )
+          : null,
+      ),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return [filled, frame] as const;
+};
+
 export const LineChart = ({
   series,
   xLabel,
   yFormat = String,
   invert,
   yDomain,
-  height = 320,
+  height: natural = 320,
   bands = [],
   endLabels = true,
+  fill,
 }: LineChartProps) => {
   const [hover, setHover] = useState<{ x: number; low: boolean } | null>(null);
+  const [filled, frame] = useFilled();
+  const height = filled ?? natural;
+  const css = fill ? FILL : NO_FILL;
   const all = series.flatMap((s) => s.points);
   const [x0, x1] = extent(all.map((p) => p[0]));
   const [y0, y1] = yDomain ?? extent(all.map((p) => p[1]));
@@ -116,12 +148,15 @@ export const LineChart = ({
           .filter((v) => v.p);
   const fx = hover === null ? 0 : sx(hover.x) / W;
   return (
-    <div>
+    <div className={css.outer}>
       {series.length > 1 && <Legend series={series} />}
-      <div className="@container relative">
+      <div
+        ref={fill ? frame : undefined}
+        className={`@container relative ${css.box}`}
+      >
         <svg
           viewBox={`0 0 ${W} ${height}`}
-          className="w-full"
+          className={`w-full ${css.svg}`}
           onMouseMove={onMove}
           onMouseLeave={() => setHover(null)}
         >

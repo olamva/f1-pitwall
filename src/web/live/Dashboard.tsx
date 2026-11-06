@@ -31,7 +31,14 @@ import {
   type Size,
   type Target,
 } from "./layout.ts";
-import { DEFAULT_LAYOUT, isWidget, WIDGETS, type WidgetId } from "./widgets.ts";
+import {
+  DEFAULT_LAYOUT,
+  height,
+  isWidget,
+  rowsFor,
+  WIDGETS,
+  type WidgetId,
+} from "./widgets.ts";
 
 const QUERIES = [
   "(width >= 80rem) and (pointer: fine)",
@@ -49,7 +56,6 @@ const PREVIEW: Record<Size, string | undefined> = {
 };
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
-const MIN_ROWS = 6;
 const EDGE = 64;
 const ZONE = 40;
 
@@ -136,7 +142,9 @@ export const Dashboard = ({
   const frozen = useRef(new Set<string>());
   const columns = draft ?? saved;
   const fixed = new Map(
-    columns.flatMap((c) => c.tiles.map((t) => [t.id, t.h])),
+    columns.flatMap((c) =>
+      c.tiles.map((t) => [t.id, height(t.id) === "content" ? null : t.h]),
+    ),
   );
   const rows = (id: string) => {
     if (!editing && off[id as WidgetId]) return 0;
@@ -162,7 +170,9 @@ export const Dashboard = ({
   const stretch = new Set(
     [...sticky].flatMap((i) => {
       const last = columns[i]!.tiles.findLast((t) => placed.has(t.id));
-      return last && last.h === null ? [last.id] : [];
+      return last && last.h === null && height(last.id) === "fill"
+        ? [last.id]
+        : [];
     }),
   );
   frozen.current = stretch;
@@ -270,14 +280,10 @@ export const Dashboard = ({
     else {
       const spot = place(d.start, rows).spots.get(d.id)!;
       const content = d.y + d.dy - box.top - cells.current.get(d.id)!.offsetTop;
-      const h =
-        Math.abs(content - d.natural) < GAP
-          ? null
-          : Math.max(MIN_ROWS, Math.round(content / ROW));
       next = resize(
         widen(d.start, box.width, spot.col, d.x + d.dx - box.left),
         d.id,
-        h,
+        rowsFor(d.id, content, d.natural),
       );
     }
     if (!same(next, draftRef.current ?? d.start)) {
@@ -328,7 +334,10 @@ export const Dashboard = ({
       y: event.clientY,
       start: saved,
       live: false,
-      natural: px[id] ?? 0,
+      natural:
+        px[id] ??
+        contents.current.get(id)?.firstElementChild?.scrollHeight ??
+        0,
     };
     drag.current = d;
     let held = false;
@@ -466,6 +475,7 @@ export const Dashboard = ({
                     : null
                 }
                 fixed={fixed.get(id) != null}
+                edge={col === columns.length - 1}
                 editing={editing}
                 moving={active?.id === id && active.kind === "move"}
                 render={off[id] ? null : tiles[id]}
