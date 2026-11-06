@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { chromium, webkit, type Browser } from "playwright-core";
 import { checkout, git } from "./checkout.ts";
+import { guard } from "./dev.ts";
 
 process.on("uncaughtException", (error) => {
   console.error(error.message);
@@ -48,19 +49,22 @@ const env = `--env-file-if-exists=${git("rev-parse", "--path-format=absolute", "
 const pause = (ms: number) => new Promise((done) => setTimeout(done, ms));
 
 const run = (cwd: string, args: string[]) => {
-  const child = spawn(process.execPath, args, {
-    cwd,
-    env: {
-      ...process.env,
-      PORT: "0",
-      DEV_NO_AUTH: "1",
-      ...(o.replay && {
-        LIVE_REPLAY: resolve(o.replay),
-        LIVE_REPLAY_FROM: o.from,
-      }),
-    },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const child = guard(
+    spawn(process.execPath, args, {
+      cwd,
+      detached: process.platform !== "win32",
+      env: {
+        ...process.env,
+        PORT: "0",
+        DEV_NO_AUTH: "1",
+        ...(o.replay && {
+          LIVE_REPLAY: resolve(o.replay),
+          LIVE_REPLAY_FROM: o.from,
+        }),
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    }),
+  );
   let log = "";
   child.stdout!.on("data", (chunk) => (log += chunk));
   child.stderr!.on("data", (chunk) => (log += chunk));

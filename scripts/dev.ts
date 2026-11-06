@@ -1,4 +1,4 @@
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
 import { createServer, type AddressInfo } from "node:net";
 
@@ -15,25 +15,32 @@ async function checkPort(port: number) {
   return String(port);
 }
 
-export async function runDev(commands: string[][]): Promise<number> {
-  const children = commands.map((args) =>
-    spawn(process.execPath, args, {
-      stdio: "inherit",
-      detached: process.platform !== "win32",
-      env: { ...process.env, DEV_NO_AUTH: "1" },
-    }),
-  );
+export function guard(child: ChildProcess) {
   const watchdog = spawn(
     process.execPath,
     [
       "-e",
-      'process.stdin.on("close", () => { for (const pid of process.argv.slice(1)) try { process.kill(-pid, "SIGKILL"); } catch {} }).resume();',
-      ...children.map((child) => String(child.pid)),
+      'process.stdin.on("close", () => { try { process.kill(-process.argv[1], "SIGKILL"); } catch {} }).resume();',
+      String(child.pid),
     ],
     {
       detached: process.platform !== "win32",
       stdio: ["pipe", "ignore", "ignore"],
     },
+  );
+  child.once("exit", () => watchdog.kill("SIGKILL"));
+  return child;
+}
+
+export async function runDev(commands: string[][]): Promise<number> {
+  const children = commands.map((args) =>
+    guard(
+      spawn(process.execPath, args, {
+        stdio: "inherit",
+        detached: process.platform !== "win32",
+        env: { ...process.env, DEV_NO_AUTH: "1" },
+      }),
+    ),
   );
   let stop: (code: number) => void;
   const stopped = new Promise<number>((resolve) => {
@@ -71,7 +78,6 @@ export async function runDev(commands: string[][]): Promise<number> {
   await Promise.all(exits);
   clearTimeout(timer);
   signal("SIGKILL");
-  watchdog.kill("SIGKILL");
   process.removeListener("SIGINT", interrupt);
   process.removeListener("SIGTERM", terminate);
   return code;
