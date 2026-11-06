@@ -1,0 +1,13 @@
+{
+  "id": "98ebf4db",
+  "ts": "2026-11-06T12:48:17+00:00",
+  "text": "pnpm -s (silent flag) fails with 'unexpected argument' in this pnpm version",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "1c360c8b",
+  "where": "pnpm",
+  "branch": "t3/title-fight-row-hover"
+}

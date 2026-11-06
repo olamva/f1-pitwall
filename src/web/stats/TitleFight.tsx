@@ -344,45 +344,38 @@ export const TitleFight = ({
               who={who}
               gain={gain}
             />
-            <table className="tabular w-full text-sm">
-              <thead className="text-left text-xs text-zinc-500">
-                <tr>
-                  <th className="py-1" />
-                  <th className="py-1 pl-3 text-right">Points</th>
-                  <th className="py-1 pl-3 text-right">Max</th>
-                  <th className="py-1 pl-4">Earliest {place || "title"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {table.slice(0, 10).map((s) => (
-                  <tr
-                    key={s.id}
-                    className={`border-t border-zinc-800 ${alive.includes(s.id) ? "" : "text-zinc-600"}`}
-                  >
-                    <td className="py-1">
-                      <Hover id={s.id} className="w-fit">
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="h-4 w-1 rounded-sm"
-                            style={{ background: ink(who.get(s.id)?.color) }}
-                          />
-                          {who.get(s.id)?.name ?? s.id}
-                        </span>
-                      </Hover>
-                    </td>
-                    <td className="py-1 pl-3 text-right">{s.points}</td>
-                    <td className="py-1 pl-3 text-right">{s.points + gain}</td>
-                    <td className="py-1 pl-4">
-                      {earliestText(
-                        earliestClinch(table, events, s.id, champ),
-                        events,
-                        place || "Champion",
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="tabular -mx-2 grid grid-cols-[auto_auto_auto_1fr] text-sm *:col-span-full *:grid *:grid-cols-subgrid *:items-center *:px-2 *:py-1">
+              <div className="text-xs font-bold text-zinc-500">
+                <span />
+                <span className="pl-3 text-right">Points</span>
+                <span className="pl-3 text-right">Max</span>
+                <span className="pl-4">Earliest {place || "title"}</span>
+              </div>
+              {table.slice(0, 10).map((s) => (
+                <Hover
+                  key={s.id}
+                  id={s.id}
+                  className={`cursor-default border-t border-zinc-800 hover:bg-zinc-800/60 ${alive.includes(s.id) ? "" : "text-zinc-600"}`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="h-4 w-1 rounded-sm"
+                      style={{ background: ink(who.get(s.id)?.color) }}
+                    />
+                    {who.get(s.id)?.name ?? s.id}
+                  </span>
+                  <span className="pl-3 text-right">{s.points}</span>
+                  <span className="pl-3 text-right">{s.points + gain}</span>
+                  <span className="pl-4">
+                    {earliestText(
+                      earliestClinch(table, events, s.id, champ),
+                      events,
+                      place || "Champion",
+                    )}
+                  </span>
+                </Hover>
+              ))}
+            </div>
           </section>
           {alive.length > 1 && (
             <section className="bg-surface space-y-3 rounded-xl p-3">
