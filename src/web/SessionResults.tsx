@@ -371,13 +371,17 @@ interface SessionPodiumProps {
   round: number;
   races: Race[];
   kind: Kind;
+  past?: boolean;
 }
+
+const start = ({ grid }: Result) => (grid ? `from P${grid}` : "from pit lane");
 
 export const SessionPodium = ({
   year,
   round,
   races,
   kind,
+  past,
 }: SessionPodiumProps) => {
   const timed = kind === "qualifying" || kind === "sprintQualifying";
   const practiced = kind.startsWith("fp");
@@ -396,10 +400,12 @@ export const SessionPodium = ({
       : race &&
         podium(
           kind === "sprint" ? race.sprint : race.results,
-          (result) => result.time || result.status,
+          past && kind === "race"
+            ? start
+            : (result) => result.time || result.status,
         );
   return top && top.length >= 3 ? (
-    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} />
+    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />
   ) : (
     <p className="py-8 text-center text-xs text-zinc-400">
       {top || quali.error || practice.error

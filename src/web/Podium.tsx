@@ -85,11 +85,15 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
   </div>
 );
 
-const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
+interface FaceProps extends Pick<PodiumEntry, "id" | "color"> {
+  faded?: boolean;
+}
+
+const Face = ({ id, color, faded }: FaceProps) => {
   const src = useArt(id)?.headshot;
   return (
     <span
-      className="size-10 shrink-0 overflow-hidden rounded-lg"
+      className={`size-10 shrink-0 overflow-hidden rounded-lg ${faded ? "grayscale-35" : ""}`}
       style={{
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}
@@ -101,7 +105,12 @@ const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
   );
 };
 
-export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
+interface PodiumListProps {
+  entries: PodiumEntry[];
+  faded?: boolean;
+}
+
+export const PodiumList = ({ entries, faded }: PodiumListProps) => (
   <ol className="mt-1">
     {entries.slice(0, 3).map((e, i) => (
       <li
@@ -114,7 +123,7 @@ export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
         >
           {i + 1}
         </span>
-        <Face id={e.id} color={e.color} />
+        <Face id={e.id} color={e.color} faded={faded} />
         <span className="min-w-0">
           <span className="block text-[13px] leading-tight font-bold">
             {e.name}
