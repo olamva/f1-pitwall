@@ -1,5 +1,5 @@
 import { Fragment, useContext, useState, type CSSProperties } from "react";
-import { BODY, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
+import { BODY, Car, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { logoSrc } from "./TeamLogo.tsx";
 
@@ -101,6 +101,19 @@ const Figures = ({ side, gone, right, seam }: PanelProps) => {
         {cast.map(({ team: [, mate], m }) => mate && figure(mate, true, m))}
       </div>
       {cast.map(({ team: [lead], m }) => lead && figure(lead, false, m))}
+      <div
+        className="absolute inset-0 transition-[clip-path] duration-500"
+        style={{ clipPath: clip(seam, right) }}
+      >
+        {cast.map(({ s, m }) => (
+          <Car
+            key={s.id}
+            id={s.id}
+            pose={right ? "left" : "right"}
+            className={`absolute top-[57%] w-[46%] max-w-none drop-shadow-[0_8px_16px_rgb(0_0_0_/_0.6)] ${right ? "right-[1%]" : "left-[1%]"} ${m}`}
+          />
+        ))}
+      </div>
     </>
   );
 };
