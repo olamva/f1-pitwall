@@ -1,5 +1,13 @@
-import { useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { ink } from "../ink.ts";
+import {
+  Count,
+  frames,
+  ramp,
+  useEntrance,
+  useFlip,
+  type Shift,
+} from "./motion.tsx";
 import { summary } from "./summary.ts";
 
 export type Box = {
@@ -9,8 +17,70 @@ export type Box = {
   values: number[];
 };
 
-export const SLIDE = "duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const ROW = 24;
+const STAGGER = 14;
+const MORPH =
+  "duration-[650ms] ease-[cubic-bezier(0.34,1.32,0.64,1)] motion-reduce:transition-none";
+
+const reshuffle = (el: HTMLElement, from: Shift | null) => {
+  if (!from?.y) return;
+  const up = from.y > 0;
+  Object.assign(el.style, {
+    zIndex: up ? "2" : "1",
+    background: up ? "var(--color-surface)" : "",
+  });
+  el.animate(
+    frames(30, (t) => {
+      const swap = ramp(t, 0.3, 1);
+      const lift = Math.sin(Math.PI * swap);
+      return {
+        transform: `translateY(${from.y * (1 - swap)}px) scale(${up ? 1 + 0.05 * lift : 1 - 0.02 * lift})`,
+        opacity: up ? 1 : 1 - 0.45 * lift,
+        boxShadow: `0 ${6 * lift}px ${14 * lift}px rgb(0 0 0 / ${up ? 0.35 * lift : 0})`,
+      };
+    }),
+    {
+      duration: 1150,
+      delay: Number(el.dataset.rank) * STAGGER,
+      fill: "backwards",
+    },
+  ).finished.then(
+    () => Object.assign(el.style, { zIndex: "", background: "" }),
+    () => {},
+  );
+};
+
+const enter = (el: HTMLElement) =>
+  el.animate(
+    [
+      { opacity: 0, transform: "translateX(-12px)" },
+      { opacity: 1, transform: "none" },
+    ],
+    {
+      duration: 420,
+      delay: Number(el.dataset.rank) * 22,
+      easing: "cubic-bezier(0.22,1,0.36,1)",
+      fill: "backwards",
+    },
+  );
+
+const moved = (order: string[], previous: string[]) =>
+  new Map(
+    order.map((id, i) => [
+      id,
+      previous.includes(id) ? previous.indexOf(id) - i : 0,
+    ]),
+  );
+
+const Move = ({ by }: { by: number }) =>
+  by ? (
+    <span
+      className={`animate-place inline-block font-bold ${by > 0 ? "text-emerald-400" : "text-red-400"}`}
+    >
+      {by > 0 ? "▲" : "▼"}
+      {Math.abs(by)}
+    </span>
+  ) : null;
 
 interface BoxPlotProps {
   boxes: Box[];
@@ -18,32 +88,50 @@ interface BoxPlotProps {
 }
 
 export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
+  const root = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<string | null>(null);
   const stats = boxes.map((b) => ({ ...b, ...summary(b.values) }));
+  const order = stats.map((s) => s.id);
+  const [seen, setSeen] = useState({ order, moves: new Map<string, number>() });
+  if (seen.order.join() !== order.join())
+    setSeen({ order, moves: moved(order, seen.order) });
+  useFlip(root, reshuffle);
+  useEntrance(root, enter);
   const lo = Math.min(...stats.map((s) => s.min));
   const hi = Math.max(...stats.map((s) => s.max));
   const pct = (v: number) => `${((v - lo) / (hi - lo || 1)) * 100}%`;
   const span = (a: number, b: number) => `${((b - a) / (hi - lo || 1)) * 100}%`;
   return (
-    <div className="relative" style={{ height: stats.length * ROW }}>
+    <div ref={root} className="relative" style={{ height: stats.length * ROW }}>
       {stats.map((s, i) => (
         <div
           key={s.id}
+          data-flip={s.id}
+          data-rank={i}
           onMouseEnter={() => setHover(s.id)}
           onMouseLeave={() => setHover(null)}
-          className={`${SLIDE} absolute inset-x-0 flex items-center gap-2 rounded transition-[top] ${hover === s.id ? "bg-zinc-800" : ""}`}
-          style={{ top: i * ROW, height: ROW }}
+          className={`absolute inset-x-0 flex items-center gap-2 rounded ${hover === s.id ? "bg-zinc-800" : ""}`}
+          style={
+            {
+              top: i * ROW,
+              height: ROW,
+              "--delay": `${i * STAGGER}ms`,
+            } as CSSProperties
+          }
         >
-          <span className="w-9 shrink-0 text-right text-xs text-zinc-300">
+          <span className="tabular w-4 shrink-0 text-[9px] leading-none">
+            <Move key={seen.order.join()} by={seen.moves.get(s.id) ?? 0} />
+          </span>
+          <span className="-ml-1 w-8 shrink-0 text-right text-xs text-zinc-300">
             {s.label}
           </span>
-          <div className="relative h-full flex-1">
+          <div className="relative h-full flex-1 *:delay-(--delay)">
             <span
-              className={`${SLIDE} absolute top-1/2 h-px bg-zinc-500 transition-[left,width]`}
+              className={`${MORPH} absolute top-1/2 h-px bg-zinc-500 transition-[left,width]`}
               style={{ left: pct(s.min), width: span(s.min, s.max) }}
             />
             <span
-              className={`${SLIDE} absolute top-1/2 h-3.5 min-w-0.5 -translate-y-1/2 rounded opacity-85 transition-[left,width]`}
+              className={`${MORPH} absolute top-1/2 h-3.5 min-w-0.5 -translate-y-1/2 rounded opacity-85 transition-[left,width]`}
               style={{
                 left: pct(s.q1),
                 width: span(s.q1, s.q3),
@@ -51,14 +139,16 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               }}
             />
             <span
-              className={`${SLIDE} absolute top-1/2 h-[18px] w-0.5 -translate-1/2 bg-zinc-50 transition-[left]`}
+              className={`${MORPH} absolute top-1/2 h-[18px] w-0.5 -translate-1/2 bg-zinc-50 transition-[left]`}
               style={{ left: pct(s.median) }}
             />
           </div>
           <span className="tabular w-16 shrink-0 text-[11px] whitespace-nowrap text-zinc-400 sm:w-28">
-            {hover === s.id
-              ? `${format(s.q1)}–${format(s.q3)}`
-              : format(s.median)}
+            {hover === s.id ? (
+              `${format(s.q1)}–${format(s.q3)}`
+            ) : (
+              <Count value={s.median} format={format} delay={i * STAGGER} />
+            )}
           </span>
         </div>
       ))}
