@@ -1,0 +1,14 @@
+{
+  "id": "ba330263",
+  "ts": "2026-11-06T16:49:40+00:00",
+  "text": "iOS 27.2 simulator Home Screen web apps stay blank for local dev and built servers (127.0.0.1 and LAN IP); Safari tab loads fine",
+  "tags": [
+    "ios",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "dd37f923",
+  "where": "iOS Simulator web app",
+  "branch": "t3/remove-pwa-top-edge-blur"
+}
