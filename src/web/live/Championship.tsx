@@ -106,7 +106,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
       {items.map((x) => (
         <div
           key={x}
-          className={`col-start-1 row-start-1 ${x === c ? "" : "invisible"}`}
+          className={`col-start-1 row-start-1 ${x === c ? "" : "filled:hidden invisible"}`}
         >
           <Table champ={x} standing={standings[x]} />
         </div>
