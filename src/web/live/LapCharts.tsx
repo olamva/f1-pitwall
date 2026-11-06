@@ -19,6 +19,7 @@ interface LapChartsProps {
   until: number;
   race: boolean;
   periods: Period[] | null;
+  chart: "times" | "gaps";
 }
 
 const VIEWS = ["Chart", "Laps"] as const;
@@ -60,6 +61,7 @@ export const LapCharts = ({
   until,
   race,
   periods,
+  chart,
 }: LapChartsProps) => {
   const [view, setView] = useState<(typeof VIEWS)[number]>("Chart");
   const [range, setRange] = useState<(typeof RANGES)[number]>("Last 15");
@@ -105,83 +107,78 @@ export const LapCharts = ({
   });
   const reference = rows.find((r) => r.number === driver)?.tla;
   const hint = "No lap times yet.";
-  return (
-    <>
-      <Panel
-        title={
-          view === "Chart"
-            ? range === "All"
-              ? "Lap times (all laps)"
-              : "Lap times (last 15)"
-            : "Lap times"
-        }
-      >
-        <div className="mb-2 flex flex-wrap gap-2">
-          <Tabs items={VIEWS} value={view} onChange={setView} small />
-          {view === "Chart" && (
-            <div title="Last 15 shows only laps within 108% of the fastest">
-              <Tabs items={RANGES} value={range} onChange={setRange} small />
-            </div>
-          )}
-        </div>
-        {view === "Laps" ? (
-          driver ? (
-            <LapList
-              number={driver}
-              laps={(laps[driver] ?? []).filter((r) => r.t <= until)}
-              deleted={deleted}
-              rows={rows}
-              race={race}
-            />
-          ) : (
-            <p className="text-sm text-zinc-500">
-              Select a driver in the timing tower.
-            </p>
-          )
-        ) : Number.isFinite(fastest) ? (
-          <>
-            <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-300">
-              {compounds.map((c) => (
-                <li key={c} className="flex items-center gap-1.5">
-                  <Compound compound={c} />
-                  {c.charAt(0) + c.slice(1).toLowerCase()}
-                </li>
-              ))}
-              <li className="flex items-center gap-1.5">
-                <span className="size-2.5 rotate-45 bg-zinc-400" />
-                Pit lap
-              </li>
-            </ul>
-            <LineChart
-              series={times}
-              xLabel="Lap"
-              yFormat={lapTime}
-              invert
-              height={400}
-            />
-          </>
-        ) : (
-          <p className="text-sm text-zinc-500">{hint}</p>
-        )}
-      </Panel>
-      {race && (
-        <Panel
-          title={reference ? `Gap to ${reference} (s)` : "Gap to leader (s)"}
-        >
-          {gaps.some((s) => s.points.length) ? (
-            <LineChart
-              series={gaps}
-              bands={bands}
-              xLabel="Lap"
-              yFormat={(v) => v.toFixed(0)}
-              invert
-              height={400}
-            />
-          ) : (
-            <p className="text-sm text-zinc-500">No laps yet.</p>
-          )}
-        </Panel>
+  return chart === "gaps" ? (
+    <Panel title={reference ? `Gap to ${reference} (s)` : "Gap to leader (s)"}>
+      {gaps.some((s) => s.points.length) ? (
+        <LineChart
+          series={gaps}
+          bands={bands}
+          xLabel="Lap"
+          yFormat={(v) => v.toFixed(0)}
+          invert
+          height={400}
+        />
+      ) : (
+        <p className="text-sm text-zinc-500">No laps yet.</p>
       )}
-    </>
+    </Panel>
+  ) : (
+    <Panel
+      title={
+        view === "Chart"
+          ? range === "All"
+            ? "Lap times (all laps)"
+            : "Lap times (last 15)"
+          : "Lap times"
+      }
+    >
+      <div className="mb-2 flex flex-wrap gap-2">
+        <Tabs items={VIEWS} value={view} onChange={setView} small />
+        {view === "Chart" && (
+          <div title="Last 15 shows only laps within 108% of the fastest">
+            <Tabs items={RANGES} value={range} onChange={setRange} small />
+          </div>
+        )}
+      </div>
+      {view === "Laps" ? (
+        driver ? (
+          <LapList
+            number={driver}
+            laps={(laps[driver] ?? []).filter((r) => r.t <= until)}
+            deleted={deleted}
+            rows={rows}
+            race={race}
+          />
+        ) : (
+          <p className="text-sm text-zinc-500">
+            Select a driver in the timing tower.
+          </p>
+        )
+      ) : Number.isFinite(fastest) ? (
+        <>
+          <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-300">
+            {compounds.map((c) => (
+              <li key={c} className="flex items-center gap-1.5">
+                <Compound compound={c} />
+                {c.charAt(0) + c.slice(1).toLowerCase()}
+              </li>
+            ))}
+            <li className="flex items-center gap-1.5">
+              <span className="size-2.5 rotate-45 bg-zinc-400" />
+              Pit lap
+            </li>
+          </ul>
+          <LineChart
+            series={times}
+            xLabel="Lap"
+            yFormat={lapTime}
+            invert
+            height={400}
+          />
+        </>
+      ) : (
+        <p className="text-sm text-zinc-500">{hint}</p>
+      )}
+    </Panel>
   );
 };

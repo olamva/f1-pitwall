@@ -1,0 +1,13 @@
+{
+  "id": "e8ef3bae",
+  "ts": "2026-11-06T15:03:15+00:00",
+  "text": "pnpm shot runs --eval after every --click and --wait and does not print the eval result, so a scripted interaction must draw its debug output into the page",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cf3e8ae4",
+  "where": "scripts/shot.ts",
+  "branch": "t3/session-viewer-draggable-layout"
+}

@@ -22,6 +22,8 @@
   }
 }
 
+@custom-variant filled (&:where([data-fill] *));
+
 *:focus {
   outline: none;
 }
@@ -672,6 +674,26 @@ textarea {
     position-try-fallbacks: flip-inline, bottom;
     inset: auto;
     margin: 0.5rem 0 0;
+  }
+}
+
+[data-fill] > * {
+  height: 100%;
+  overflow-y: auto;
+}
+
+@keyframes jiggle {
+  from {
+    rotate: -0.3deg;
+  }
+  to {
+    rotate: 0.3deg;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jiggle {
+    animation: jiggle 0.25s ease-in-out infinite alternate;
   }
 }
 

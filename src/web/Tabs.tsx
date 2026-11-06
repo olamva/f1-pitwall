@@ -17,6 +17,7 @@ interface TabsProps<T extends string> {
   stretch?: boolean;
   labels?: Partial<Record<T, string>>;
   icons?: Partial<Record<T, LucideIcon>>;
+  iconOnly?: boolean;
   live?: T;
   alert?: T;
   drive?: RefObject<((offset: number, held: boolean) => void) | null>;
@@ -31,6 +32,7 @@ export const Tabs = <T extends string>({
   stretch,
   labels,
   icons,
+  iconOnly,
   live,
   alert,
   drive,
@@ -186,8 +188,15 @@ export const Tabs = <T extends string>({
             className="mr-2 inline-block size-2 rounded-full bg-yellow-300"
           />
         )}
-        {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
-        <span className={Icon ? "max-sm:sr-only" : undefined}>
+        {Icon && (
+          <Icon
+            aria-hidden="true"
+            className={iconOnly ? "size-5" : "size-5 sm:hidden"}
+          />
+        )}
+        <span
+          className={iconOnly ? "sr-only" : Icon ? "max-sm:sr-only" : undefined}
+        >
           {labels?.[i] ?? i}
         </span>
       </>

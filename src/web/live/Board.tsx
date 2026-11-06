@@ -1,4 +1,4 @@
-import { ArrowDownToLine } from "lucide-react";
+import { ArrowDownToLine, LayoutDashboard } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { Round } from "../../shared/season.ts";
 import {
@@ -16,6 +16,14 @@ import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
 import { LongRuns } from "./LongRuns.tsx";
 import { Battle } from "./Battle.tsx";
+import { Dashboard } from "./Dashboard.tsx";
+import {
+  DriverFocus,
+  Movers,
+  PitStops,
+  PositionChart,
+  SpeedTraps,
+} from "./Extras.tsx";
 import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
@@ -117,6 +125,8 @@ export const Board = ({
   onLap,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editing, setEditing] = useState(false);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
   const hideMap = useTokenHidden() && !!positionsNote;
   const top = useRef<HTMLDivElement>(null);
   const grid = useRef<HTMLDivElement>(null);
@@ -182,77 +192,105 @@ export const Board = ({
           <ArrowDownToLine aria-hidden="true" size={16} />
           Focus
         </button>
+        <span ref={setSlot} className="contents" />
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            title="Move, resize, add and remove widgets"
+            className="bg-surface flex cursor-pointer items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-800"
+          >
+            <LayoutDashboard aria-hidden="true" size={16} />
+            Customize
+          </button>
+        )}
       </Status>
-      <div
+      <Dashboard
         ref={grid}
-        className="grid scroll-mt-[calc(env(safe-area-inset-top)+1rem)] grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(max-content,3fr)_minmax(0,2fr)] 2xl:grid-cols-[minmax(max-content,48rem)_minmax(0,1fr)]"
-      >
-        <div className="grid min-w-0 xl:sticky xl:top-[calc(env(safe-area-inset-top)+1rem)] xl:min-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)]">
-          <TimingTower
-            rows={rows}
-            race={race}
-            qualifying={qualifying}
-            bests={bests}
-            cut={knockout(state)}
-            selected={selected}
-            pit={pit}
-            onToggle={toggle}
-          />
-        </div>
-        <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))] items-start gap-4">
-          <div className="flex min-w-0 flex-col gap-4">
-            {race && (
-              <Battle
-                rows={rows}
-                laps={laps}
-                periods={periods}
-                until={feed.t}
-                left={
-                  state.LapCount
-                    ? state.LapCount.TotalLaps - state.LapCount.CurrentLap
-                    : Infinity
-                }
-                selected={driver}
-              />
-            )}
-            {!hideMap && (
-              <TrackMap
-                outline={outline}
-                positions={state.Position}
-                telemetry={state.CarData}
-                rows={rows}
-                bests={bests}
-                race={race}
-                selected={selected}
-                pit={pit}
-                onToggle={toggle}
-                note={positionsNote}
-                positionTrail={feed.positionTrail}
-                time={feed.t}
-                speed={speed}
-                stream={feed.src}
-                banner={banner}
-                flags={sectorFlags(state)}
-              />
-            )}
-            {!positionsNote && (
-              <Panel title="Lap compare">
-                <LapCompare outline={outline} drivers={compare} />
-              </Panel>
-            )}
-          </div>
-          <div className="flex min-w-0 flex-col gap-4">
+        editing={editing}
+        slot={slot}
+        onEdit={() => setEditing(true)}
+        onDone={() => setEditing(false)}
+        off={{
+          battle: !race,
+          map: hideMap,
+          compare: !!positionsNote,
+          radio: !radios(state).length,
+          championship: !race || !contested(table),
+          runs: state.SessionInfo?.Type !== "Practice",
+          gaps: !race,
+          stops: !race,
+          positions: !race,
+          movers: !race,
+        }}
+        tiles={{
+          tower: () => (
+            <TimingTower
+              rows={rows}
+              race={race}
+              qualifying={qualifying}
+              bests={bests}
+              cut={knockout(state)}
+              selected={selected}
+              pit={pit}
+              onToggle={toggle}
+            />
+          ),
+          battle: () => (
+            <Battle
+              rows={rows}
+              laps={laps}
+              periods={periods}
+              until={feed.t}
+              left={
+                state.LapCount
+                  ? state.LapCount.TotalLaps - state.LapCount.CurrentLap
+                  : Infinity
+              }
+              selected={driver}
+            />
+          ),
+          map: () => (
+            <TrackMap
+              outline={outline}
+              positions={state.Position}
+              telemetry={state.CarData}
+              rows={rows}
+              bests={bests}
+              race={race}
+              selected={selected}
+              pit={pit}
+              onToggle={toggle}
+              note={positionsNote}
+              positionTrail={feed.positionTrail}
+              time={feed.t}
+              speed={speed}
+              stream={feed.src}
+              banner={banner}
+              flags={sectorFlags(state)}
+            />
+          ),
+          compare: () => (
+            <Panel title="Lap compare">
+              <LapCompare outline={outline} drivers={compare} />
+            </Panel>
+          ),
+          control: () => (
             <RaceControl
               messages={messages(state)}
               rows={rows}
               selected={selected}
               start={sessionStart(state)}
             />
+          ),
+          radio: () => (
             <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
+          ),
+          weather: () => (
             <Weather weather={state.WeatherData} trend={trackTemps(state)} />
-            {race && contested(table) && <Championship standings={table} />}
-          </div>
-          <div className="@container flex min-w-0 flex-col gap-4">
+          ),
+          championship: () => <Championship standings={table} />,
+          runs: () => (
             <LongRuns
               laps={laps}
               rows={rows}
@@ -260,7 +298,10 @@ export const Board = ({
               selected={selected}
               info={state.SessionInfo}
             />
+          ),
+          times: () => (
             <LapCharts
+              chart="times"
               laps={laps}
               rows={rows}
               focus={focus}
@@ -270,9 +311,49 @@ export const Board = ({
               race={race}
               periods={periods}
             />
-          </div>
-        </div>
-      </div>
+          ),
+          gaps: () => (
+            <LapCharts
+              chart="gaps"
+              laps={laps}
+              rows={rows}
+              focus={focus}
+              driver={driver}
+              deleted={deletedLaps(state, driver)}
+              until={feed.t}
+              race={race}
+              periods={periods}
+            />
+          ),
+          driver: () => (
+            <DriverFocus
+              row={rows.find((r) => r.number === driver)}
+              telemetry={driver ? state.CarData?.[driver] : undefined}
+              race={race}
+            />
+          ),
+          traps: () => (
+            <SpeedTraps state={state} rows={rows} selected={selected} />
+          ),
+          stops: () => (
+            <PitStops
+              laps={laps}
+              rows={rows}
+              until={feed.t}
+              selected={selected}
+            />
+          ),
+          positions: () => (
+            <PositionChart
+              laps={laps}
+              rows={rows}
+              until={feed.t}
+              driver={driver}
+            />
+          ),
+          movers: () => <Movers rows={rows} />,
+        }}
+      />
     </div>
   );
 };
