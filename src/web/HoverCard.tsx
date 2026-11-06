@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface HoverCardProps {
   card: ReactNode;
@@ -59,7 +60,11 @@ export const HoverCard = ({
       className={className}
       onPointerOver={(e) => {
         if (e.pointerType !== "mouse") return;
-        if ((e.target as Element).closest("[data-hover]") !== ref.current)
+        const target = e.target as Element;
+        if (
+          target.closest("[data-hover]") !== ref.current &&
+          !pop.current?.contains(target)
+        )
           return close();
         timer.current ||= window.setTimeout(
           () => setBox(ref.current!.getBoundingClientRect()),
@@ -69,27 +74,29 @@ export const HoverCard = ({
       onPointerLeave={close}
     >
       {children}
-      {box && (
-        <div
-          ref={pop}
-          popover="manual"
-          aria-hidden={!interactive}
-          className={`fixed inset-auto m-0 overflow-visible bg-transparent text-zinc-100 ${interactive ? "" : "pointer-events-none"}`}
-          style={{
-            width: WIDTH,
-            left: Math.min(
-              Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
-              innerWidth - WIDTH - MARGIN,
-            ),
-            ...edge,
-            paddingBlock: GAP,
-          }}
-        >
-          <div className="bg-surface overflow-hidden rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
-            {card}
-          </div>
-        </div>
-      )}
+      {box &&
+        createPortal(
+          <div
+            ref={pop}
+            popover="manual"
+            aria-hidden={!interactive}
+            className={`fixed inset-auto m-0 overflow-visible bg-transparent text-sm text-zinc-100 ${interactive ? "" : "pointer-events-none"}`}
+            style={{
+              width: WIDTH,
+              left: Math.min(
+                Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
+                innerWidth - WIDTH - MARGIN,
+              ),
+              ...edge,
+              paddingBlock: GAP,
+            }}
+          >
+            <div className="bg-surface overflow-hidden rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
+              {card}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

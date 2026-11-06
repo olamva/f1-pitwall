@@ -1,7 +1,6 @@
 import type { RaceArchive, Stint, Stints } from "../shared/season.ts";
 import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
 import { TeamHover } from "./TeamCard.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
 import { Compound, tyreColor } from "./Tyre.tsx";
 
 const describe = (stint: Stint) =>
@@ -92,9 +91,7 @@ export const Strategy = ({ rows, stints, favourite }: StrategyProps) => {
           >
             <span className="flex items-center">
               <span className="w-6 text-zinc-500">{result.positionText}</span>
-              <TeamHover team={result.team} className="mr-1.5">
-                <TeamLogo team={result.team} className="block h-4 w-6" />
-              </TeamHover>
+              <TeamHover team={result.team} className="mr-1.5" logo="h-4 w-6" />
               {result.code}
             </span>
             <Line stints={stints[result.number] ?? []} at={at} />

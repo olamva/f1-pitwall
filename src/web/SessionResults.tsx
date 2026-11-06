@@ -14,10 +14,9 @@ import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium, PodiumList, type PodiumEntry } from "./Podium.tsx";
+import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 import { TeamHover } from "./TeamCard.tsx";
 
@@ -155,9 +154,8 @@ const ResultsTable = <T extends Entry>({
                   <TeamHover
                     team={row.team}
                     className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
-                  >
-                    <TeamLogo team={row.team} className="block h-4 w-6" />
-                  </TeamHover>
+                    logo="h-4 w-6"
+                  />
                   {row.name}
                 </button>
               </DriverHover>
@@ -377,6 +375,7 @@ interface SessionPodiumProps {
   round: number;
   races: Race[];
   kind: Kind;
+  past?: boolean;
 }
 
 export const SessionPodium = ({
@@ -384,6 +383,7 @@ export const SessionPodium = ({
   round,
   races,
   kind,
+  past,
 }: SessionPodiumProps) => {
   const timed = kind === "qualifying" || kind === "sprintQualifying";
   const practiced = kind.startsWith("fp");
@@ -400,12 +400,11 @@ export const SessionPodium = ({
     : practiced
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race &&
-        podium(
-          kind === "sprint" ? race.sprint : race.results,
-          (result) => result.time || result.status,
+        podium(kind === "sprint" ? race.sprint : race.results, (r) =>
+          past && kind === "race" ? start(r) : r.time || r.status,
         );
   return top && top.length >= 3 ? (
-    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} />
+    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />
   ) : (
     <p className="py-8 text-center text-xs text-zinc-400">
       {top || quali.error || practice.error

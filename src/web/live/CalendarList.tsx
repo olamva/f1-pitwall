@@ -11,6 +11,7 @@ import { LABEL } from "./Countdown.tsx";
 import {
   CardHead,
   Days,
+  LastYear,
   OpenHint,
   ScheduleWeekend,
   sessions as schedule,
@@ -32,7 +33,7 @@ interface CalendarListProps {
   onOpen: (round: number) => void;
 }
 
-type Previewer = (session: SessionRef) => ReactNode;
+type Previewer = (session: Entry) => ReactNode;
 
 interface PreviewProps {
   session: SessionRef;
@@ -151,6 +152,7 @@ const SessionButton = ({
       time={session.time}
       next={next}
       race={session.name === "Race" ? Date.parse(session.start) : undefined}
+      card={preview?.(session)}
     />
   ) : session.path ? (
     <HoverCard card={preview?.(session)} className="flex">
@@ -307,6 +309,7 @@ export const CalendarList = ({
         <li key={r.name} {...item(r.name)}>
           <ScheduleWeekend
             round={r}
+            year={season.year}
             track={tracks[r.round]}
             featured={r.name === anchor}
           />
@@ -328,17 +331,20 @@ export const CalendarList = ({
               preview={(s) => {
                 const kind = kindOf(s.name);
                 return (
-                  number &&
-                  kind && (
+                  info &&
+                  kind &&
+                  (s.time ? (
+                    <LastYear round={info} year={season.year} kind={kind} />
+                  ) : (
                     <Preview
                       session={s}
                       kind={kind}
                       year={String(season.year)}
-                      round={number}
+                      round={info.round}
                       races={races}
                       hidden={hidden}
                     />
-                  )
+                  ))
                 );
               }}
               podium={race && <Finish race={race} hidden={hidden} />}
