@@ -388,6 +388,7 @@ export const TitleFight = ({
                 table={table}
                 who={who}
                 gain={gain}
+                cars={champ === "constructors"}
               />
               <Pickers
                 label={place ? `${place} for` : "Title for"}
