@@ -16,8 +16,9 @@ import { Finish, type Race } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { useBack } from "./Swipe.tsx";
-import { fresh, useSeen } from "./spoilers.ts";
+import { useHidden } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
+import { TeamSeason } from "./TeamCard.tsx";
 import { currentYear, YEARS, YearSelect } from "./YearSelect.tsx";
 
 const LABELS = {
@@ -30,17 +31,6 @@ const LABELS = {
 
 const calendarPath = (year: string, round: number, current: boolean) =>
   `/calendar${current && !round ? "" : `/${year}`}${round ? `/${round}` : ""}`;
-
-const useHidden = (year: string, season: Season | null) => {
-  const seen = useSeen();
-  return new Set(
-    seen && season && Number(year) === season.year
-      ? fresh(season.rounds, Date.now())
-          .filter((s) => seen[s.id] !== "shown")
-          .map((s) => `${s.round.round}/${s.kind}`)
-      : [],
-  );
-};
 
 interface RaceListProps {
   races: Race[];
@@ -169,13 +159,15 @@ const RaceDetail = ({
         kinds={[shown]}
         round={race.round}
       >
-        <SessionResults
-          year={year}
-          race={race}
-          races={races}
-          kind={shown}
-          favourite={favourite?.id}
-        />
+        <TeamSeason value={Number(year) === season.year ? season : null}>
+          <SessionResults
+            year={year}
+            race={race}
+            races={races}
+            kind={shown}
+            favourite={favourite?.id}
+          />
+        </TeamSeason>
       </Spoiler>
     </section>
   );

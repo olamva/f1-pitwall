@@ -96,6 +96,7 @@ export type RaceArchive = {
     round: number;
     name: string;
     date: string;
+    circuit: string;
     country: string;
     results: {
       driver: string;
@@ -109,6 +110,7 @@ export type RaceArchive = {
       positionText: string;
       points: number;
       status: string;
+      time: string;
     }[];
     sprint: RaceArchive["races"][number]["results"];
   }[];

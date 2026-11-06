@@ -1,13 +1,17 @@
-import { Play } from "lucide-react";
+import { EyeOff, Play } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef, Track } from "../../shared/timing.ts";
 import { Circuit } from "../Circuit.tsx";
+import { Flag } from "../Flag.tsx";
+import { HoverCard } from "../HoverCard.tsx";
 import { Finish, type Race } from "../Podium.tsx";
+import { SESSIONS, SessionPodium, type Kind } from "../SessionResults.tsx";
 import { LABEL } from "./Countdown.tsx";
 import {
   CardHead,
   Days,
+  LastYear,
   OpenHint,
   ScheduleWeekend,
   sessions as schedule,
@@ -29,10 +33,22 @@ interface CalendarListProps {
   onOpen: (round: number) => void;
 }
 
+type Previewer = (session: Entry) => ReactNode;
+
+interface PreviewProps {
+  session: SessionRef;
+  kind: Kind;
+  year: string;
+  round: number;
+  races: Race[];
+  hidden: Set<string>;
+}
+
 interface SessionButtonProps {
   session: Entry;
   onStart: (session: SessionRef) => void;
   next?: boolean;
+  preview?: Previewer;
 }
 
 interface WeekendProps {
@@ -41,6 +57,7 @@ interface WeekendProps {
   track: Track | undefined;
   onStart: (session: SessionRef) => void;
   onOpen?: () => void;
+  preview?: Previewer;
   podium?: ReactNode;
   featured?: boolean;
   sprint: boolean;
@@ -102,23 +119,52 @@ const dates = (sessions: SessionRef[]) =>
     timeZone: "UTC",
   }).formatRange(day(sessions[0]), day(sessions.at(-1)!));
 
-const SessionButton = ({ session, onStart, next }: SessionButtonProps) =>
+const kindOf = (name: string) =>
+  SESSIONS.find((kind) => LABEL[kind].replace(/^Practice /, "FP") === name);
+
+const Preview = ({ session, kind, round, hidden, ...props }: PreviewProps) => (
+  <>
+    <p className="truncate text-xs text-zinc-400">
+      <Flag country={session.country} />
+      {session.meeting}
+    </p>
+    <p className="font-f1 font-bold">{LABEL[kind]}</p>
+    {hidden.has(`${round}/${kind}`) ? (
+      <p className="flex items-center justify-center gap-1.5 py-8 text-xs text-zinc-400">
+        <EyeOff aria-hidden="true" className="size-4 text-red-500" />
+        Results hidden
+      </p>
+    ) : (
+      <SessionPodium round={round} kind={kind} {...props} />
+    )}
+  </>
+);
+
+const SessionButton = ({
+  session,
+  onStart,
+  next,
+  preview,
+}: SessionButtonProps) =>
   session.time ? (
     <Slot
       name={short(session.name)}
       time={session.time}
       next={next}
       race={session.name === "Race" ? Date.parse(session.start) : undefined}
+      card={preview?.(session)}
     />
   ) : session.path ? (
-    <button
-      onClick={() => onStart(session)}
-      aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className="pointer-events-auto flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
-    >
-      <Play aria-hidden="true" className="size-3.5 shrink-0" />
-      <span className="truncate">{short(session.name)}</span>
-    </button>
+    <HoverCard card={preview?.(session)} className="flex">
+      <button
+        onClick={() => onStart(session)}
+        aria-label={`Start replay: ${session.meeting} · ${session.name}`}
+        className="pointer-events-auto flex w-full cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 hover:bg-red-600 hover:text-white"
+      >
+        <Play aria-hidden="true" className="size-3.5 shrink-0" />
+        <span className="truncate">{short(session.name)}</span>
+      </button>
+    </HoverCard>
   ) : (
     <span className="group/pending pointer-events-auto relative flex">
       <button
@@ -148,6 +194,7 @@ const Weekend = ({
   track,
   onStart,
   onOpen,
+  preview,
   podium,
   featured,
   sprint,
@@ -200,6 +247,7 @@ const Weekend = ({
                 session={s}
                 onStart={onStart}
                 next={s === next}
+                preview={preview}
               />
             )),
           ])}
@@ -261,6 +309,7 @@ export const CalendarList = ({
         <li key={r.name} {...item(r.name)}>
           <ScheduleWeekend
             round={r}
+            year={season.year}
             track={tracks[r.round]}
             featured={r.name === anchor}
           />
@@ -279,6 +328,25 @@ export const CalendarList = ({
               track={number ? tracks[number] : undefined}
               onStart={onStart}
               onOpen={round ? () => onOpen(round) : undefined}
+              preview={(s) => {
+                const kind = kindOf(s.name);
+                return (
+                  info &&
+                  kind &&
+                  (s.time ? (
+                    <LastYear round={info} year={season.year} kind={kind} />
+                  ) : (
+                    <Preview
+                      session={s}
+                      kind={kind}
+                      year={String(season.year)}
+                      round={info.round}
+                      races={races}
+                      hidden={hidden}
+                    />
+                  ))
+                );
+              }}
               podium={race && <Finish race={race} hidden={hidden} />}
               featured={w[0].start === anchor}
               sprint={!!info?.sessions.sprint}

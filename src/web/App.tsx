@@ -8,6 +8,7 @@ import {
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { Calendar } from "./Calendar.tsx";
+import { SeasonData } from "./DriverCard.tsx";
 import { LiveSession, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Faces, usePreload } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
@@ -93,7 +94,7 @@ export const App = () => {
     setTab(t);
   };
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [&>.swipe]:grow [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
+    <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 2xl:has-[main:not([inert])_.board]:max-w-none [&>.swipe]:grow [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="flex flex-wrap items-center gap-1.5 sm:h-13.5">
         <button
           ref={logo}
@@ -125,41 +126,46 @@ export const App = () => {
         </div>
       </header>
       <Faces value={faces}>
-        <Swipe
-          items={TABS}
-          value={tab}
-          onChange={go}
-          keep={["Countdown"]}
-          drive={blob}
-          lift={logo}
-          render={(t) =>
-            t === "Countdown" ? (
-              <LiveSession key={session} season={season} info={info} />
-            ) : (
-              <Fragment key={visit}>
-                {t === "Calendar" && <Calendar season={season} />}
-                {t === "Stats" &&
-                  (season.data ? (
-                    <Spoiler
-                      season={season.data}
-                      year={season.data.year}
-                      kinds={KINDS}
-                    >
-                      <Stats season={season.data} />
-                    </Spoiler>
-                  ) : (
-                    <Loading label="Loading the season…" error={season.error} />
-                  ))}
-                {t === "Settings" && (
-                  <Settings
-                    drivers={season.data?.drivers ?? []}
-                    teams={season.data?.teams ?? []}
-                  />
-                )}
-              </Fragment>
-            )
-          }
-        />
+        <SeasonData value={season.data}>
+          <Swipe
+            items={TABS}
+            value={tab}
+            onChange={go}
+            keep={["Countdown"]}
+            drive={blob}
+            lift={logo}
+            render={(t) =>
+              t === "Countdown" ? (
+                <LiveSession key={session} season={season} info={info} />
+              ) : (
+                <Fragment key={visit}>
+                  {t === "Calendar" && <Calendar season={season} />}
+                  {t === "Stats" &&
+                    (season.data ? (
+                      <Spoiler
+                        season={season.data}
+                        year={season.data.year}
+                        kinds={KINDS}
+                      >
+                        <Stats season={season.data} />
+                      </Spoiler>
+                    ) : (
+                      <Loading
+                        label="Loading the season…"
+                        error={season.error}
+                      />
+                    ))}
+                  {t === "Settings" && (
+                    <Settings
+                      drivers={season.data?.drivers ?? []}
+                      teams={season.data?.teams ?? []}
+                    />
+                  )}
+                </Fragment>
+              )
+            }
+          />
+        </SeasonData>
       </Faces>
       <UpdateToast />
     </div>

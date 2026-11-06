@@ -10,7 +10,8 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
-import { Headshot } from "./Headshot.tsx";
+import { DriverHover } from "./DriverCard.tsx";
+import { FALLBACK, Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openConstructor, openDriver, pathPart, pathSegment } from "./path.ts";
 import { GOLD } from "./stats/Champion.tsx";
@@ -18,32 +19,33 @@ import { clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { TeamHover, TeamSeason } from "./TeamCard.tsx";
 import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 import { YEARS, YearSelect } from "./YearSelect.tsx";
 
 const CHAMPS = ["drivers", "constructors"] as const;
 
 interface PortraitProps {
-  driver: DriverInfo;
+  driver?: DriverInfo;
   color: string;
   big: boolean;
 }
 
 const Portrait = ({ driver, color, big }: PortraitProps) => (
   <>
-    {driver.headshot && (
-      <Headshot
-        src={driver.headshot}
-        loading="lazy"
-        className={`absolute bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "champion-figure right-4 max-h-64 origin-bottom-right max-sm:h-3/4 sm:right-24" : "right-8 max-h-36 origin-bottom"}`}
+    <Headshot
+      src={driver?.headshot ?? FALLBACK}
+      loading="lazy"
+      className={`absolute bottom-0 h-full object-contain object-bottom transition group-hover:scale-105 ${big ? "champion-figure right-4 max-h-64 origin-bottom-right max-sm:h-3/4 sm:right-24" : "right-8 max-h-36 origin-bottom"}`}
+    />
+    {driver && (
+      <TeamNumber
+        id={driver.id}
+        number={driver.number}
+        color={big ? GOLD : color}
+        className={`absolute top-3 right-3 flex transition ${big ? "h-10 text-4xl sm:top-6 sm:right-6 sm:h-16 sm:text-6xl" : "h-7 text-3xl"}`}
       />
     )}
-    <TeamNumber
-      id={driver.id}
-      number={driver.number}
-      color={big ? GOLD : color}
-      className={`absolute top-3 right-3 flex transition ${big ? "h-10 text-4xl sm:top-6 sm:right-6 sm:h-16 sm:text-6xl" : "h-7 text-3xl"}`}
-    />
   </>
 );
 
@@ -76,9 +78,10 @@ interface BadgeProps {
 
 const Badge = ({ team, teams, big }: BadgeProps) =>
   logoSrc(team) ? (
-    <TeamLogo
+    <TeamHover
       team={team}
-      className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
+      className={`relative w-fit ${big ? "mt-2" : "mt-1"}`}
+      logo={`object-left ${big ? "h-8 w-16" : "h-5 w-10"}`}
     />
   ) : (
     <span className="relative block text-sm text-zinc-400">
@@ -132,7 +135,7 @@ const Cards = ({
                 className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
               />
             ) : (
-              driver && <Portrait driver={driver} color={color} big={big} />
+              <Portrait driver={driver} color={color} big={big} />
             )}
             {big && (
               <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#fef08a] uppercase sm:text-sm">
@@ -145,11 +148,13 @@ const Cards = ({
                 {driver.code}
               </span>
             )}
-            <span
-              className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
-            >
-              {row.name}
-            </span>
+            <DriverHover id={team ? "" : row.id} className="relative w-fit">
+              <span
+                className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
+              >
+                {row.name}
+              </span>
+            </DriverHover>
             {team ? (
               <Numbers crew={crew} color={color} big={big} />
             ) : (
@@ -260,13 +265,15 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
         drive={blob}
         render={(c) =>
           c === "drivers" ? (
-            <Cards
-              rows={data.drivers}
-              season={season}
-              teams={names}
-              champion={decided(c) ? `${year} World Champion` : undefined}
-              onSelect={openDriver}
-            />
+            <TeamSeason value={Number(year) === season.year ? season : null}>
+              <Cards
+                rows={data.drivers}
+                season={season}
+                teams={names}
+                champion={decided(c) ? `${year} World Champion` : undefined}
+                onSelect={openDriver}
+              />
+            </TeamSeason>
           ) : (
             <Cards
               rows={data.constructors}

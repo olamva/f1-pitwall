@@ -80,9 +80,9 @@ export const RaceControl = ({
   selected,
   start,
 }: RaceControlProps) => (
-  <Panel title="Race control" className="flex grow flex-col">
+  <Panel title="Race control">
     <ul
-      className="min-h-72 grow basis-0 space-y-1 overflow-y-auto text-sm"
+      className="max-h-72 space-y-1 overflow-y-auto text-sm"
       aria-live="polite"
     >
       {messages.length === 0 && (
@@ -378,7 +378,10 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
       toggle(r);
   });
   return (
-    <Panel title="Team radio" className="flex grow flex-col">
+    <Panel
+      title="Team radio"
+      className={shown.length || playing ? undefined : "hidden"}
+    >
       <audio
         ref={audio}
         preload="none"
@@ -449,7 +452,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
           </div>
         </div>
       )}
-      <ul className="min-h-60 grow basis-0 divide-y divide-zinc-800 overflow-y-auto text-sm">
+      <ul className="max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
         {shown.map((r) => {
           const active = r.url === current?.url;
           const d = by.get(r.number);

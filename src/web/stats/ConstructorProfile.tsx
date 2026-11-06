@@ -5,8 +5,10 @@ import type {
 } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
+import { Car } from "../Headshot.tsx";
 import { useConfetti } from "../confetti.ts";
 import { Loading } from "../Loading.tsx";
+import { DriverHover } from "../DriverCard.tsx";
 import { openDriver } from "../path.ts";
 import { useBack } from "../Swipe.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
@@ -87,6 +89,11 @@ export const ConstructorProfile = ({
                 </a>
               )}
             </div>
+            <Car
+              id={id}
+              pose="right"
+              className="relative mx-auto mt-4 w-full max-w-xl drop-shadow-[0_12px_20px_rgb(0_0_0_/_0.45)]"
+            />
             <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-6">
               {(
                 [
@@ -132,13 +139,15 @@ export const ConstructorProfile = ({
                       {season.drivers.map((driver, i) => (
                         <span key={driver.id}>
                           {i > 0 && ", "}
-                          <button
-                            type="button"
-                            onClick={() => openDriver(driver.id)}
-                            className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
-                          >
-                            {driver.name}
-                          </button>
+                          <DriverHover id={driver.id} className="inline-block">
+                            <button
+                              type="button"
+                              onClick={() => openDriver(driver.id)}
+                              className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
+                            >
+                              {driver.name}
+                            </button>
+                          </DriverHover>
                         </span>
                       ))}
                     </td>

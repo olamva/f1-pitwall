@@ -1,16 +1,26 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, History } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import type { Round } from "../../shared/season.ts";
+import type { RaceArchive, Round } from "../../shared/season.ts";
 import type { Track } from "../../shared/timing.ts";
+import { useJson } from "../api.ts";
 import { Circuit } from "../Circuit.tsx";
 import { Flag } from "../Flag.tsx";
+import { HoverCard } from "../HoverCard.tsx";
+import { SessionPodium, type Kind } from "../SessionResults.tsx";
 import { SprintLogo } from "../SprintLogo.tsx";
 import { LABEL } from "./Countdown.tsx";
 
 interface WeekendProps {
   round: Round;
+  year: number;
   track: Track | undefined;
   featured?: boolean;
+}
+
+interface LastYearProps {
+  round: Round;
+  year: number;
+  kind: Kind;
 }
 
 interface CardHeadProps {
@@ -30,6 +40,7 @@ interface SlotProps {
   time: string;
   next?: boolean;
   race?: number;
+  card?: ReactNode;
 }
 
 interface LeftProps {
@@ -149,23 +160,88 @@ export const Days = ({ days }: DaysProps) => (
   </div>
 );
 
-export const Slot = ({ name, time, next, race }: SlotProps) => (
-  <span
-    className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
-  >
-    <span className="flex items-baseline justify-between gap-1.5">
-      <span className="truncate">{name}</span>
-      <span
-        className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
-      >
-        {time}
+export const Slot = ({ name, time, next, race, card }: SlotProps) => (
+  <HoverCard card={card} className="pointer-events-auto grid">
+    <span
+      className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
+    >
+      <span className="flex items-baseline justify-between gap-1.5">
+        <span className="truncate">{name}</span>
+        <span
+          className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+        >
+          {time}
+        </span>
       </span>
+      {race && <Left at={race} />}
     </span>
-    {race && <Left at={race} />}
-  </span>
+  </HoverCard>
 );
 
-export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
+export const LastYear = ({ round, year, kind }: LastYearProps) => {
+  const now = useNow();
+  const archive = useJson<RaceArchive>(`/api/results/${year - 1}`);
+  const at = new Date(round.sessions[kind]!);
+  const past = archive.data?.races.find((r) => r.circuit === round.circuitId);
+  return (
+    <>
+      <p className="truncate text-xs text-zinc-400">
+        <Flag country={round.country} />
+        {round.name} ·{" "}
+        {at.toLocaleDateString([], {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        })}
+        , {time(at)}
+      </p>
+      <p className="flex items-baseline justify-between gap-2">
+        <span className="font-f1 font-bold">{LABEL[kind]}</span>
+        <span className="text-[13px] font-extrabold text-red-400">
+          in{" "}
+          {until(+at - now)
+            .map(([n, unit]) => `${n}${unit}`)
+            .join(" ")}
+        </span>
+      </p>
+      <div className="mt-2.5 rounded-[10px] border border-dashed border-zinc-700 bg-zinc-950 px-2.5 py-2">
+        <p className="mb-0.5 flex items-center gap-1.5">
+          <History aria-hidden className="size-3.5 text-zinc-400" />
+          <span className="text-[11px] font-bold text-zinc-300">
+            Last year's result
+          </span>
+          <span className="ml-auto rounded bg-zinc-700 px-1.5 text-[10px] font-extrabold text-zinc-200">
+            {year - 1}
+          </span>
+        </p>
+        {past ? (
+          <SessionPodium
+            year={String(year - 1)}
+            round={past.round}
+            races={archive.data!.races}
+            kind={kind}
+            past
+          />
+        ) : (
+          <p className="py-8 text-center text-xs text-zinc-400">
+            {archive.data
+              ? "No race here last year"
+              : archive.error
+                ? "Results are not available."
+                : "Loading results…"}
+          </p>
+        )}
+      </div>
+    </>
+  );
+};
+
+export const ScheduleWeekend = ({
+  round,
+  year,
+  track,
+  featured,
+}: WeekendProps) => {
   const all = sessions(round);
   const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
   return (
@@ -196,6 +272,11 @@ export const ScheduleWeekend = ({ round, track, featured }: WeekendProps) => {
               time={time(s.at)}
               next={s === next}
               race={s.key === "race" ? +s.at : undefined}
+              card={
+                +s.at > Date.now() && (
+                  <LastYear round={round} year={year} kind={s.key as Kind} />
+                )
+              }
             />
           )),
         ])}

@@ -212,7 +212,7 @@ const median = (v: number[]) => {
     : null;
 };
 
-function qualifyingHeadToHead(
+export function qualifyingHeadToHead(
   events: { results: QualiResult[] }[],
   a: string,
   b: string,

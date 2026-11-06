@@ -15,6 +15,12 @@ export type Period = {
   to: number | null;
 };
 
+export type ScrubPoint = {
+  t: number;
+  status: string | null;
+  order: { tla: string; color: string; gap: string }[];
+};
+
 export type Point = [t: number, x: number, y: number];
 
 export type Telemetry = [

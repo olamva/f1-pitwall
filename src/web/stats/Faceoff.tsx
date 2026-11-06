@@ -8,9 +8,17 @@ interface FaceoffProps {
   table: Standing[];
   who: Map<string, Who>;
   gain: number;
+  cars: boolean;
 }
 
-export const Faceoff = ({ focus, rival, table, who, gain }: FaceoffProps) => {
+export const Faceoff = ({
+  focus,
+  rival,
+  table,
+  who,
+  gain,
+  cars,
+}: FaceoffProps) => {
   const points = (id: string) => table.find((s) => s.id === id)?.points ?? 0;
   const color = (id: string) => who.get(id)?.color ?? "#888";
   const gap = points(focus) - points(rival);
@@ -20,6 +28,7 @@ export const Faceoff = ({ focus, rival, table, who, gain }: FaceoffProps) => {
       seam={50 + 30 * Math.max(-1, Math.min(gap / gain, 1))}
       center={gap > 0 ? `+${gap}` : gap < 0 ? `−${-gap}` : "="}
       caption="Points"
+      cars={cars}
       sides={[
         {
           id: focus,

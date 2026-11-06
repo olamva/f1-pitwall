@@ -9,15 +9,16 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium } from "./Podium.tsx";
+import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { TeamHover } from "./TeamCard.tsx";
 
 export const SESSIONS = [
   "fp1",
@@ -53,6 +54,58 @@ const entrants = (races: Race[], round: number) =>
       .flatMap((race) => [...race.sprint, ...race.results])
       .map((result) => [result.number, result]),
   );
+
+type Known = ReturnType<typeof entrants>;
+
+const podium = <T extends Entry>(
+  rows: T[],
+  value: (row: T) => string,
+): PodiumEntry[] =>
+  rows.map((row) => ({
+    id: row.driver,
+    name: row.name,
+    color: teamColor(row.team),
+    value: value(row),
+    team: row.team,
+  }));
+
+const points = (result: Result) => `${result.points} pts`;
+
+const qualifyingUrl = (year: string, round: number, kind: Kind) =>
+  `/api/qualifying/${year}/${round}/${kind === "qualifying" ? "race" : "sprint"}`;
+
+const qualifyingRows = (data: Qualifying, known: Known) =>
+  data.map(({ number, position, times }) => ({
+    driver: "",
+    name: `#${number}`,
+    team: "",
+    teamName: "",
+    ...known.get(number),
+    positionText: String(position),
+    times,
+  }));
+
+const best = (row: { times: (string | null)[] }) =>
+  row.times.findLast(Boolean) ?? "";
+
+const practiceRows = (data: Practice, known: Known) => {
+  const teams = new Map(
+    data.flatMap((row) => {
+      const entrant = known.get(row.number);
+      return entrant ? [[row.team, entrant] as const] : [];
+    }),
+  );
+  return data.map(({ number, position, name, team, ...row }) => ({
+    driver: "",
+    name,
+    team: teams.get(team)?.team ?? "",
+    ...known.get(number),
+    positionText: String(position),
+    ...row,
+  }));
+};
+
+const lap = (row: { time: string | null }) => row.time ?? "";
 
 interface ResultsTableProps<T extends Entry> {
   rows: T[];
@@ -91,18 +144,21 @@ const ResultsTable = <T extends Entry>({
               {CODES[row.positionText] ?? row.positionText}
             </td>
             <td className="py-2">
-              <button
-                type="button"
-                onClick={() => openDriver(row.driver)}
-                disabled={!row.driver}
-                className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
-              >
-                <TeamLogo
-                  team={row.team}
-                  className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
-                />
-                {row.name}
-              </button>
+              <DriverHover id={row.driver} className="w-fit">
+                <button
+                  type="button"
+                  onClick={() => openDriver(row.driver)}
+                  disabled={!row.driver}
+                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
+                >
+                  <TeamHover
+                    team={row.team}
+                    className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
+                    logo="h-4 w-6"
+                  />
+                  {row.name}
+                </button>
+              </DriverHover>
             </td>
             {cells(row)}
           </tr>
@@ -122,16 +178,7 @@ const Classification = <T extends Entry>({
 }: ClassificationProps<T>) => (
   <>
     {table.rows.length >= 3 && (
-      <Podium
-        entries={table.rows.map((row) => ({
-          id: row.driver,
-          name: row.name,
-          color: teamColor(row.team),
-          value: value(row),
-          team: row.team,
-        }))}
-        onSelect={openDriver}
-      />
+      <Podium entries={podium(table.rows, value)} onSelect={openDriver} />
     )}
     <ResultsTable {...table} />
   </>
@@ -212,7 +259,7 @@ const RaceBody = ({
       favourite={favourite}
       columns={["", "Pts"]}
       cells={raceCells}
-      value={(result) => `${result.points} pts`}
+      value={points}
     />
   );
 };
@@ -232,9 +279,7 @@ const QualifyingBody = ({
   kind,
   favourite,
 }: QualifyingBodyProps) => {
-  const quali = useJson<Qualifying>(
-    `/api/qualifying/${year}/${race.round}/${kind === "qualifying" ? "race" : "sprint"}`,
-  );
+  const quali = useJson<Qualifying>(qualifyingUrl(year, race.round, kind));
   if (!quali.data)
     return (
       <Loading
@@ -245,19 +290,10 @@ const QualifyingBody = ({
         }
       />
     );
-  const known = entrants(races, race.round);
   const prefix = kind === "qualifying" ? "Q" : "SQ";
   return (
     <Classification
-      rows={quali.data.map(({ number, position, times }) => ({
-        driver: "",
-        name: `#${number}`,
-        team: "",
-        teamName: "",
-        ...known.get(number),
-        positionText: String(position),
-        times,
-      }))}
+      rows={qualifyingRows(quali.data, entrants(races, race.round))}
       favourite={favourite}
       columns={[1, 2, 3].map((part) => `${prefix}${part}`)}
       cells={(row) =>
@@ -267,7 +303,7 @@ const QualifyingBody = ({
           </td>
         ))
       }
-      value={(row) => row.times.findLast(Boolean) ?? ""}
+      value={best}
     />
   );
 };
@@ -300,23 +336,9 @@ const PracticeBody = ({
         }
       />
     );
-  const known = entrants(races, race.round);
-  const teams = new Map(
-    practice.data.flatMap((row) => {
-      const entrant = known.get(row.number);
-      return entrant ? [[row.team, entrant] as const] : [];
-    }),
-  );
   return (
     <Classification
-      rows={practice.data.map(({ number, position, name, team, ...row }) => ({
-        driver: "",
-        name,
-        team: teams.get(team)?.team ?? "",
-        ...known.get(number),
-        positionText: String(position),
-        ...row,
-      }))}
+      rows={practiceRows(practice.data, entrants(races, race.round))}
       favourite={favourite}
       columns={["Time", "Gap", "Laps"]}
       cells={(row) => (
@@ -328,8 +350,67 @@ const PracticeBody = ({
           <td className="py-2 pl-2 text-right text-zinc-400">{row.laps}</td>
         </>
       )}
-      value={(row) => row.time ?? ""}
+      value={lap}
     />
+  );
+};
+
+const LAP = /^(\d+):(\d\d\.\d+)$/;
+
+const seconds = (time: string) => {
+  const [, minutes, rest] = LAP.exec(time) ?? [];
+  return Number(minutes) * 60 + Number(rest);
+};
+
+const gap = (entry: PodiumEntry, leader: PodiumEntry, index: number) =>
+  index && LAP.test(entry.value) && LAP.test(leader.value)
+    ? {
+        ...entry,
+        value: `+${(seconds(entry.value) - seconds(leader.value)).toFixed(3)}`,
+      }
+    : entry;
+
+interface SessionPodiumProps {
+  year: string;
+  round: number;
+  races: Race[];
+  kind: Kind;
+  past?: boolean;
+}
+
+export const SessionPodium = ({
+  year,
+  round,
+  races,
+  kind,
+  past,
+}: SessionPodiumProps) => {
+  const timed = kind === "qualifying" || kind === "sprintQualifying";
+  const practiced = kind.startsWith("fp");
+  const quali = useJson<Qualifying>(
+    timed ? qualifyingUrl(year, round, kind) : null,
+  );
+  const practice = useJson<Practice>(
+    practiced ? `/api/practice/${year}/${round}/${kind}` : null,
+  );
+  const known = entrants(races, round);
+  const race = races.find((entry) => entry.round === round);
+  const top = timed
+    ? quali.data && podium(qualifyingRows(quali.data, known), best)
+    : practiced
+      ? practice.data && podium(practiceRows(practice.data, known), lap)
+      : race &&
+        podium(kind === "sprint" ? race.sprint : race.results, (r) =>
+          past && kind === "race" ? start(r) : r.time || r.status,
+        );
+  return top && top.length >= 3 ? (
+    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />
+  ) : (
+    <p className="py-8 text-center text-xs text-zinc-400">
+      {top || quali.error || practice.error
+        ? "Results are not available."
+        : "Loading results…"}
+    </p>
   );
 };
 
