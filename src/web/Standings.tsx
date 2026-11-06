@@ -18,6 +18,7 @@ import { clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { TeamHover, TeamSeason } from "./TeamCard.tsx";
 import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 import { YEARS, YearSelect } from "./YearSelect.tsx";
 
@@ -76,10 +77,15 @@ interface BadgeProps {
 
 const Badge = ({ team, teams, big }: BadgeProps) =>
   logoSrc(team) ? (
-    <TeamLogo
+    <TeamHover
       team={team}
-      className={`relative block object-left ${big ? "mt-2 h-8 w-16" : "mt-1 h-5 w-10"}`}
-    />
+      className={`relative w-fit ${big ? "mt-2" : "mt-1"}`}
+    >
+      <TeamLogo
+        team={team}
+        className={`block object-left ${big ? "h-8 w-16" : "h-5 w-10"}`}
+      />
+    </TeamHover>
   ) : (
     <span className="relative block text-sm text-zinc-400">
       {teams.get(team) ?? team}
@@ -260,13 +266,15 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
         drive={blob}
         render={(c) =>
           c === "drivers" ? (
-            <Cards
-              rows={data.drivers}
-              season={season}
-              teams={names}
-              champion={decided(c) ? `${year} World Champion` : undefined}
-              onSelect={openDriver}
-            />
+            <TeamSeason value={Number(year) === season.year ? season : null}>
+              <Cards
+                rows={data.drivers}
+                season={season}
+                teams={names}
+                champion={decided(c) ? `${year} World Champion` : undefined}
+                onSelect={openDriver}
+              />
+            </TeamSeason>
           ) : (
             <Cards
               rows={data.constructors}
