@@ -1,0 +1,14 @@
+{
+  "id": "162aee91",
+  "ts": "2026-11-06T04:23:57+00:00",
+  "text": "Headless WebKit does not move an opacity-0 range input on a synthetic mouse drag; Chromium does",
+  "tags": [
+    "playwright",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "2adcbc03",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-9e1124da",
+  "branch": "t3/racepace-seek-transition-tabs"
+}
