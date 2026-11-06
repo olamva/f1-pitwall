@@ -1,5 +1,10 @@
 import { EyeOff, Trophy } from "lucide-react";
-import { createContext, useContext, type CSSProperties } from "react";
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import type { Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { BUST, Figure } from "./Headshot.tsx";
@@ -206,22 +211,21 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
 };
 
 interface TeamHoverProps {
-  team: string;
+  id: string;
   className?: string;
-  logo: string;
+  children: ReactNode;
 }
 
-export const TeamHover = ({ team, className, logo }: TeamHoverProps) => {
+export const TeamHover = ({ id, className, children }: TeamHoverProps) => {
   const season = useContext(TeamSeason);
-  const image = <TeamLogo team={team} className={`block ${logo}`} />;
-  return season?.constructorStandings.some((t) => t.id === team) ? (
+  return season?.constructorStandings.some((t) => t.id === id) ? (
     <HoverCard
       className={className}
-      card={<TeamCard season={season} team={team} />}
+      card={<TeamCard season={season} team={id} />}
     >
-      {image}
+      {children}
     </HoverCard>
   ) : (
-    <div className={className}>{image}</div>
+    <div className={className}>{children}</div>
   );
 };

@@ -6,6 +6,7 @@ import { pathPart, pathSegment, setPathPart } from "../path.ts";
 import { Standings } from "../Standings.tsx";
 import { Swipe } from "../Swipe.tsx";
 import { Tabs } from "../Tabs.tsx";
+import { TeamSeason } from "../TeamCard.tsx";
 import {
   driverTables,
   drivers,
@@ -93,76 +94,78 @@ export const Stats = ({ season }: StatsProps) => {
         stretch
         drive={viewBlob}
       />
-      <Swipe
-        items={VIEWS}
-        value={view}
-        onChange={show}
-        drive={viewBlob}
-        render={(v) => (
-          <>
-            {v === "Standings" &&
-              (profile?.kind === "drivers" ? (
-                <DriverProfile
-                  key={profile.id}
-                  id={profile.id}
-                  season={season}
-                  onBack={() => show("Standings")}
+      <TeamSeason value={season}>
+        <Swipe
+          items={VIEWS}
+          value={view}
+          onChange={show}
+          drive={viewBlob}
+          render={(v) => (
+            <>
+              {v === "Standings" &&
+                (profile?.kind === "drivers" ? (
+                  <DriverProfile
+                    key={profile.id}
+                    id={profile.id}
+                    season={season}
+                    onBack={() => show("Standings")}
+                  />
+                ) : profile ? (
+                  <ConstructorProfile
+                    key={profile.id}
+                    id={profile.id}
+                    season={season}
+                    onBack={() => show("Standings")}
+                  />
+                ) : (
+                  <Standings season={season} champ={table} />
+                ))}
+              {v === "Title fight" && (
+                <div className="space-y-4">
+                  <Tabs
+                    items={CHAMPS}
+                    value={champ}
+                    onChange={setChamp}
+                    small
+                    stretch
+                    drive={champBlob}
+                  />
+                  <Swipe
+                    items={CHAMPS}
+                    value={champ}
+                    onChange={setChamp}
+                    drive={champBlob}
+                    render={(c) => (
+                      <TitleFight
+                        champ={c}
+                        season={season}
+                        table={latest(c === "drivers" ? d.dt : d.tt)}
+                        events={d.events}
+                        who={c === "drivers" ? d.who : d.teamWho}
+                      />
+                    )}
+                  />
+                </div>
+              )}
+              {v === "H2H" && (
+                <Teammates
+                  duels={d.duels}
+                  who={d.who}
+                  hasSprints={
+                    season.sprints.length > 0 ||
+                    season.sprintQualifying.length > 0
+                  }
+                  hasSprintQualifying={season.sprintQualifying.length > 0}
                 />
-              ) : profile ? (
-                <ConstructorProfile
-                  key={profile.id}
-                  id={profile.id}
-                  season={season}
-                  onBack={() => show("Standings")}
-                />
-              ) : (
-                <Standings season={season} champ={table} />
-              ))}
-            {v === "Title fight" && (
-              <div className="space-y-4">
-                <Tabs
-                  items={CHAMPS}
-                  value={champ}
-                  onChange={setChamp}
-                  small
-                  stretch
-                  drive={champBlob}
-                />
-                <Swipe
-                  items={CHAMPS}
-                  value={champ}
-                  onChange={setChamp}
-                  drive={champBlob}
-                  render={(c) => (
-                    <TitleFight
-                      champ={c}
-                      season={season}
-                      table={latest(c === "drivers" ? d.dt : d.tt)}
-                      events={d.events}
-                      who={c === "drivers" ? d.who : d.teamWho}
-                    />
-                  )}
-                />
-              </div>
-            )}
-            {v === "H2H" && (
-              <Teammates
-                duels={d.duels}
-                who={d.who}
-                hasSprints={
-                  season.sprints.length > 0 ||
-                  season.sprintQualifying.length > 0
-                }
-                hasSprintQualifying={season.sprintQualifying.length > 0}
-              />
-            )}
-            {v === "Season" && (
-              <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
-            )}
-            {v === "Race pace" && <RacePace season={season} who={d.who} />}
-          </>
-        )}
-      />
+              )}
+              {v === "Season" && (
+                <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
+              )}
+              {v === "Race pace" && <RacePace season={season} who={d.who} />}
+            </>
+          )}
+        />
+      </TeamSeason>
     </div>
   );
 };

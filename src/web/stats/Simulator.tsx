@@ -8,8 +8,10 @@ import {
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
+import { DriverHover } from "../DriverCard.tsx";
 import { Flag } from "../Flag.tsx";
 import { ink } from "../ink.ts";
+import { TeamHover } from "../TeamCard.tsx";
 import type { Who } from "./derive.ts";
 import { Lineup } from "./Lineup.tsx";
 
@@ -86,6 +88,7 @@ export const Simulator = ({
   const cars = champ === "drivers" ? 1 : 2;
   const code = (id: string) => who.get(id)?.code ?? id;
   const name = (id: string) => who.get(id)?.name ?? id;
+  const Hover = champ === "drivers" ? DriverHover : TeamHover;
   const why = ({ id, rival, left, countback }: Decided) =>
     [
       left ? `Only ${left} points remain.` : "No points remain.",
@@ -221,7 +224,9 @@ export const Simulator = ({
                 className="h-4 w-1 rounded-sm"
                 style={{ background: ink(who.get(s.id)?.color) }}
               />
-              <span className="truncate">{who.get(s.id)?.name ?? s.id}</span>
+              <Hover id={s.id} className="truncate">
+                {who.get(s.id)?.name ?? s.id}
+              </Hover>
               <span className="ml-auto font-semibold">{s.points}</span>
               <span className="w-10 text-right text-xs text-zinc-500">
                 {i ? `−${leader - s.points}` : ""}
@@ -238,13 +243,15 @@ export const Simulator = ({
                 </th>
                 {contenders.map((id) => (
                   <th key={id} className="p-1 text-xs text-zinc-300">
-                    <span className="flex items-center justify-center gap-1.5">
-                      <span
-                        className="h-3 w-1 rounded-sm"
-                        style={{ background: ink(who.get(id)?.color) }}
-                      />
-                      {code(id)}
-                    </span>
+                    <Hover id={id}>
+                      <span className="flex items-center justify-center gap-1.5">
+                        <span
+                          className="h-3 w-1 rounded-sm"
+                          style={{ background: ink(who.get(id)?.color) }}
+                        />
+                        {code(id)}
+                      </span>
+                    </Hover>
                   </th>
                 ))}
               </tr>
