@@ -72,7 +72,14 @@ export const Tile = ({
     <div
       ref={card}
       className={`relative ${spot && (fixed || editing) ? "h-full" : ""} ${moving ? "z-30 scale-[1.03] rounded-xl shadow-2xl transition-[scale]" : editing ? "jiggle" : ""}`}
-      style={editing ? { animationDelay: `${-index * 0.09}s` } : undefined}
+      style={
+        editing
+          ? {
+              animationDelay: `${-index * 0.09}s, ${-index * 0.13}s`,
+              animationDuration: `${0.14 + ((index % 3) - 1) * 0.025}s, ${0.18 - ((index % 3) - 1) * 0.025}s`,
+            }
+          : undefined
+      }
     >
       <div
         ref={content}
