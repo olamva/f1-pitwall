@@ -398,7 +398,6 @@ export const Dashboard = ({
             size={size}
             onSize={setView}
             missing={missing}
-            preview={(id) => (off[id] ? null : tiles[id]())}
             onAdd={(id) => {
               setSaved(add(saved, rows, id));
               setAdded(id);

@@ -9,41 +9,22 @@ import {
 } from "../../shared/timing.ts";
 import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
-import { LapCompare } from "../LapCompare.tsx";
 import { useTokenHidden } from "../tokenHidden.ts";
-import { Championship } from "./Championship.tsx";
-import { cutGaps, knockout } from "./knockout.ts";
-import { LapCharts } from "./LapCharts.tsx";
-import { LongRuns } from "./LongRuns.tsx";
-import { Battle } from "./Battle.tsx";
+import { cutGaps } from "./knockout.ts";
 import { Dashboard } from "./Dashboard.tsx";
-import {
-  DriverFocus,
-  Movers,
-  PitStops,
-  PositionChart,
-  SpeedTraps,
-} from "./Extras.tsx";
-import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
-import { TimingTower } from "./TimingTower.tsx";
-import { TrackMap } from "./TrackMap.tsx";
+import { widgetTiles } from "./tiles.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
 import { rejoin } from "./rejoin.ts";
 import {
   deletedLaps,
-  isQualifying,
-  messages,
   qualifyingPart,
   radios,
   remaining,
   rows as towerRows,
-  sectorFlags,
   sessionBests,
-  sessionStart,
   trackStatus,
-  trackTemps,
 } from "./view.ts";
 
 interface BoardProps {
@@ -137,7 +118,6 @@ export const Board = ({
   const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = isRace(state.SessionInfo);
-  const qualifying = isQualifying(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
@@ -145,10 +125,6 @@ export const Board = ({
   const [driver] = selected;
   const table = standings(state, rounds);
   const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
-  const at = rows.findIndex((r) => r.number === driver);
-  const focus = (
-    at < 0 ? rows.slice(0, 5) : rows.slice(Math.max(0, at - 1), at + 2)
-  ).map((r) => r.number);
   const compare = rows.flatMap((r) => {
     const lap = fastestLap(
       laps[r.number] ?? [],
@@ -215,136 +191,26 @@ export const Board = ({
           positions: !race,
           movers: !race,
         }}
-        tiles={{
-          tower: () => (
-            <TimingTower
-              rows={rows}
-              race={race}
-              qualifying={qualifying}
-              bests={bests}
-              cut={knockout(state)}
-              selected={selected}
-              pit={pit}
-              onToggle={toggle}
-            />
-          ),
-          battle: () => (
-            <Battle
-              rows={rows}
-              laps={laps}
-              periods={periods}
-              until={feed.t}
-              left={
-                state.LapCount
-                  ? state.LapCount.TotalLaps - state.LapCount.CurrentLap
-                  : Infinity
-              }
-              selected={driver}
-            />
-          ),
-          map: () => (
-            <TrackMap
-              outline={outline}
-              positions={state.Position}
-              telemetry={state.CarData}
-              rows={rows}
-              bests={bests}
-              race={race}
-              selected={selected}
-              pit={pit}
-              onToggle={toggle}
-              note={positionsNote}
-              positionTrail={feed.positionTrail}
-              time={feed.t}
-              speed={speed}
-              stream={feed.src}
-              banner={banner}
-              flags={sectorFlags(state)}
-            />
-          ),
-          compare: () => (
-            <Panel title="Lap compare">
-              <LapCompare outline={outline} drivers={compare} />
-            </Panel>
-          ),
-          control: () => (
-            <RaceControl
-              messages={messages(state)}
-              rows={rows}
-              selected={selected}
-              start={sessionStart(state)}
-            />
-          ),
-          radio: () => (
-            <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
-          ),
-          weather: () => (
-            <Weather weather={state.WeatherData} trend={trackTemps(state)} />
-          ),
-          championship: () => <Championship standings={table} />,
-          runs: () => (
-            <LongRuns
-              laps={laps}
-              rows={rows}
-              until={feed.t}
-              selected={selected}
-              info={state.SessionInfo}
-            />
-          ),
-          times: () => (
-            <LapCharts
-              chart="times"
-              laps={laps}
-              rows={rows}
-              focus={focus}
-              driver={driver}
-              deleted={deletedLaps(state, driver)}
-              until={feed.t}
-              race={race}
-              periods={periods}
-            />
-          ),
-          gaps: () => (
-            <LapCharts
-              chart="gaps"
-              laps={laps}
-              rows={rows}
-              focus={focus}
-              driver={driver}
-              deleted={deletedLaps(state, driver)}
-              until={feed.t}
-              race={race}
-              periods={periods}
-            />
-          ),
-          driver: () => (
-            <DriverFocus
-              row={rows.find((r) => r.number === driver)}
-              telemetry={driver ? state.CarData?.[driver] : undefined}
-              race={race}
-            />
-          ),
-          traps: () => (
-            <SpeedTraps state={state} rows={rows} selected={selected} />
-          ),
-          stops: () => (
-            <PitStops
-              laps={laps}
-              rows={rows}
-              until={feed.t}
-              selected={selected}
-            />
-          ),
-          positions: () => (
-            <PositionChart
-              laps={laps}
-              rows={rows}
-              until={feed.t}
-              driver={driver}
-            />
-          ),
-          movers: () => <Movers rows={rows} />,
-        }}
+        tiles={widgetTiles({
+          state,
+          laps,
+          outline,
+          periods,
+          until: feed.t,
+          rows,
+          bests,
+          table,
+          compare,
+          radios: radios(state),
+          selected,
+          pit,
+          onToggle: toggle,
+          note: positionsNote,
+          trail: feed.positionTrail,
+          speed,
+          stream: feed.src,
+          banner,
+        })}
       />
     </div>
   );
