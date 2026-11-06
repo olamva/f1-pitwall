@@ -3,7 +3,7 @@
 F1 Pitwall is an F1 site: live timing, replays of recent sessions, and season stats with a championship clinch calculator.
 
 Everyone can use live timing, replays, results, and stats without sign-in.
-Google sign-in is necessary only for new radio transcripts, session reminders, and F1TV tokens. Transcripts use Azure Speech, so only signed-in users can start them. Everyone can read saved transcripts. `ALLOWED_EMAILS` lists the accounts that can sign in.
+Google sign-in is necessary only for new radio transcripts, session reminders, and F1TV tokens. Transcripts use Azure Speech, so only signed-in users can start them. Everyone can read saved transcripts. All Google accounts with a verified email address can sign in.
 Each user saves an own F1TV token in Settings. The server opens a separate live connection for each token. Only that user gets the car positions.
 The server keeps the tokens in `$DATA_DIR/tokens.json` with mode 0600, under a hash of the email address.
 Signed-in users get the same TV delay and favourite driver on all devices. The server keeps them in `$DATA_DIR/settings`, under a hash of the email address. The app reads them at start, every 15 seconds and when it becomes visible.
@@ -73,7 +73,6 @@ Keep the other settings in `/etc/f1/env` on the VM, with mode 0600:
 
 | Variable                                                 | Use                                                   |
 | -------------------------------------------------------- | ----------------------------------------------------- |
-| `ALLOWED_EMAILS`                                         | The accounts that can sign in                         |
 | `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`                   | The Google OAuth client                               |
 | `OIDC_AUTH_SECRET`                                       | The key of the session cookie, at least 32 characters |
 | `F1_ORIGIN`                                              | The relay origin for F1 archives and live timing      |

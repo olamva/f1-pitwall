@@ -11,13 +11,6 @@ const COOKIE = "oidc-auth";
 const CALLBACK = "/.auth/login/google/callback";
 const EXPIRES = 30 * 24 * 3600;
 
-const allowed = (address: string): boolean =>
-  (process.env.ALLOWED_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-    .includes(address.toLowerCase());
-
 const oidc: MiddlewareHandler = (c, next) => {
   if (!process.env.OIDC_AUTH_SECRET) return next();
   const site = `https://${c.req.header("host")}`;
@@ -64,8 +57,7 @@ export const sessions = new Hono()
 
 export const user = (c: Context): string | null => {
   if (process.env.DEV_NO_AUTH === "1") return "dev";
-  const address = c.get("oidcAuth")?.email;
-  return address && allowed(address) ? address : null;
+  return c.get("oidcAuth")?.email || null;
 };
 
 export const requireGoogle: MiddlewareHandler = async (c, next) => {
