@@ -122,8 +122,8 @@ test("a pass inside a battle is found and shown over the lead train", () => {
   const [pass, ...rest] = passes(before, after);
   assert.equal(rest.length, 0);
   assert.deepEqual([pass!.ahead.number, pass!.chaser.number], ["4", "3"]);
-  after[3]!.interval = "+0.3";
-  const groups = battles(after);
+  const groups = battles(after, pass!);
+  assert.deepEqual(groups.map(label), ["P1", "P3", "P5"]);
   assert.equal(
     choose(groups, null, undefined, null, undefined, pass!)?.pair.chaser.number,
     "3",

@@ -104,7 +104,7 @@ export const Battle = ({
   const [tapped, setTapped] = useState<string | null>(null);
   const last = useRef<Pair | null>(null);
   const fresh = usePass(rows, until);
-  const groups = battles(rows);
+  const groups = battles(rows, fresh);
   const next = forecast(rows, laps, periods, until, left);
   if (tapped && !ongoing(groups, next, tapped)) setTapped(null);
   const fan = rows.find((r) => r.tla === favourite?.code)?.number;

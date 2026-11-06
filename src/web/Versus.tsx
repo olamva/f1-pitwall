@@ -279,25 +279,33 @@ export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
   const cast = sides
     .map((s, i) => [s, i] as const)
     .sort(([a], [b]) => a.id.localeCompare(b.id));
+  const cut = (i: number) =>
+    slice(
+      i ? i * w : -SLANT - 1,
+      i < sides.length - 1 ? (i + 1) * w : 100 + SLANT + 1,
+    );
+  const fill = (s: Side, i: number) => paint(s.color, (i + 0.5) * w);
   return (
     <div
       className="@container relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
       style={{ background: INK }}
     >
+      {sides.map((s, i) => (
+        <div
+          key={i}
+          className="absolute inset-0 -z-2"
+          style={{ clipPath: cut(i), background: fill(s, i) }}
+        />
+      ))}
       {cast.map(([s, i]) => (
         <div
           key={s.id}
-          className="absolute inset-0 transition-[clip-path] duration-500"
-          style={{
-            clipPath: slice(
-              i ? i * w : -SLANT - 1,
-              i < sides.length - 1 ? (i + 1) * w : 100 + SLANT + 1,
-            ),
-          }}
+          className={`absolute inset-0 transition-[clip-path] duration-500 ${i === pass ? "z-0" : "-z-1"}`}
+          style={{ clipPath: cut(i) }}
         >
           <div
             className="absolute inset-0"
-            style={{ background: paint(s.color, (i + 0.5) * w) }}
+            style={{ background: fill(s, i) }}
           />
           <Figure
             id={s.id}
@@ -315,7 +323,7 @@ export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
       {cast.map(([s, i]) => (
         <div
           key={s.id}
-          className="font-f1 absolute bottom-3 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5 transition-[left] duration-500"
+          className={`font-f1 absolute bottom-3 flex -translate-x-1/2 flex-col items-center gap-1.5 transition-[left] duration-500 ${i === pass ? "z-20" : "z-10"}`}
           style={{ left: mid(i) }}
         >
           <p className="text-xl leading-none font-black tracking-wide sm:text-3xl">

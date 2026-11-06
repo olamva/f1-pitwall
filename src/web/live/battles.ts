@@ -27,9 +27,16 @@ const pairs = (rows: Row[], blank = false): Pair[] =>
       : [];
   });
 
-export const battles = (rows: Row[]): Pair[][] =>
-  pairs(rows)
-    .filter((p) => p.interval < RANGE)
+export const within = (group: Pair[], pass: Pair | null) =>
+  group.find(
+    (p) =>
+      p.ahead.number === pass?.ahead.number &&
+      p.chaser.number === pass.chaser.number,
+  );
+
+export const battles = (rows: Row[], pass: Pair | null = null): Pair[][] =>
+  pairs(rows, true)
+    .filter((p) => within([p], pass) || (p.interval > 0 && p.interval < RANGE))
     .reduce<Pair[][]>((groups, p) => {
       const last = groups.at(-1);
       if (last?.at(-1)!.chaser === p.ahead) last.push(p);
@@ -122,13 +129,6 @@ export const passes = (before: Row[], after: Row[]): Pair[] => {
     (p) => was.get(p.ahead.number) === p.chaser.number,
   );
 };
-
-export const within = (group: Pair[], pass: Pair | null) =>
-  group.find(
-    (p) =>
-      p.ahead.number === pass?.ahead.number &&
-      p.chaser.number === pass.chaser.number,
-  );
 
 export const choose = (
   groups: Pair[][],
