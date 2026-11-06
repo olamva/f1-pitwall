@@ -243,11 +243,11 @@ export const Versus = ({
         className={`font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center px-3 py-1 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] transition-[left] duration-500 ${alert ? "overtake bg-[#e10600] text-white" : "bg-white text-zinc-950"}`}
         style={{ left: `${seam}%` }}
       >
-        <span
-          className={`text-[9px] font-bold tracking-[0.2em] uppercase ${alert ? "text-white/80" : "text-zinc-500"}`}
-        >
-          {caption}
-        </span>
+        {!alert && (
+          <span className="text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+            {caption}
+          </span>
+        )}
         <span className="tabular text-2xl leading-none font-black sm:text-4xl">
           {center}
         </span>
@@ -340,15 +340,10 @@ export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
       {gaps.map((g, i) => (
         <div
           key={i === pass ? "pass" : i}
-          className={`font-f1 tabular absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center px-2 py-1 text-lg leading-none font-black shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] sm:text-2xl ${i === pass ? "overtake bg-[#e10600] text-white" : "bg-white text-zinc-950"}`}
+          className={`font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 px-2 py-1 leading-none font-black shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] ${i === pass ? "overtake bg-[#e10600] text-xs text-white sm:text-base" : "bg-white text-lg text-zinc-950 sm:text-2xl"}`}
           style={{ left: `${(i + 1) * w}%` }}
         >
-          {i === pass && (
-            <span className="mb-0.5 text-[9px] font-bold tracking-[0.2em] text-white/80 uppercase">
-              Overtake
-            </span>
-          )}
-          {g}
+          {i === pass ? "OVERTAKE" : g}
         </div>
       ))}
       {more > 0 && (

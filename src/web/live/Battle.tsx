@@ -19,7 +19,7 @@ import {
 } from "./battles.ts";
 import type { Row } from "./view.ts";
 
-const HOLD = 8000;
+const HOLD = 3000;
 
 interface BattleProps {
   rows: Row[];
@@ -73,14 +73,15 @@ const Card = ({
 
 const usePass = (rows: Row[], until: number) => {
   const [seen, setSeen] = useState({ rows, until });
-  const [pass, setPass] = useState<{ pair: Pair; at: number } | null>(null);
+  const [held, setPass] = useState<{ pair: Pair; at: number } | null>(null);
+  let pass = held;
   if (seen.rows !== rows) {
     setSeen({ rows, until });
     const pair =
       until > seen.until && until - seen.until < HOLD
         ? passes(seen.rows, rows)[0]
         : undefined;
-    if (pair) setPass({ pair, at: until });
+    if (pair) setPass((pass = { pair, at: until }));
   }
   return pass && until >= pass.at && until - pass.at < HOLD ? pass.pair : null;
 };
@@ -172,8 +173,8 @@ const Stage = ({
     ) : (
       <Card
         pair={focus}
-        center={interval(focus)}
-        caption={pass ? "Overtake" : "Interval"}
+        center={pass ? "OVERTAKE" : interval(focus)}
+        caption="Interval"
         alert={!!pass}
       />
     );
