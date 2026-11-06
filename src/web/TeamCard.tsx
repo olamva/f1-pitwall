@@ -1,18 +1,25 @@
-import { EyeOff } from "lucide-react";
-import { createContext, useContext } from "react";
+import { EyeOff, Trophy } from "lucide-react";
+import { createContext, useContext, type CSSProperties } from "react";
 import type { Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { BUST, Figure } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
 import { ink } from "./ink.ts";
 import { useHidden } from "./spoilers.ts";
-import { qualifyingHeadToHead } from "./stats/derive.ts";
+import { GOLD } from "./stats/Champion.tsx";
+import { clinched, qualifyingHeadToHead } from "./stats/derive.ts";
 import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 
 export const TeamSeason = createContext<Season | null>(null);
 
 const solid = (color: string, scale = 1) =>
   `oklch(from ${color} calc(min(l, 0.66) * ${scale}) c h)`;
+
+const SHINE: CSSProperties = {
+  background:
+    "linear-gradient(105deg, transparent 40%, rgb(254 240 138 / 0.25) 50%, transparent 60%) 0 0 / 300% 100%",
+  animation: "champion-shine 6s ease-in-out infinite",
+};
 
 const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
@@ -26,7 +33,7 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
   const color = teamColor(team);
   const table = season.constructorStandings;
   const place = table.findIndex((t) => t.id === team);
-  const start = Math.max(place - 2, 0);
+  const start = Math.max(place - 3, 0);
   const mine = table[place]!.points;
   const name = (id: string) =>
     season.teams.find((t) => t.id === id)?.name ?? id;
@@ -43,8 +50,12 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
   const [a, b] = pair;
   const quali =
     a && b ? qualifyingHeadToHead(season.qualifying, a.id, b.id) : [0, 0];
+  const champion = !hidden && clinched(season, "constructors");
+  const crowned = champion && !place;
   return (
-    <div className="-m-3">
+    <div
+      className={`relative -m-3 ${crowned ? "after:pointer-events-none after:absolute after:inset-0 after:rounded-xl after:ring-2 after:ring-[#facc15] after:ring-inset" : ""}`}
+    >
       <div
         className="relative h-35 overflow-hidden px-3 pt-3 text-white"
         style={{
@@ -56,12 +67,24 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
           alt=""
           className="absolute top-1.5 left-1/2 h-35 w-60 -translate-x-1/2 object-contain opacity-15"
         />
-        <div className="relative flex items-start justify-between">
-          <span className="font-f1 text-xl leading-tight font-bold italic">
-            {name(team)}
-          </span>
+        {crowned && <span className="absolute inset-0" style={SHINE} />}
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <span className="font-f1 block text-xl leading-tight font-bold italic">
+              {name(team)}
+            </span>
+            {crowned && (
+              <span className="font-f1 mt-1 flex items-center gap-1 text-[10px] font-bold tracking-[0.2em] text-[#fef08a] uppercase">
+                <Trophy aria-hidden className="size-3" />
+                {season.year} Champions
+              </span>
+            )}
+          </div>
           {!hidden && (
-            <span className="font-f1 text-3xl leading-none font-black italic">
+            <span
+              className={`font-f1 text-3xl leading-none font-black italic ${crowned ? "bg-clip-text pr-1 text-transparent" : ""}`}
+              style={crowned ? { backgroundImage: GOLD } : undefined}
+            >
               P{place + 1}
             </span>
           )}
@@ -128,28 +151,59 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
               </>
             )}
             <ol className="tabular mt-3 text-xs first:mt-0">
-              {table.slice(start, place + 3).map((t, i) => (
-                <li
-                  key={t.id}
-                  className={`flex items-center gap-2 rounded-md px-1.5 py-1 ${t.id === team ? "bg-zinc-800 font-bold" : ""} ${Math.abs(start + i - place) > 1 ? "opacity-35" : ""}`}
-                >
-                  <span className="font-f1 w-4 text-right font-bold">
-                    {start + i + 1}
-                  </span>
-                  <TeamLogo team={t.id} className="h-3.5 w-5 shrink-0" />
-                  <span className="truncate">{name(t.id)}</span>
-                  <span
-                    className="ml-auto"
-                    style={{ color: t.id === team ? ink(color) : undefined }}
+              {table.slice(start, place + 4).map((t, i) => {
+                const n = start + i;
+                const far = Math.abs(n - place);
+                const up = n < place;
+                return (
+                  <li
+                    key={t.id}
+                    className={
+                      far > 2
+                        ? `flex h-3 overflow-hidden opacity-30 ${up ? "items-end" : "items-start"}`
+                        : far > 1
+                          ? "opacity-40"
+                          : ""
+                    }
+                    style={
+                      far > 2
+                        ? {
+                            maskImage: `linear-gradient(to ${up ? "top" : "bottom"}, #000, transparent)`,
+                          }
+                        : undefined
+                    }
                   >
-                    {t.points}
-                  </span>
-                  <span className="w-9 text-right text-zinc-400">
-                    {t.id !== team &&
-                      `${t.points >= mine ? "+" : "−"}${Math.abs(t.points - mine)}`}
-                  </span>
-                </li>
-              ))}
+                    <div
+                      className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 ${t.id === team ? "bg-zinc-800 font-bold" : ""}`}
+                    >
+                      <span className="font-f1 flex w-4 justify-end font-bold">
+                        {champion && !n ? (
+                          <Trophy
+                            aria-label="Champions"
+                            className="size-3.5 text-yellow-300"
+                          />
+                        ) : (
+                          n + 1
+                        )}
+                      </span>
+                      <TeamLogo team={t.id} className="h-3.5 w-5 shrink-0" />
+                      <span className="truncate">{name(t.id)}</span>
+                      <span
+                        className="ml-auto"
+                        style={{
+                          color: t.id === team ? ink(color) : undefined,
+                        }}
+                      >
+                        {t.points}
+                      </span>
+                      <span className="w-9 text-right text-zinc-400">
+                        {t.id !== team &&
+                          `${t.points >= mine ? "+" : "−"}${Math.abs(t.points - mine)}`}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </>
