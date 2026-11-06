@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
-import { BUST, Figure } from "./Headshot.tsx";
+import { BUST, Figure, Headshot, useArt } from "./Headshot.tsx";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
@@ -83,6 +83,55 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
     </div>
     <div className="h-px bg-linear-to-r from-transparent via-zinc-600 to-transparent" />
   </div>
+);
+
+const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
+  const src = useArt(id)?.headshot;
+  return (
+    <span
+      className="size-10 shrink-0 overflow-hidden rounded-lg"
+      style={{
+        background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
+      }}
+    >
+      {src && (
+        <Headshot src={src} className="size-full object-cover object-top" />
+      )}
+    </span>
+  );
+};
+
+export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
+  <ol className="mt-1">
+    {entries.slice(0, 3).map((e, i) => (
+      <li
+        key={`${e.id}:${i}`}
+        className="flex items-center gap-2.5 border-t border-zinc-800 py-1.5 first:border-0"
+      >
+        <span
+          className="font-f1 w-3.5 shrink-0 font-black"
+          style={{ color: ink(METALS[i]) }}
+        >
+          {i + 1}
+        </span>
+        <Face id={e.id} color={e.color} />
+        <span className="min-w-0">
+          <span className="block text-[13px] leading-tight font-bold">
+            {e.name}
+          </span>
+          {e.team && (
+            <TeamLogo
+              team={e.team}
+              className="mt-0.5 block h-3.5 w-6 object-left"
+            />
+          )}
+        </span>
+        <span className="tabular ml-auto shrink-0 text-xs text-zinc-400">
+          {e.value}
+        </span>
+      </li>
+    ))}
+  </ol>
 );
 
 interface FinishProps {

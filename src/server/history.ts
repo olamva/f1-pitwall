@@ -74,6 +74,7 @@ const result = (row: any): Result => ({
   positionText: row.positionText,
   points: Number(row.points),
   status: row.status ?? "",
+  time: row.Time?.time ?? "",
 });
 
 export async function raceArchive(year: number): Promise<RaceArchive> {
