@@ -34,7 +34,10 @@ import {
 } from "./layout.ts";
 import { DEFAULT_LAYOUT, isWidget, WIDGETS, type WidgetId } from "./widgets.ts";
 
-const QUERIES = ["(width >= 80rem)", "(width >= 48rem)"].map(matchMedia);
+const QUERIES = [
+  "(width >= 80rem) and (pointer: fine)",
+  "(width >= 48rem)",
+].map(matchMedia);
 const KEYS: Record<Size, string> = {
   phone: "layoutPhone",
   tablet: "layoutTablet",
