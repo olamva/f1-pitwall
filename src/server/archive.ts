@@ -11,6 +11,7 @@ import {
   lapSeconds,
   type FastestLaps,
   type Outline,
+  type ScrubPoint,
   type SessionRef,
 } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
@@ -429,6 +430,21 @@ export function replay(path: string): Promise<Replay> {
   if (cache.size > CACHED) cache.delete(cache.keys().next().value!);
   return r;
 }
+
+export const scrub = (r: Replay): ScrubPoint[] =>
+  r.checkpoints.map(({ t, state }: { t: number; state: any }) => ({
+    t,
+    status: state.TrackStatus?.Status ?? null,
+    order: Object.entries<any>(state.TimingData?.Lines ?? {})
+      .filter(([n]) => state.DriverList?.[n])
+      .sort(([, a], [, b]) => Number(a.Position) - Number(b.Position))
+      .slice(0, 5)
+      .map(([n, line]) => ({
+        tla: state.DriverList[n].Tla ?? n,
+        color: `#${state.DriverList[n].TeamColour ?? "888888"}`,
+        gap: line.GapToLeader ?? line.TimeDiffToFastest ?? "",
+      })),
+  }));
 
 export function stateAt(r: Replay, t: number): { state: State; index: number } {
   const cp = r.checkpoints.findLast((c) => c.t <= t) ?? r.checkpoints[0]!;
