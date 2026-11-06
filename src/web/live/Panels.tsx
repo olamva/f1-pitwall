@@ -218,10 +218,13 @@ export const Weather = ({ weather, trend }: WeatherProps) => (
         </div>
       ))}
     </dl>
-    {weather?.Rainfall === "1" &&
-      DROPS.map((style, i) => (
-        <i key={i} className="rain-drop" style={style} />
-      ))}
+    {weather?.Rainfall === "1" && (
+      <div className="pointer-events-none absolute inset-0 [content-visibility:auto]">
+        {DROPS.map((style, i) => (
+          <i key={i} className="rain-drop" style={style} />
+        ))}
+      </div>
+    )}
   </Panel>
 );
 
