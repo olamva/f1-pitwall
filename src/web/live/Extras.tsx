@@ -48,7 +48,7 @@ export const SpeedTraps = ({
         />
       </div>
       {speeds.length ? (
-        <ol className="filled:min-h-0 filled:flex-1 max-h-80 space-y-0.5 overflow-y-auto text-sm">
+        <ol className="filled:max-h-none filled:min-h-0 filled:flex-1 max-h-80 space-y-0.5 overflow-y-auto text-sm">
           {speeds.map(({ row, speed }, i) => (
             <li
               key={row.number}
@@ -182,6 +182,7 @@ export const PositionChart = ({
           yDomain={[1, rows.length]}
           invert
           height={480}
+          fill
         />
       ) : (
         <p className="text-sm text-zinc-500">No laps yet.</p>

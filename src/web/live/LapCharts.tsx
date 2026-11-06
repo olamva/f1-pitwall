@@ -117,6 +117,7 @@ export const LapCharts = ({
           yFormat={(v) => v.toFixed(0)}
           invert
           height={400}
+          fill
         />
       ) : (
         <p className="text-sm text-zinc-500">No laps yet.</p>
@@ -174,6 +175,7 @@ export const LapCharts = ({
             yFormat={lapTime}
             invert
             height={400}
+            fill
           />
         </>
       ) : (

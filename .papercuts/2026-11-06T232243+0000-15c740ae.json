@@ -1,0 +1,14 @@
+{
+  "id": "15c740ae",
+  "ts": "2026-11-06T23:22:43+00:00",
+  "text": "screenshots skill says reload with --eval then --wait, but shot.ts runs --wait before --eval and keeps only the last --eval",
+  "tags": [
+    "docs",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cf7741b2",
+  "where": ".claude/skills/screenshots/SKILL.md",
+  "branch": "t3/widget-resize-constraints"
+}
