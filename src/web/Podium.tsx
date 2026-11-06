@@ -108,38 +108,65 @@ export const Face = ({ id, color, size = "size-10", faded }: FaceProps) => {
 };
 
 interface PodiumListProps {
-  entries: PodiumEntry[];
+  entries?: PodiumEntry[];
   faded?: boolean;
 }
 
-export const PodiumList = ({ entries, faded }: PodiumListProps) => (
-  <ol className="mt-1">
-    {entries.slice(0, 3).map((e, i) => (
+export const PodiumList = ({ entries, faded }: PodiumListProps) =>
+  !entries ? (
+    <PodiumSkeleton />
+  ) : (
+    <ol className="mt-1">
+      {entries.slice(0, 3).map((e, i) => (
+        <li
+          key={`${e.id}:${i}`}
+          className="flex items-center gap-2.5 border-t border-zinc-800 py-1.5 first:border-0"
+        >
+          <span
+            className="font-f1 w-3.5 shrink-0 font-black"
+            style={{ color: ink(METALS[i]) }}
+          >
+            {i + 1}
+          </span>
+          <Face id={e.id} color={e.color} faded={faded} />
+          <span className="min-w-0">
+            <span className="block text-[13px] leading-tight font-bold">
+              {e.name}
+            </span>
+            {e.team && (
+              <TeamLogo
+                team={e.team}
+                className="mt-0.5 block h-3.5 w-6 object-left"
+              />
+            )}
+          </span>
+          <span className="tabular ml-auto shrink-0 text-xs text-zinc-400">
+            {e.value}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+
+const PodiumSkeleton = () => (
+  <ol aria-label="Loading results" className="mt-1 animate-pulse">
+    {METALS.map((metal, i) => (
       <li
-        key={`${e.id}:${i}`}
+        key={metal}
         className="flex items-center gap-2.5 border-t border-zinc-800 py-1.5 first:border-0"
       >
         <span
           className="font-f1 w-3.5 shrink-0 font-black"
-          style={{ color: ink(METALS[i]) }}
+          style={{ color: ink(metal) }}
         >
           {i + 1}
         </span>
-        <Face id={e.id} color={e.color} faded={faded} />
-        <span className="min-w-0">
-          <span className="block text-[13px] leading-tight font-bold">
-            {e.name}
-          </span>
-          {e.team && (
-            <TeamLogo
-              team={e.team}
-              className="mt-0.5 block h-3.5 w-6 object-left"
-            />
-          )}
+        <span className="size-10 shrink-0 rounded-lg bg-zinc-800" />
+        <span className="space-y-1.5">
+          <span className="block h-3 w-20 rounded bg-zinc-800" />
+          <span className="block h-3 w-6 rounded bg-zinc-800" />
         </span>
-        <span className="tabular ml-auto shrink-0 text-xs text-zinc-400">
-          {e.value}
-        </span>
+        <span className="ml-auto h-3 w-14 rounded bg-zinc-800" />
       </li>
     ))}
   </ol>
