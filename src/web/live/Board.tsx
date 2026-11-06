@@ -119,6 +119,7 @@ export const Board = ({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const hideMap = useTokenHidden() && !!positionsNote;
   const top = useRef<HTMLDivElement>(null);
+  const grid = useRef<HTMLDivElement>(null);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
@@ -169,7 +170,12 @@ export const Board = ({
       >
         <button
           type="button"
-          onClick={() => top.current!.scrollIntoView({ behavior: "smooth" })}
+          onClick={() =>
+            (matchMedia("(width >= 80rem)").matches
+              ? grid
+              : top
+            ).current!.scrollIntoView({ behavior: "smooth" })
+          }
           title="Scroll the timing to the top of the screen"
           className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
         >
@@ -177,7 +183,10 @@ export const Board = ({
           Focus
         </button>
       </Status>
-      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(max-content,3fr)_minmax(0,2fr)] 2xl:grid-cols-[minmax(max-content,48rem)_minmax(0,1fr)]">
+      <div
+        ref={grid}
+        className="grid scroll-mt-[calc(env(safe-area-inset-top)+1rem)] grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(max-content,3fr)_minmax(0,2fr)] 2xl:grid-cols-[minmax(max-content,48rem)_minmax(0,1fr)]"
+      >
         <div className="grid min-w-0 xl:sticky xl:top-[calc(env(safe-area-inset-top)+1rem)] xl:min-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)]">
           <TimingTower
             rows={rows}
