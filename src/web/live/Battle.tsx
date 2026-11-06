@@ -12,10 +12,14 @@ import {
   label,
   NEXT,
   ongoing,
+  passes,
+  within,
   type Pair,
   type View,
 } from "./battles.ts";
 import type { Row } from "./view.ts";
+
+const HOLD = 8000;
 
 interface BattleProps {
   rows: Row[];
@@ -33,20 +37,23 @@ const Card = ({
   center,
   caption,
   dim,
+  alert,
   detail,
 }: {
   pair: Pair;
   center: string;
   caption: string;
   dim?: boolean;
+  alert?: boolean;
   detail?: string[];
 }) => (
   <Versus
-    key={pair.ahead.tla + pair.chaser.tla}
+    key={[pair.ahead.tla, pair.chaser.tla].sort().join()}
     seam={50}
     center={center}
     caption={caption}
     dim={dim}
+    alert={alert}
     detail={detail}
     cars
     sides={[
@@ -64,6 +71,27 @@ const Card = ({
   />
 );
 
+const usePass = (rows: Row[], until: number) => {
+  const [seen, setSeen] = useState({ rows, until });
+  const [pass, setPass] = useState<{ pair: Pair; at: number } | null>(null);
+  if (seen.rows !== rows) {
+    setSeen({ rows, until });
+    const pair =
+      until > seen.until && until - seen.until < HOLD
+        ? passes(seen.rows, rows)[0]
+        : undefined;
+    if (pair) setPass({ pair, at: until });
+  }
+  return pass && until >= pass.at && until - pass.at < HOLD ? pass.pair : null;
+};
+
+const heading = (view: View | null, pass: Pair | null, lead?: Row) =>
+  pass
+    ? `Overtake for P${pass.ahead.position}`
+    : !lead
+      ? "Battle"
+      : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`;
+
 export const Battle = ({
   rows,
   laps,
@@ -75,11 +103,13 @@ export const Battle = ({
   const favourite = useFavourite();
   const [tapped, setTapped] = useState<string | null>(null);
   const last = useRef<Pair | null>(null);
+  const fresh = usePass(rows, until);
   const groups = battles(rows);
   const next = forecast(rows, laps, periods, until, left);
   if (tapped && !ongoing(groups, next, tapped)) setTapped(null);
   const fan = rows.find((r) => r.tla === favourite?.code)?.number;
-  const view = choose(groups, next, selected, tapped, fan);
+  const view = choose(groups, next, selected, tapped, fan, fresh);
+  const pass = (view?.group && within(view.group, fresh)) ?? null;
   if (view?.group) last.current = view.pair;
   const nextChip = next && `Next ${lapsText(next.laps)}`;
   const key = [...groups.map(label), nextChip].filter(Boolean).join("\n");
@@ -89,9 +119,7 @@ export const Battle = ({
   return (
     <section className="bg-surface space-y-2 rounded-xl p-3">
       <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-        {!lead
-          ? "Battle"
-          : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`}
+        {heading(view, pass, lead)}
       </h2>
       <div className="-mx-3 h-[50px] [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3 py-1">
         <div className="w-max">
@@ -111,16 +139,25 @@ export const Battle = ({
           )}
         </div>
       </div>
-      <Stage view={view} last={last.current} />
+      <Stage view={view} last={last.current} pass={pass} />
     </section>
   );
 };
 
 const interval = (p: Pair) => p.chaser.interval.replace(/^\+/, "");
 
-const Stage = ({ view, last }: { view: View | null; last: Pair | null }) => {
+const Stage = ({
+  view,
+  last,
+  pass,
+}: {
+  view: View | null;
+  last: Pair | null;
+  pass: Pair | null;
+}) => {
   if (view?.group) {
-    const { pairs, more } = contenders(view.group, view.pair);
+    const focus = pass ?? view.pair;
+    const { pairs, more } = contenders(view.group, focus);
     return pairs.length > 1 ? (
       <Slices
         sides={[pairs[0]!.ahead, ...pairs.map((p) => p.chaser)].map((r) => ({
@@ -129,10 +166,16 @@ const Stage = ({ view, last }: { view: View | null; last: Pair | null }) => {
           note: `P${r.position}`,
         }))}
         gaps={pairs.map(interval)}
+        pass={pass ? pairs.indexOf(pass) : -1}
         more={more}
       />
     ) : (
-      <Card pair={view.pair} center={interval(view.pair)} caption="Interval" />
+      <Card
+        pair={focus}
+        center={interval(focus)}
+        caption={pass ? "Overtake" : "Interval"}
+        alert={!!pass}
+      />
     );
   }
   if (view)
