@@ -661,7 +661,7 @@ textarea {
 
 .live-dot::before {
   background: light-dark(rgb(239 68 68 / 0.5), rgb(248 113 113 / 0.7));
-  animation: live-pulse 2s ease-out 3;
+  animation: live-pulse 2s ease-out 3.25 forwards;
 }
 
 .live-dot::after {
