@@ -334,28 +334,39 @@ export const Dashboard = ({
       natural: px[id] ?? 0,
     };
     drag.current = d;
+    let held = false;
     const go = () => {
       if (d.live || drag.current !== d) return;
       d.live = true;
-      if (!editing) onEdit();
+      if (held) {
+        const box = cards.current.get(id)!.getBoundingClientRect();
+        [d.dx, d.dy] = [d.sx - box.left, d.sy - box.top];
+      }
       document.addEventListener("touchmove", prevent, { passive: false });
       setActive({ ...d });
       requestAnimationFrame(frame);
     };
+    const wake = () => {
+      if (drag.current !== d) return;
+      held = true;
+      [d.sx, d.sy] = [d.x, d.y];
+      document.addEventListener("touchmove", prevent, { passive: false });
+      onEdit();
+    };
     const hold =
-      kind === "size"
+      kind === "size" || mouse
         ? 0
-        : mouse
-          ? 0
-          : window.setTimeout(go, editing ? 150 : 500);
+        : window.setTimeout(editing ? go : wake, editing ? 150 : 500);
     const moved = (e: PointerEvent) => {
       if (e.pointerId !== event.pointerId) return;
       d.x = e.clientX;
       d.y = e.clientY;
-      if (d.live) return claim(e);
+      if (d.live || held) claim(e);
+      if (d.live) return;
       const far = Math.hypot(d.x - d.sx, d.y - d.sy);
-      if (hold && far > 8) ended(e);
-      else if (!hold && far > 4) go();
+      if (hold && !held) {
+        if (far > 8) ended(e);
+      } else if (far > 4) go();
     };
     const ended = (e: PointerEvent) => {
       if (e.pointerId !== event.pointerId) return;
@@ -409,7 +420,9 @@ export const Dashboard = ({
         )}
       <div
         className="mx-auto"
-        style={{ maxWidth: editing ? PREVIEW[size] : undefined }}
+        style={{
+          maxWidth: editing && size !== real ? PREVIEW[size] : undefined,
+        }}
       >
         <div
           ref={(el) => {
