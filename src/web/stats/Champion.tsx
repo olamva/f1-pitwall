@@ -34,6 +34,12 @@ interface PosterProps {
 
 export const GOLD = "linear-gradient(180deg, #fef9c3, #facc15 45%, #a16207)";
 
+export const ChampionMark = () => (
+  <span aria-label="Champion" className="font-f1 font-black text-yellow-300">
+    C
+  </span>
+);
+
 interface TeamProps {
   id: string;
   name: string;

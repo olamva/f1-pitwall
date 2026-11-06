@@ -1,6 +1,7 @@
 import { Trophy } from "lucide-react";
 import { useRef, useState } from "react";
 import type { Championship as Champ } from "../../shared/clinch.ts";
+import { ChampionMark } from "../stats/Champion.tsx";
 import { Swipe } from "../Swipe.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
@@ -59,14 +60,7 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
           {rows.map((d, i) => (
             <tr key={d.id} className="border-t border-zinc-800">
               <td className="px-2 py-1 text-right text-zinc-400">
-                {crowned && !i ? (
-                  <Trophy
-                    aria-label="Champion"
-                    className="ml-auto size-4 text-yellow-300"
-                  />
-                ) : (
-                  d.position
-                )}
+                {crowned && !i ? <ChampionMark /> : d.position}
               </td>
               <td className="px-2 py-1">
                 <span className="flex items-center gap-2">

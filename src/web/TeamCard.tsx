@@ -6,7 +6,7 @@ import { BUST, Figure } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
 import { ink } from "./ink.ts";
 import { useHidden } from "./spoilers.ts";
-import { GOLD } from "./stats/Champion.tsx";
+import { ChampionMark, GOLD } from "./stats/Champion.tsx";
 import { clinched, qualifyingHeadToHead } from "./stats/derive.ts";
 import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 
@@ -177,14 +177,7 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
                       className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 ${t.id === team ? "bg-zinc-800 font-bold" : ""}`}
                     >
                       <span className="font-f1 flex w-4 justify-end font-bold">
-                        {champion && !n ? (
-                          <Trophy
-                            aria-label="Champions"
-                            className="size-3.5 text-yellow-300"
-                          />
-                        ) : (
-                          n + 1
-                        )}
+                        {champion && !n ? <ChampionMark /> : n + 1}
                       </span>
                       <TeamLogo team={t.id} className="h-3.5 w-5 shrink-0" />
                       <span className="truncate">{name(t.id)}</span>
