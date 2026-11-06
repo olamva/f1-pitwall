@@ -1,0 +1,14 @@
+{
+  "id": "24fd8729",
+  "ts": "2026-11-06T00:10:56+00:00",
+  "text": "codex-mirror skill says to edit ~/.codex/AGENTS.md, but it is a symlink to ~/.agents/AGENTS.md and the Edit tool refuses symlinks",
+  "tags": [
+    "docs",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b75b4f57",
+  "where": "/Users/olavassbotn/.claude/skills/codex-mirror/SKILL.md",
+  "branch": "t3/replay-hover-podium-preview"
+}
