@@ -13,7 +13,7 @@ import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium, type PodiumEntry } from "./Podium.tsx";
+import { Podium, PodiumList, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -380,7 +380,7 @@ export const SessionPodium = ({
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race && podium(kind === "sprint" ? race.sprint : race.results, points);
   return top && top.length >= 3 ? (
-    <Podium entries={top} small />
+    <PodiumList entries={top} />
   ) : (
     <p className="py-8 text-center text-xs text-zinc-400">
       {top || quali.error || practice.error
