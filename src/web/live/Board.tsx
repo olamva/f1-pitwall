@@ -1,5 +1,6 @@
-import { ArrowDownToLine } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
+import { useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import type { Round } from "../../shared/season.ts";
 import {
   isRace,
@@ -42,7 +43,6 @@ interface BoardProps {
 }
 
 interface StatusProps {
-  ref: React.Ref<HTMLDivElement>;
   lap?: { CurrentLap: number; TotalLaps: number };
   part: string | null;
   banner: React.ReactNode;
@@ -51,19 +51,8 @@ interface StatusProps {
   children: React.ReactNode;
 }
 
-const Status = ({
-  ref,
-  lap,
-  part,
-  banner,
-  clock,
-  onLap,
-  children,
-}: StatusProps) => (
-  <div
-    ref={ref}
-    className="flex scroll-mt-[calc(env(safe-area-inset-top)+1rem)] flex-wrap items-center gap-3"
-  >
+const Status = ({ lap, part, banner, clock, onLap, children }: StatusProps) => (
+  <div className="flex flex-wrap items-center gap-3">
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
@@ -111,9 +100,8 @@ export const Board = ({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [focus, setFocus] = useState(false);
   const hideMap = useTokenHidden() && !!positionsNote;
-  const top = useRef<HTMLDivElement>(null);
-  const grid = useRef<HTMLDivElement>(null);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
@@ -144,13 +132,12 @@ export const Board = ({
     </div>
   );
   return (
-    <div className="board space-y-4">
+    <div className="board space-y-4" data-focus={focus || undefined}>
       <h1 className="font-f1 text-xl font-bold">
         <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
         {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
       </h1>
       <Status
-        ref={top}
         lap={state.LapCount}
         part={part}
         banner={banner}
@@ -159,22 +146,28 @@ export const Board = ({
       >
         <button
           type="button"
-          onClick={() =>
-            (matchMedia("(width >= 80rem)").matches
-              ? grid
-              : top
-            ).current!.scrollIntoView({ behavior: "smooth" })
+          aria-pressed={focus}
+          onClick={() => {
+            flushSync(() => setFocus(!focus));
+            scrollTo(0, 0);
+          }}
+          title={
+            focus
+              ? "Show the full page"
+              : "Show only the timing, the lap count and the flags"
           }
-          title="Scroll the timing to the top of the screen"
           className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
         >
-          <ArrowDownToLine aria-hidden="true" size={16} />
-          Focus
+          {focus ? (
+            <ArrowUpToLine aria-hidden="true" size={16} />
+          ) : (
+            <ArrowDownToLine aria-hidden="true" size={16} />
+          )}
+          {focus ? "Exit focus" : "Focus"}
         </button>
         <span ref={setSlot} className="contents" />
       </Status>
       <Dashboard
-        ref={grid}
         editing={editing}
         slot={slot}
         onEdit={() => setEditing(true)}

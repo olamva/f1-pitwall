@@ -7,7 +7,6 @@ import {
   useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
-  type Ref,
 } from "react";
 import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
@@ -100,7 +99,6 @@ type Drag = {
 };
 
 interface DashboardProps {
-  ref: Ref<HTMLDivElement>;
   tiles: Record<WidgetId, () => ReactNode>;
   off: Partial<Record<WidgetId, boolean>>;
   editing: boolean;
@@ -110,7 +108,6 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({
-  ref,
   tiles,
   off,
   editing,
@@ -412,13 +409,9 @@ export const Dashboard = ({
         style={{ maxWidth: editing ? PREVIEW[size] : undefined }}
       >
         <div
-          ref={(el) => {
-            grid.current = el;
-            if (typeof ref === "function") ref(el);
-            else if (ref) ref.current = el;
-          }}
+          ref={grid}
           onClick={(e) => editing && e.target === e.currentTarget && onDone()}
-          className="relative grid scroll-mt-[calc(env(safe-area-inset-top)+1rem)] [-webkit-touch-callout:none] pointer-coarse:select-none"
+          className="relative grid [-webkit-touch-callout:none] pointer-coarse:select-none"
           style={{
             columnGap: GAP,
             gridTemplateColumns: columns
