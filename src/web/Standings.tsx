@@ -25,6 +25,26 @@ import { YEARS, YearSelect } from "./YearSelect.tsx";
 
 const CHAMPS = ["drivers", "constructors"] as const;
 
+const SPANS: [number, Record<number, string>][] = [
+  [2, { 6: "sm:col-span-6", 12: "sm:col-span-12" }],
+  [3, { 4: "lg:col-span-4", 6: "lg:col-span-6", 12: "lg:col-span-12" }],
+  [
+    4,
+    {
+      3: "2xl:col-span-3",
+      4: "2xl:col-span-4",
+      6: "2xl:col-span-6",
+      12: "2xl:col-span-12",
+    },
+  ],
+];
+
+const span = (index: number, count: number) =>
+  SPANS.map(([cols, classes]) => {
+    const rest = count % cols;
+    return classes[12 / (index < rest ? rest : cols)];
+  }).join(" ");
+
 interface PortraitProps {
   driver?: DriverInfo;
   color: string;
@@ -110,9 +130,10 @@ const Cards = ({
   const info = new Map(season.drivers.map((d) => [d.id, d]));
   const Card = onSelect ? "button" : "div";
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-12">
       {rows.map((row, place) => {
         const big = place === 0 && !!champion;
+        const offset = champion ? 1 : 0;
         const color = teamColor(row.team);
         const driver = info.get(row.id);
         const team = row.id === row.team;
@@ -124,7 +145,9 @@ const Cards = ({
           <Hover
             key={row.id}
             id={row.id}
-            className={big ? "col-span-full" : ""}
+            className={
+              big ? "col-span-full" : span(place - offset, rows.length - offset)
+            }
           >
             <Card
               onClick={() => onSelect?.(row.id)}
