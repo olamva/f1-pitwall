@@ -5,6 +5,7 @@ import type {
 } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
+import { Car } from "../Headshot.tsx";
 import { useConfetti } from "../confetti.ts";
 import { Loading } from "../Loading.tsx";
 import { openDriver } from "../path.ts";
@@ -87,6 +88,11 @@ export const ConstructorProfile = ({
                 </a>
               )}
             </div>
+            <Car
+              id={id}
+              pose="right"
+              className="relative mx-auto mt-4 w-full max-w-xl drop-shadow-[0_12px_20px_rgb(0_0_0_/_0.45)]"
+            />
             <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-6">
               {(
                 [
