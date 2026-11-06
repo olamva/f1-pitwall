@@ -213,7 +213,12 @@ export const TrackMap = ({
       {(full) => (
         <>
           <div
-            className={`relative ${full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}`}
+            className={`relative ${full ? "min-h-0 w-full flex-1" : "w-full"}`}
+            style={
+              full
+                ? undefined
+                : { aspectRatio: `${box[2]} / ${Math.min(box[2], box[3])}` }
+            }
             onPointerMove={(event) => {
               const at = `${event.clientX},${event.clientY}`;
               if (at === pointer.current) return;

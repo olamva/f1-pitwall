@@ -359,7 +359,7 @@ export const TimingTower = ({
   const bestRow = !race && !tyres;
   const strip = bestRow ? "sm:hidden" : "sm:contents";
   return (
-    <div className="bg-surface overflow-x-auto rounded-xl pb-1.5">
+    <div className="bg-surface flex flex-col overflow-x-auto rounded-xl pb-1.5">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-2 py-2 text-xs sm:px-3">
         <Tabs items={VIEWS} value={view} onChange={setView} small />
         <span
@@ -392,7 +392,7 @@ export const TimingTower = ({
       </div>
       <table
         ref={table}
-        className="tabular w-full font-mono text-xs sm:text-sm"
+        className="tabular w-full grow font-mono text-xs sm:text-sm"
       >
         <thead className="text-left text-xs text-zinc-500">
           <tr className="relative">
