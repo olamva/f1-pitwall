@@ -9,6 +9,7 @@ import {
   maxGain,
   OUTSIDE,
   othersAfterWin,
+  outscoreBy,
   settled,
   type Cell,
   type Championship,
@@ -26,6 +27,7 @@ import { TeamHover } from "../TeamCard.tsx";
 import { Champion } from "./Champion.tsx";
 import { Faceoff } from "./Faceoff.tsx";
 import { Lineup } from "./Lineup.tsx";
+import { Margin } from "./Margin.tsx";
 import { Simulator } from "./Simulator.tsx";
 import type { Who } from "./derive.ts";
 
@@ -177,13 +179,14 @@ const Places = ({ list, empty }: { list: Finish[]; empty: string }) => (
 );
 
 const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
-  const needs = useMemo(
-    () =>
-      constructorNeeds(table, events, focus, rival).filter(
-        (n, i, all) => n.need !== null && n.need !== all[i - 1]?.need,
-      ),
+  const all = useMemo(
+    () => constructorNeeds(table, events, focus, rival),
     [table, events, focus, rival],
   );
+  const needs = all.filter(
+    (n, i) => n.need !== null && n.need !== all[i - 1]?.need,
+  );
+  const by = outscoreBy(all);
   const [a, b] = [who.get(focus)?.name ?? focus, who.get(rival)?.name ?? rival];
   if (!needs.length)
     return (
@@ -193,14 +196,17 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
     );
   return (
     <div>
-      <p className="mb-2 text-sm text-zinc-400">
-        The points {a} need at {events[0]!.name} to secure {prize} there, for
-        each score of {b}. This assumes that every other team can still score
-        the maximum. The finishes show the best results for {b} and the worst
-        results for {a} that give those points. A single position means that the
-        other car scores no points.
-      </p>
-      <table className="tabular w-full text-sm">
+      {by !== null && (
+        <Margin
+          by={by}
+          focus={focus}
+          rival={rival}
+          who={who}
+          prize={prize}
+          event={events[0]!.name}
+        />
+      )}
+      <table className="tabular mt-2 w-full text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
             <th className="w-1/2 py-1 pr-4">{b} at most</th>
