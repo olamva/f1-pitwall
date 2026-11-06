@@ -155,7 +155,7 @@ export const ReplayBar = ({
   return (
     <div
       ref={bar}
-      className="glass-panel relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
+      className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
     >
       <button
         onClick={onToggle}

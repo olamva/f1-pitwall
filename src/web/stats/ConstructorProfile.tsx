@@ -8,6 +8,7 @@ import { useJson } from "../api.ts";
 import { Car } from "../Headshot.tsx";
 import { useConfetti } from "../confetti.ts";
 import { Loading } from "../Loading.tsx";
+import { DriverHover } from "../DriverCard.tsx";
 import { openDriver } from "../path.ts";
 import { useBack } from "../Swipe.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
@@ -138,13 +139,15 @@ export const ConstructorProfile = ({
                       {season.drivers.map((driver, i) => (
                         <span key={driver.id}>
                           {i > 0 && ", "}
-                          <button
-                            type="button"
-                            onClick={() => openDriver(driver.id)}
-                            className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
-                          >
-                            {driver.name}
-                          </button>
+                          <DriverHover id={driver.id} className="inline-block">
+                            <button
+                              type="button"
+                              onClick={() => openDriver(driver.id)}
+                              className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
+                            >
+                              {driver.name}
+                            </button>
+                          </DriverHover>
                         </span>
                       ))}
                     </td>
