@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
 import { DriverHover } from "./DriverCard.tsx";
-import { BUST, Figure, Headshot, useArt } from "./Headshot.tsx";
+import { BUST, FALLBACK, Figure, Headshot, useArt } from "./Headshot.tsx";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
@@ -88,27 +88,31 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
   </div>
 );
 
-export const Face = ({
-  id,
-  color,
-  size = "size-10",
-}: Pick<PodiumEntry, "id" | "color"> & { size?: string }) => {
-  const src = useArt(id)?.headshot;
+interface FaceProps extends Pick<PodiumEntry, "id" | "color"> {
+  size?: string;
+  faded?: boolean;
+}
+
+export const Face = ({ id, color, size = "size-10", faded }: FaceProps) => {
+  const src = useArt(id)?.headshot ?? FALLBACK;
   return (
     <span
-      className={`${size} shrink-0 overflow-hidden rounded-lg`}
+      className={`${size} shrink-0 overflow-hidden rounded-lg ${faded ? "grayscale-35" : ""}`}
       style={{
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}
     >
-      {src && (
-        <Headshot src={src} className="size-full object-cover object-top" />
-      )}
+      <Headshot src={src} className="size-full object-cover object-top" />
     </span>
   );
 };
 
-export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
+interface PodiumListProps {
+  entries: PodiumEntry[];
+  faded?: boolean;
+}
+
+export const PodiumList = ({ entries, faded }: PodiumListProps) => (
   <ol className="mt-1">
     {entries.slice(0, 3).map((e, i) => (
       <li
@@ -121,7 +125,7 @@ export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
         >
           {i + 1}
         </span>
-        <Face id={e.id} color={e.color} />
+        <Face id={e.id} color={e.color} faded={faded} />
         <span className="min-w-0">
           <span className="block text-[13px] leading-tight font-bold">
             {e.name}
@@ -147,6 +151,9 @@ interface FinishProps {
 }
 
 type Result = Race["results"][number];
+
+export const start = ({ grid }: Result) =>
+  grid ? `from P${grid}` : "from pit lane";
 
 const Gain = ({ grid, position }: Result) => {
   const gain = grid - position;

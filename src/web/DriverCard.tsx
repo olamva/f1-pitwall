@@ -7,7 +7,7 @@ import {
 import type { DriverProfile, Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
-import { Headshot } from "./Headshot.tsx";
+import { FALLBACK, Headshot, PORTRAIT } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
 import { METALS } from "./Podium.tsx";
 import { useHidden } from "./spoilers.ts";
@@ -136,7 +136,7 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
       name={driver.name}
       number={driver.number}
       team={driver.team}
-      src={driver.headshot}
+      src={driver.headshot ?? FALLBACK}
       line={[
         season.teams.find((t) => t.id === driver.team)?.name,
         place >= 0 && nth(place + 1),
@@ -179,7 +179,7 @@ const CareerCard = ({ id }: { id: string }) => {
       name={data.name}
       number={data.number}
       team={last?.team ?? ""}
-      src={data.portrait}
+      src={data.portrait ?? PORTRAIT}
       line={[
         last?.teamName,
         data.firstSeason === data.lastSeason

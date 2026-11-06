@@ -14,7 +14,7 @@ import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium, PodiumList, type PodiumEntry } from "./Podium.tsx";
+import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -374,6 +374,7 @@ interface SessionPodiumProps {
   round: number;
   races: Race[];
   kind: Kind;
+  past?: boolean;
 }
 
 export const SessionPodium = ({
@@ -381,6 +382,7 @@ export const SessionPodium = ({
   round,
   races,
   kind,
+  past,
 }: SessionPodiumProps) => {
   const timed = kind === "qualifying" || kind === "sprintQualifying";
   const practiced = kind.startsWith("fp");
@@ -397,12 +399,11 @@ export const SessionPodium = ({
     : practiced
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race &&
-        podium(
-          kind === "sprint" ? race.sprint : race.results,
-          (result) => result.time || result.status,
+        podium(kind === "sprint" ? race.sprint : race.results, (r) =>
+          past && kind === "race" ? start(r) : r.time || r.status,
         );
   return top && top.length >= 3 ? (
-    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} />
+    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />
   ) : (
     <p className="py-8 text-center text-xs text-zinc-400">
       {top || quali.error || practice.error
