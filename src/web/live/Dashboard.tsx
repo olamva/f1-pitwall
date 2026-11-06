@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
@@ -100,6 +101,7 @@ interface DashboardProps {
   tiles: Record<WidgetId, () => ReactNode>;
   off: Partial<Record<WidgetId, boolean>>;
   editing: boolean;
+  slot: HTMLElement | null;
   onEdit: () => void;
   onDone: () => void;
 }
@@ -109,6 +111,7 @@ export const Dashboard = ({
   tiles,
   off,
   editing,
+  slot,
   onEdit,
   onDone,
 }: DashboardProps) => {
@@ -374,22 +377,25 @@ export const Dashboard = ({
   const total = Math.max(1, ...ends);
 
   return (
-    <div className="space-y-3">
-      {editing && (
-        <EditBar
-          sizes={sizes}
-          size={size}
-          onSize={setView}
-          missing={missing}
-          preview={(id) => (off[id] ? null : tiles[id]())}
-          onAdd={(id) => {
-            setSaved(add(saved, rows, id));
-            setAdded(id);
-          }}
-          onReset={() => setSaved(DEFAULT_LAYOUT[size])}
-          onDone={onDone}
-        />
-      )}
+    <>
+      {editing &&
+        slot &&
+        createPortal(
+          <EditBar
+            sizes={sizes}
+            size={size}
+            onSize={setView}
+            missing={missing}
+            preview={(id) => (off[id] ? null : tiles[id]())}
+            onAdd={(id) => {
+              setSaved(add(saved, rows, id));
+              setAdded(id);
+            }}
+            onReset={() => setSaved(DEFAULT_LAYOUT[size])}
+            onDone={onDone}
+          />,
+          slot,
+        )}
       <div
         className="mx-auto"
         style={{ maxWidth: editing ? PREVIEW[size] : undefined }}
@@ -459,6 +465,6 @@ export const Dashboard = ({
           })}
         </div>
       </div>
-    </div>
+    </>
   );
 };

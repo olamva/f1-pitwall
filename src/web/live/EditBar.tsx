@@ -55,7 +55,7 @@ export const EditBar = ({
   const sheet = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   return (
-    <div className="glass-panel sticky top-[calc(env(safe-area-inset-top)+0.5rem)] z-40 flex items-center gap-2 rounded-full p-1.5 text-sm">
+    <div className="bg-surface flex items-center gap-1 rounded-full border border-zinc-800 p-0.5 text-sm">
       <button
         type="button"
         aria-label="Add a widget"
@@ -64,27 +64,25 @@ export const EditBar = ({
           setOpen(true);
           sheet.current!.showModal();
         }}
-        className="glass-control grid size-9 shrink-0 cursor-pointer place-items-center"
+        className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full hover:bg-zinc-800"
       >
         <Plus aria-hidden="true" className="size-5" />
       </button>
-      <div className="flex min-w-0 grow justify-center">
-        {sizes.length > 1 && (
-          <Tabs
-            small
-            items={sizes}
-            value={size}
-            onChange={onSize}
-            labels={{ phone: "Phone", tablet: "Tablet", desktop: "Desktop" }}
-            icons={{ phone: Smartphone, tablet: Landscape, desktop: Monitor }}
-            iconOnly
-          />
-        )}
-      </div>
+      {sizes.length > 1 && (
+        <Tabs
+          small
+          items={sizes}
+          value={size}
+          onChange={onSize}
+          labels={{ phone: "Phone", tablet: "Tablet", desktop: "Desktop" }}
+          icons={{ phone: Smartphone, tablet: Landscape, desktop: Monitor }}
+          iconOnly
+        />
+      )}
       <button
         type="button"
         onClick={onDone}
-        className="shrink-0 cursor-pointer rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white"
+        className="shrink-0 cursor-pointer rounded-full bg-red-600 px-3.5 py-1 font-semibold text-white"
       >
         Done
       </button>

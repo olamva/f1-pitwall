@@ -126,6 +126,7 @@ export const Board = ({
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState(false);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
   const hideMap = useTokenHidden() && !!positionsNote;
   const top = useRef<HTMLDivElement>(null);
   const grid = useRef<HTMLDivElement>(null);
@@ -191,20 +192,23 @@ export const Board = ({
           <ArrowDownToLine aria-hidden="true" size={16} />
           Focus
         </button>
-        <button
-          type="button"
-          onClick={() => setEditing(!editing)}
-          aria-pressed={editing}
-          title="Move, resize, add and remove widgets"
-          className="bg-surface flex cursor-pointer items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-800"
-        >
-          <LayoutDashboard aria-hidden="true" size={16} />
-          Customize
-        </button>
+        <span ref={setSlot} className="contents" />
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            title="Move, resize, add and remove widgets"
+            className="bg-surface flex cursor-pointer items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-800"
+          >
+            <LayoutDashboard aria-hidden="true" size={16} />
+            Customize
+          </button>
+        )}
       </Status>
       <Dashboard
         ref={grid}
         editing={editing}
+        slot={slot}
         onEdit={() => setEditing(true)}
         onDone={() => setEditing(false)}
         off={{
