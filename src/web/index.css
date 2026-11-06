@@ -684,16 +684,27 @@ textarea {
 
 @keyframes jiggle {
   from {
-    rotate: -0.3deg;
+    rotate: -0.02rad;
   }
   to {
-    rotate: 0.3deg;
+    rotate: 0.02rad;
+  }
+}
+
+@keyframes jiggle-bounce {
+  from {
+    translate: 0 2px;
+  }
+  to {
+    translate: 0 0;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .jiggle {
-    animation: jiggle 0.25s ease-in-out infinite alternate;
+    animation:
+      jiggle 0.14s ease-in-out infinite alternate,
+      jiggle-bounce 0.18s ease-in-out infinite alternate;
   }
 }
 
