@@ -205,6 +205,13 @@ test("2025 constructors: McLaren's real 27 points met the need against Mercedes'
   assert.ok(need !== null && need <= 27);
 });
 
+test("2026 constructors: Mercedes win in Brazil when they outscore Ferrari by 3 and keep the countback", () => {
+  const table = [s("mercedes", 630, 12), s("ferrari", 504, 2)];
+  const events = [20, 21, 22, 23].map((n) => race(n, `R${n}`));
+  const needs = constructorNeeds(table, events, "mercedes", "ferrari");
+  assert.equal(needs.find((n) => n.rival === 18)!.need, 21);
+});
+
 test("a rival points cap lists the best finish pairs that stay within it", () => {
   assert.deepEqual(finishesAtMost("race", 27), [
     { best: 1, other: 9 },
