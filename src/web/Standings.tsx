@@ -78,11 +78,12 @@ interface BadgeProps {
 
 const Badge = ({ team, teams, big }: BadgeProps) =>
   logoSrc(team) ? (
-    <TeamHover
-      team={team}
-      className={`relative w-fit ${big ? "mt-2" : "mt-1"}`}
-      logo={`object-left ${big ? "h-8 w-16" : "h-5 w-10"}`}
-    />
+    <TeamHover id={team} className={`relative w-fit ${big ? "mt-2" : "mt-1"}`}>
+      <TeamLogo
+        team={team}
+        className={`block object-left ${big ? "h-8 w-16" : "h-5 w-10"}`}
+      />
+    </TeamHover>
   ) : (
     <span className="relative block text-sm text-zinc-400">
       {teams.get(team) ?? team}

@@ -11,6 +11,7 @@ import {
 } from "../charts/motion.tsx";
 import { summary } from "../charts/summary.ts";
 import { Car } from "../Headshot.tsx";
+import { TeamHover } from "../TeamCard.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 
 interface CarPaceProps {
@@ -121,7 +122,9 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
             className="absolute inset-y-0 left-0 flex items-center gap-2"
             style={{ width: GUTTER }}
           >
-            <TeamLogo team={t.id} className="size-5 shrink-0" />
+            <TeamHover id={t.id} className="shrink-0">
+              <TeamLogo team={t.id} className="block size-5" />
+            </TeamHover>
             <Count
               value={medians[i]! - best}
               format={gap}
@@ -149,12 +152,14 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
                 data-streak
                 className="absolute top-[80%] right-[90%] h-px w-14 origin-right bg-linear-to-l from-zinc-400 to-transparent opacity-0"
               />
-              <Car
-                id={t.id}
-                pose="right"
-                title={t.label}
-                className="group-data-[pending=true]:animate-rumble relative w-32 max-w-none drop-shadow-[0_4px_6px_rgb(0_0_0_/_0.35)]"
-              />
+              <TeamHover id={t.id} className="relative">
+                <Car
+                  id={t.id}
+                  pose="right"
+                  alt={t.label}
+                  className="group-data-[pending=true]:animate-rumble w-32 max-w-none drop-shadow-[0_4px_6px_rgb(0_0_0_/_0.35)]"
+                />
+              </TeamHover>
             </div>
           </div>
         </div>

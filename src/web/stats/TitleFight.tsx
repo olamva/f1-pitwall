@@ -19,8 +19,10 @@ import {
 } from "../../shared/clinch.ts";
 import { pointsFor } from "../../shared/points.ts";
 import type { Season } from "../../shared/season.ts";
+import { DriverHover } from "../DriverCard.tsx";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
+import { TeamHover } from "../TeamCard.tsx";
 import { Champion } from "./Champion.tsx";
 import { Faceoff } from "./Faceoff.tsx";
 import { Lineup } from "./Lineup.tsx";
@@ -34,6 +36,8 @@ interface TitleFightProps {
   events: Upcoming[];
   who: Map<string, Who>;
 }
+
+const HOVER = { drivers: DriverHover, constructors: TeamHover };
 
 const earliestText = (e: Earliest, events: Upcoming[], won: string): string =>
   e.state === "clinched"
@@ -292,6 +296,7 @@ export const TitleFight = ({
   const gain = maxGain(events, champ);
   const fight = events.length > 0 && table.length > 1;
   const nextRef = useRef<HTMLHeadingElement>(null);
+  const Hover = HOVER[champ];
   return (
     <div className="space-y-4">
       {done > 0 && (
@@ -355,13 +360,15 @@ export const TitleFight = ({
                     className={`border-t border-zinc-800 ${alive.includes(s.id) ? "" : "text-zinc-600"}`}
                   >
                     <td className="py-1">
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="h-4 w-1 rounded-sm"
-                          style={{ background: ink(who.get(s.id)?.color) }}
-                        />
-                        {who.get(s.id)?.name ?? s.id}
-                      </span>
+                      <Hover id={s.id} className="w-fit">
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="h-4 w-1 rounded-sm"
+                            style={{ background: ink(who.get(s.id)?.color) }}
+                          />
+                          {who.get(s.id)?.name ?? s.id}
+                        </span>
+                      </Hover>
                     </td>
                     <td className="py-1 pl-3 text-right">{s.points}</td>
                     <td className="py-1 pl-3 text-right">{s.points + gain}</td>
