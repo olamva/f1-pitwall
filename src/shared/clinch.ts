@@ -232,12 +232,18 @@ export function constructorNeeds(
   const me = find(table, id);
   const others = table
     .filter((r) => r.id !== id && r.id !== rivalId)
-    .map((r) => ceiling(r, events, "constructors").points);
+    .map((r) => ceiling(r, events, "constructors"));
   const rival = find(table, rivalId);
+  const top = ceiling(rival, events, "constructors");
   const restMax = ceiling({ ...rival, points: 0 }, rest, "constructors").points;
   return scores.map((theirs) => {
-    const bar = Math.max(rival.points + theirs + restMax, ...others);
-    const fit = scores.filter((s) => me.points + s > bar);
+    const bars = [
+      { ...top, points: rival.points + theirs + restMax },
+      ...others,
+    ];
+    const fit = scores.filter((s) =>
+      bars.every((b) => ahead({ ...me, points: me.points + s }, b)),
+    );
     return { rival: theirs, need: fit.length ? Math.min(...fit) : null };
   });
 }
