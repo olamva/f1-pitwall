@@ -17,6 +17,7 @@ interface VersusProps {
   caption: string;
   cars?: boolean;
   dim?: boolean;
+  alert?: boolean;
   detail?: string[];
 }
 
@@ -182,6 +183,7 @@ export const Versus = ({
   caption,
   cars,
   dim,
+  alert,
   detail,
 }: VersusProps) => {
   const swaps = [useSwap(sides[0]), useSwap(sides[1])];
@@ -237,12 +239,15 @@ export const Versus = ({
         })}
       </div>
       <div
-        className="font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center bg-white px-3 py-1 text-zinc-950 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] transition-[left] duration-500"
+        key={alert ? "alert" : "calm"}
+        className={`font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center px-3 py-1 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] transition-[left] duration-500 ${alert ? "overtake bg-[#e10600] text-white" : "bg-white text-zinc-950"}`}
         style={{ left: `${seam}%` }}
       >
-        <span className="text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
-          {caption}
-        </span>
+        {!alert && (
+          <span className="text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+            {caption}
+          </span>
+        )}
         <span className="tabular text-2xl leading-none font-black sm:text-4xl">
           {center}
         </span>
@@ -264,12 +269,22 @@ const slice = (l: number, r: number) =>
 interface SlicesProps {
   sides: Side[];
   gaps: string[];
+  pass: number;
   more: number;
 }
 
-export const Slices = ({ sides, gaps, more }: SlicesProps) => {
+export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
   const w = 100 / sides.length;
   const mid = (i: number) => `${(i + 0.5) * w}%`;
+  const cast = sides
+    .map((s, i) => [s, i] as const)
+    .sort(([a], [b]) => a.id.localeCompare(b.id));
+  const cut = (i: number) =>
+    slice(
+      i ? i * w : -SLANT - 1,
+      i < sides.length - 1 ? (i + 1) * w : 100 + SLANT + 1,
+    );
+  const fill = (s: Side, i: number) => paint(s.color, (i + 0.5) * w);
   return (
     <div
       className="@container relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
@@ -277,24 +292,26 @@ export const Slices = ({ sides, gaps, more }: SlicesProps) => {
     >
       {sides.map((s, i) => (
         <div
+          key={i}
+          className="absolute inset-0 -z-2"
+          style={{ clipPath: cut(i), background: fill(s, i) }}
+        />
+      ))}
+      {cast.map(([s, i]) => (
+        <div
           key={s.id}
-          className="absolute inset-0"
-          style={{
-            clipPath: slice(
-              i ? i * w : -SLANT - 1,
-              i < sides.length - 1 ? (i + 1) * w : 100 + SLANT + 1,
-            ),
-          }}
+          className={`absolute inset-0 transition-[clip-path] duration-500 ${i === pass ? "z-0" : "-z-1"}`}
+          style={{ clipPath: cut(i) }}
         >
           <div
             className="absolute inset-0"
-            style={{ background: paint(s.color, (i + 0.5) * w) }}
+            style={{ background: fill(s, i) }}
           />
           <Figure
             id={s.id}
             pose="front"
             transform={BODY}
-            className="absolute top-[8%] h-[150%] max-w-none -translate-x-1/2 drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)]"
+            className="absolute top-[8%] h-[150%] max-w-none -translate-x-1/2 drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] transition-[left] duration-500"
             style={{ left: mid(i) }}
           />
         </div>
@@ -303,10 +320,10 @@ export const Slices = ({ sides, gaps, more }: SlicesProps) => {
         className="absolute inset-x-0 bottom-0 h-1/2"
         style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
       />
-      {sides.map((s, i) => (
+      {cast.map(([s, i]) => (
         <div
           key={s.id}
-          className="font-f1 absolute bottom-3 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5"
+          className={`font-f1 absolute bottom-3 flex -translate-x-1/2 flex-col items-center gap-1.5 transition-[left] duration-500 ${i === pass ? "z-20" : "z-10"}`}
           style={{ left: mid(i) }}
         >
           <p className="text-xl leading-none font-black tracking-wide sm:text-3xl">
@@ -322,11 +339,11 @@ export const Slices = ({ sides, gaps, more }: SlicesProps) => {
       ))}
       {gaps.map((g, i) => (
         <div
-          key={i}
-          className="font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 bg-white px-2 py-1 text-lg leading-none font-black text-zinc-950 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] sm:text-2xl"
+          key={i === pass ? "pass" : i}
+          className={`font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 px-2 py-1 leading-none font-black shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] ${i === pass ? "overtake bg-[#e10600] text-xs text-white sm:text-base" : "bg-white text-lg text-zinc-950 sm:text-2xl"}`}
           style={{ left: `${(i + 1) * w}%` }}
         >
-          {g}
+          {i === pass ? "OVERTAKE" : g}
         </div>
       ))}
       {more > 0 && (

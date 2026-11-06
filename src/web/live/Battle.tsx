@@ -12,10 +12,14 @@ import {
   label,
   NEXT,
   ongoing,
+  passes,
+  within,
   type Pair,
   type View,
 } from "./battles.ts";
 import type { Row } from "./view.ts";
+
+const HOLD = 3000;
 
 interface BattleProps {
   rows: Row[];
@@ -33,20 +37,23 @@ const Card = ({
   center,
   caption,
   dim,
+  alert,
   detail,
 }: {
   pair: Pair;
   center: string;
   caption: string;
   dim?: boolean;
+  alert?: boolean;
   detail?: string[];
 }) => (
   <Versus
-    key={pair.ahead.tla + pair.chaser.tla}
+    key={[pair.ahead.tla, pair.chaser.tla].sort().join()}
     seam={50}
     center={center}
     caption={caption}
     dim={dim}
+    alert={alert}
     detail={detail}
     cars
     sides={[
@@ -64,6 +71,21 @@ const Card = ({
   />
 );
 
+const usePass = (rows: Row[], until: number) => {
+  const [seen, setSeen] = useState({ rows, until });
+  const [held, setPass] = useState<{ pair: Pair; at: number } | null>(null);
+  let pass = held;
+  if (seen.rows !== rows) {
+    setSeen({ rows, until });
+    const pair =
+      until > seen.until && until - seen.until < HOLD
+        ? passes(seen.rows, rows)[0]
+        : undefined;
+    if (pair) setPass((pass = { pair, at: until }));
+  }
+  return pass && until >= pass.at && until - pass.at < HOLD ? pass.pair : null;
+};
+
 export const Battle = ({
   rows,
   laps,
@@ -75,11 +97,12 @@ export const Battle = ({
   const favourite = useFavourite();
   const [tapped, setTapped] = useState<string | null>(null);
   const last = useRef<Pair | null>(null);
-  const groups = battles(rows);
+  const fresh = usePass(rows, until);
+  const groups = battles(rows, fresh);
   const next = forecast(rows, laps, periods, until, left);
   if (tapped && !ongoing(groups, next, tapped)) setTapped(null);
   const fan = rows.find((r) => r.tla === favourite?.code)?.number;
-  const view = choose(groups, next, selected, tapped, fan);
+  const view = choose(groups, next, selected, tapped, fan, fresh);
   if (view?.group) last.current = view.pair;
   const nextChip = next && `Next ${lapsText(next.laps)}`;
   const key = [...groups.map(label), nextChip].filter(Boolean).join("\n");
@@ -111,16 +134,26 @@ export const Battle = ({
           )}
         </div>
       </div>
-      <Stage view={view} last={last.current} />
+      <Stage view={view} last={last.current} fresh={fresh} />
     </section>
   );
 };
 
 const interval = (p: Pair) => p.chaser.interval.replace(/^\+/, "");
 
-const Stage = ({ view, last }: { view: View | null; last: Pair | null }) => {
+const Stage = ({
+  view,
+  last,
+  fresh,
+}: {
+  view: View | null;
+  last: Pair | null;
+  fresh: Pair | null;
+}) => {
   if (view?.group) {
-    const { pairs, more } = contenders(view.group, view.pair);
+    const pass = within(view.group, fresh);
+    const focus = pass ?? view.pair;
+    const { pairs, more } = contenders(view.group, focus);
     return pairs.length > 1 ? (
       <Slices
         sides={[pairs[0]!.ahead, ...pairs.map((p) => p.chaser)].map((r) => ({
@@ -129,10 +162,16 @@ const Stage = ({ view, last }: { view: View | null; last: Pair | null }) => {
           note: `P${r.position}`,
         }))}
         gaps={pairs.map(interval)}
+        pass={pass ? pairs.indexOf(pass) : -1}
         more={more}
       />
     ) : (
-      <Card pair={view.pair} center={interval(view.pair)} caption="Interval" />
+      <Card
+        pair={focus}
+        center={pass ? "OVERTAKE" : interval(focus)}
+        caption="Interval"
+        alert={!!pass}
+      />
     );
   }
   if (view)

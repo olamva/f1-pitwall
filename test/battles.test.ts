@@ -8,6 +8,7 @@ import {
   forecast,
   label,
   NEXT,
+  passes,
 } from "../src/web/live/battles.ts";
 import type { Row } from "../src/web/live/view.ts";
 
@@ -109,4 +110,36 @@ test("the pair that reaches 1 s soonest is the forecast", () => {
   const next = forecast(grid("", "+3.0", "+1.5"), laps, null, 500, 10);
   assert.equal(next?.chaser.number, "3");
   assert.equal(next?.laps, 1);
+});
+
+test("a pass inside a battle is found and shown over the lead train", () => {
+  const before = grid("", "+0.5", "+3.0", "+0.4", "+3.0", "+1.5");
+  const after = [0, 1, 3, 2, 4, 5].map((from, i) => ({
+    ...before[from]!,
+    position: i + 1,
+    interval: ["", "+0.5", "+3.0", "", "+3.0", "+0.2"][i]!,
+  }));
+  const [pass, ...rest] = passes(before, after);
+  assert.equal(rest.length, 0);
+  assert.deepEqual([pass!.ahead.number, pass!.chaser.number], ["4", "3"]);
+  const groups = battles(after, pass!);
+  assert.deepEqual(groups.map(label), ["P1", "P3", "P5"]);
+  assert.equal(
+    choose(groups, null, undefined, null, undefined, pass!)?.pair.chaser.number,
+    "3",
+  );
+  assert.equal(
+    choose(groups, null, undefined, null, "2", pass!)?.pair.chaser.number,
+    "2",
+  );
+});
+
+test("a swap from a gap over 1 s is not a battle pass", () => {
+  const before = grid("", "+1.5");
+  const after = [before[1]!, before[0]!].map((r, i) => ({
+    ...r,
+    position: i + 1,
+    interval: i ? "+0.2" : "",
+  }));
+  assert.deepEqual(passes(before, after), []);
 });

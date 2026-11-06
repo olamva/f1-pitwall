@@ -15,18 +15,28 @@ export type Forecast = Pair & { rate: number; laps: number };
 export type View =
   { group: Pair[]; pair: Pair } | { group: null; pair: Forecast };
 
-const pairs = (rows: Row[]): Pair[] =>
+const pairs = (rows: Row[], blank = false): Pair[] =>
   rows.slice(1).flatMap((chaser, i) => {
     const ahead = rows[i]!;
-    const interval = gapSeconds(chaser.interval);
-    return interval !== null && interval > 0 && !ahead.status && !chaser.status
+    const interval = gapSeconds(chaser.interval) ?? (blank ? 0 : null);
+    return interval !== null &&
+      (interval > 0 || blank) &&
+      !ahead.status &&
+      !chaser.status
       ? [{ ahead, chaser, interval }]
       : [];
   });
 
-export const battles = (rows: Row[]): Pair[][] =>
-  pairs(rows)
-    .filter((p) => p.interval < RANGE)
+export const within = (group: Pair[], pass: Pair | null) =>
+  group.find(
+    (p) =>
+      p.ahead.number === pass?.ahead.number &&
+      p.chaser.number === pass.chaser.number,
+  );
+
+export const battles = (rows: Row[], pass: Pair | null = null): Pair[][] =>
+  pairs(rows, true)
+    .filter((p) => within([p], pass) || (p.interval > 0 && p.interval < RANGE))
     .reduce<Pair[][]>((groups, p) => {
       const last = groups.at(-1);
       if (last?.at(-1)!.chaser === p.ahead) last.push(p);
@@ -109,12 +119,24 @@ export const ongoing = (
 ) =>
   tapped === NEXT ? !!next : groups.some((g) => g.some((p) => has(p, tapped)));
 
+export const passes = (before: Row[], after: Row[]): Pair[] => {
+  const was = new Map(
+    pairs(before)
+      .filter((p) => p.interval < RANGE)
+      .map((p) => [p.chaser.number, p.ahead.number]),
+  );
+  return pairs(after, true).filter(
+    (p) => was.get(p.ahead.number) === p.chaser.number,
+  );
+};
+
 export const choose = (
   groups: Pair[][],
   next: Forecast | null,
   selected: string | undefined,
   tapped: string | null,
   favourite: string | undefined,
+  pass: Pair | null = null,
 ): View | null => {
   const around = (n: string | undefined) => {
     const group = groups.find((g) => g.some((p) => has(p, n)));
@@ -123,12 +145,17 @@ export const choose = (
   const whole = (group: Pair[] | undefined) =>
     group && { group, pair: closest(group) };
   const coming = next && { group: null, pair: next };
+  const passing = groups.flatMap((group) => {
+    const pair = within(group, pass);
+    return pair ? [{ group, pair }] : [];
+  })[0];
   return (
     around(selected) ??
     (tapped === NEXT
       ? coming
       : whole(groups.find((g) => g.some((p) => has(p, tapped))))) ??
     around(favourite) ??
+    passing ??
     whole(groups[0]) ??
     coming
   );

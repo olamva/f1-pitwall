@@ -1312,7 +1312,29 @@ html:has(dialog[open]) {
   }
 }
 
+.overtake {
+  animation:
+    overtake-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms both,
+    overtake-pulse 1s ease-in-out 800ms 2;
+}
+
+@keyframes overtake-pop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+
+@keyframes overtake-pulse {
+  50% {
+    box-shadow:
+      0 6px 20px rgb(0 0 0 / 0.5),
+      0 0 0 6px rgb(225 6 0 / 0.45);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .overtake,
   .versus-fade,
   .versus-in-left,
   .versus-in-right {
