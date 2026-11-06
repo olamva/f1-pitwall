@@ -16,6 +16,8 @@ interface VersusProps {
   center: string;
   caption: string;
   cars?: boolean;
+  dim?: boolean;
+  detail?: string;
 }
 
 const INK = "#15151e";
@@ -173,49 +175,67 @@ const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
   );
 };
 
-export const Versus = ({ sides, seam, center, caption, cars }: VersusProps) => {
+export const Versus = ({
+  sides,
+  seam,
+  center,
+  caption,
+  cars,
+  dim,
+  detail,
+}: VersusProps) => {
   const swaps = [useSwap(sides[0]), useSwap(sides[1])];
   return (
     <div
       className="@container relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
       style={{ background: INK }}
     >
-      {sides.map((s, i) => (
-        <Panel key={i} side={s} gone={swaps[i]![0]} right={i > 0} seam={seam} />
-      ))}
-      {sides.map((s, i) => (
-        <Figures
-          key={i}
-          side={s}
-          gone={swaps[i]![0]}
-          right={i > 0}
-          seam={seam}
-          cars={cars}
-        />
-      ))}
       <div
-        className="absolute inset-x-0 bottom-0 h-1/2"
-        style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
-      />
-      {sides.map((s, i) => {
-        const gone = swaps[i]![0];
-        return (
-          <Fragment key={i}>
-            {[gone, s].map(
-              (p) =>
-                p && (
-                  <Plate
-                    key={p.id}
-                    side={p}
-                    right={i > 0}
-                    motion={motion(p, gone, i > 0)}
-                    onDone={p === s ? swaps[i]![1] : undefined}
-                  />
-                ),
-            )}
-          </Fragment>
-        );
-      })}
+        className={`absolute inset-0 transition-opacity duration-500 ${dim ? "opacity-40" : ""}`}
+      >
+        {sides.map((s, i) => (
+          <Panel
+            key={i}
+            side={s}
+            gone={swaps[i]![0]}
+            right={i > 0}
+            seam={seam}
+          />
+        ))}
+        {sides.map((s, i) => (
+          <Figures
+            key={i}
+            side={s}
+            gone={swaps[i]![0]}
+            right={i > 0}
+            seam={seam}
+            cars={cars}
+          />
+        ))}
+        <div
+          className="absolute inset-x-0 bottom-0 h-1/2"
+          style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
+        />
+        {sides.map((s, i) => {
+          const gone = swaps[i]![0];
+          return (
+            <Fragment key={i}>
+              {[gone, s].map(
+                (p) =>
+                  p && (
+                    <Plate
+                      key={p.id}
+                      side={p}
+                      right={i > 0}
+                      motion={motion(p, gone, i > 0)}
+                      onDone={p === s ? swaps[i]![1] : undefined}
+                    />
+                  ),
+              )}
+            </Fragment>
+          );
+        })}
+      </div>
       <div
         className="font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center bg-white px-3 py-1 text-zinc-950 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] transition-[left] duration-500"
         style={{ left: `${seam}%` }}
@@ -226,6 +246,11 @@ export const Versus = ({ sides, seam, center, caption, cars }: VersusProps) => {
         <span className="tabular text-2xl leading-none font-black sm:text-4xl">
           {center}
         </span>
+        {detail && (
+          <span className="tabular mt-0.5 text-[10px] font-bold whitespace-nowrap text-zinc-600 sm:text-xs">
+            {detail}
+          </span>
+        )}
       </div>
     </div>
   );
