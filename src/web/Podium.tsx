@@ -129,7 +129,7 @@ export const PodiumList = ({ entries, faded }: PodiumListProps) =>
           </span>
           <Face id={e.id} color={e.color} faded={faded} />
           <span className="min-w-0">
-            <span className="block text-[13px] leading-tight font-bold">
+            <span className="block truncate text-[13px] leading-tight font-bold">
               {e.name}
             </span>
             {e.team && (
