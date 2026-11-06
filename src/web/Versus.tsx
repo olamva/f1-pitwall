@@ -100,21 +100,18 @@ const Figures = ({ side, gone, right, seam, cars }: PanelProps) => {
         className="absolute inset-0 transition-[clip-path] duration-500"
         style={{ clipPath: clip(seam, right) }}
       >
+        {cars &&
+          cast.map(({ s, m }) => (
+            <Car
+              key={s.id}
+              id={s.id}
+              pose={right ? "left" : "right"}
+              className={`absolute top-[14%] w-full max-w-none opacity-80 ${right ? "-right-[42%]" : "-left-[42%]"} ${m}`}
+            />
+          ))}
         {cast.map(({ team: [, mate], m }) => mate && figure(mate, true, m))}
       </div>
       {cast.map(({ team: [lead], m }) => lead && figure(lead, false, m))}
-      {cars &&
-        cast.map(({ s, m }) => (
-          <Car
-            key={s.id}
-            id={s.id}
-            pose={right ? "left" : "right"}
-            style={{
-              width: `${Math.min(46, (right ? 100 - seam : seam) - 4)}%`,
-            }}
-            className={`absolute top-[57%] max-w-none drop-shadow-[0_8px_16px_rgb(0_0_0_/_0.6)] transition-[width] duration-500 ${right ? "right-[1%]" : "left-[1%]"} ${m}`}
-          />
-        ))}
     </>
   );
 };
