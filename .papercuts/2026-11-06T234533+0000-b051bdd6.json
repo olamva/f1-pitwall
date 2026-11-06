@@ -1,0 +1,14 @@
+{
+  "id": "b051bdd6",
+  "ts": "2026-11-06T23:45:33+00:00",
+  "text": "git push to github.com gets 'remote rejected: Internal Server Error' on repeated tries",
+  "tags": [
+    "git",
+    "github"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "80552918",
+  "where": "git push",
+  "branch": "t3/keep-replay-playing-on-swipe"
+}

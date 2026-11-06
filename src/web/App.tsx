@@ -57,8 +57,12 @@ const fromPath = (): Tab =>
 
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromPath);
-  const [visit, setVisit] = useState(0);
+  const [visits, setVisits] = useState<Partial<Record<Tab, number>>>({});
   const [session, setSession] = useState(0);
+  const [replaying, setReplaying] = useState(false);
+  const replayUrl = useRef("/calendar");
+  const revisit = (t: Tab) =>
+    setVisits((v) => ({ ...v, [t]: (v[t] ?? 0) + 1 }));
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
@@ -78,7 +82,7 @@ export const App = () => {
   useEffect(() => {
     const on = () => {
       setTab(fromPath());
-      setVisit((v) => v + 1);
+      revisit(fromPath());
     };
     addEventListener("popstate", on);
     return () => removeEventListener("popstate", on);
@@ -87,10 +91,19 @@ export const App = () => {
     document.documentElement.dataset.tab = tab;
   }, [tab]);
   const go = (t: Tab) => {
-    if (tab === "Calendar" && t !== "Calendar") scrollTo(0, 0);
-    navigate(t === "Countdown" ? "/" : `/${SLUG[t]}`);
+    if (tab === "Calendar" && t !== "Calendar") {
+      replayUrl.current = location.pathname + location.search;
+      scrollTo(0, 0);
+    }
+    navigate(
+      t === "Calendar" && tab !== t && replaying
+        ? replayUrl.current
+        : t === "Countdown"
+          ? "/"
+          : `/${SLUG[t]}`,
+    );
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
-    if (t === tab) setVisit((v) => v + 1);
+    if (t === tab) revisit(t);
     setTab(t);
   };
   return (
@@ -132,15 +145,17 @@ export const App = () => {
             items={TABS}
             value={tab}
             onChange={go}
-            keep={["Countdown"]}
+            keep={replaying ? ["Countdown", "Calendar"] : ["Countdown"]}
             drive={blob}
             lift={logo}
             render={(t) =>
               t === "Countdown" ? (
                 <LiveSession key={session} season={season} info={info} />
               ) : (
-                <Fragment key={visit}>
-                  {t === "Calendar" && <Calendar season={season} />}
+                <Fragment key={visits[t] ?? 0}>
+                  {t === "Calendar" && (
+                    <Calendar season={season} onPlaying={setReplaying} />
+                  )}
                   {t === "Stats" &&
                     (season.data ? (
                       <Spoiler

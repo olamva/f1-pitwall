@@ -307,6 +307,7 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
     return { t: t || null, speed: 4, on: t ? null : true };
   });
   const visible = useVisible();
+  const active = useActive();
   useAwake();
   useBack(onClose);
   const q = `path=${encodeURIComponent(session.path)}`;
@@ -331,63 +332,65 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
     setPlay((s) => ({ ...s, t, on: true }));
   };
   return (
-    <div className="space-y-4">
-      <button
-        onClick={onClose}
-        className="flex cursor-pointer items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-zinc-100"
-      >
-        <ChevronLeft aria-hidden="true" className="size-4" />
-        Back
-      </button>
-      <ReplayBar
-        race={/^(Race|Sprint)$/.test(session.name)}
-        starts={starts}
-        start={feed?.start ?? 0}
-        end={feed?.duration ?? 0}
-        at={at}
-        periods={periods.data}
-        playing={!!play.on}
-        speed={play.speed}
-        onToggle={() => {
-          if (play.on && feed) share(feed.t);
-          setPlay((s) => ({ ...s, on: !s.on, t: feed?.t ?? s.t }));
-        }}
-        onSpeed={(speed) =>
-          setPlay((s) => ({ ...s, speed, t: feed?.t ?? s.t }))
-        }
-        onSeek={seek}
-        preview={(t) => (
-          <ScrubCard
-            url={`/api/replay/scrub?${q}`}
-            t={t}
-            at={at}
-            start={feed?.start ?? 0}
-            starts={starts}
+    <Frozen frozen={!active}>
+      <div className="space-y-4">
+        <button
+          onClick={onClose}
+          className="flex cursor-pointer items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-zinc-100"
+        >
+          <ChevronLeft aria-hidden="true" className="size-4" />
+          Back
+        </button>
+        <ReplayBar
+          race={/^(Race|Sprint)$/.test(session.name)}
+          starts={starts}
+          start={feed?.start ?? 0}
+          end={feed?.duration ?? 0}
+          at={at}
+          periods={periods.data}
+          playing={!!play.on}
+          speed={play.speed}
+          onToggle={() => {
+            if (play.on && feed) share(feed.t);
+            setPlay((s) => ({ ...s, on: !s.on, t: feed?.t ?? s.t }));
+          }}
+          onSpeed={(speed) =>
+            setPlay((s) => ({ ...s, speed, t: feed?.t ?? s.t }))
+          }
+          onSeek={seek}
+          preview={(t) => (
+            <ScrubCard
+              url={`/api/replay/scrub?${q}`}
+              t={t}
+              at={at}
+              start={feed?.start ?? 0}
+              starts={starts}
+            />
+          )}
+        />
+        {!feed ? (
+          <Loading
+            label="Loading the replay. A race takes a few seconds…"
+            error={laps.error}
+          />
+        ) : (
+          <Board
+            feed={feed}
+            laps={laps.data ?? {}}
+            outline={outline.data ?? null}
+            periods={periods.data}
+            rounds={rounds}
+            positionsNote={null}
+            speed={play.speed}
+            paused={!play.on}
+            traceUrl={(driver, lap) =>
+              `/api/replay/trace?${q}&driver=${driver}&lap=${lap}`
+            }
+            onLap={(n) => seek(lapTime(starts, n))}
           />
         )}
-      />
-      {!feed ? (
-        <Loading
-          label="Loading the replay. A race takes a few seconds…"
-          error={laps.error}
-        />
-      ) : (
-        <Board
-          feed={feed}
-          laps={laps.data ?? {}}
-          outline={outline.data ?? null}
-          periods={periods.data}
-          rounds={rounds}
-          positionsNote={null}
-          speed={play.speed}
-          paused={!play.on}
-          traceUrl={(driver, lap) =>
-            `/api/replay/trace?${q}&driver=${driver}&lap=${lap}`
-          }
-          onLap={(n) => seek(lapTime(starts, n))}
-        />
-      )}
-    </div>
+      </div>
+    </Frozen>
   );
 };
 
