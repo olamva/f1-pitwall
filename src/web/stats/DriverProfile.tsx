@@ -16,7 +16,7 @@ import { METALS } from "../Podium.tsx";
 import { clinched, driverTables, latest } from "./derive.ts";
 import { TeamNumber } from "./TeamNumber.tsx";
 
-const SHORT: Record<string, string> = {
+export const SHORT: Record<string, string> = {
   "Did not start": "DNS",
   Disqualified: "DSQ",
 };

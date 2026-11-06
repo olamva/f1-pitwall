@@ -8,6 +8,7 @@ import {
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { Calendar } from "./Calendar.tsx";
+import { SeasonData } from "./DriverCard.tsx";
 import { LiveSession, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Faces, usePreload } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
@@ -125,41 +126,46 @@ export const App = () => {
         </div>
       </header>
       <Faces value={faces}>
-        <Swipe
-          items={TABS}
-          value={tab}
-          onChange={go}
-          keep={["Countdown"]}
-          drive={blob}
-          lift={logo}
-          render={(t) =>
-            t === "Countdown" ? (
-              <LiveSession key={session} season={season} info={info} />
-            ) : (
-              <Fragment key={visit}>
-                {t === "Calendar" && <Calendar season={season} />}
-                {t === "Stats" &&
-                  (season.data ? (
-                    <Spoiler
-                      season={season.data}
-                      year={season.data.year}
-                      kinds={KINDS}
-                    >
-                      <Stats season={season.data} />
-                    </Spoiler>
-                  ) : (
-                    <Loading label="Loading the season…" error={season.error} />
-                  ))}
-                {t === "Settings" && (
-                  <Settings
-                    drivers={season.data?.drivers ?? []}
-                    teams={season.data?.teams ?? []}
-                  />
-                )}
-              </Fragment>
-            )
-          }
-        />
+        <SeasonData value={season.data}>
+          <Swipe
+            items={TABS}
+            value={tab}
+            onChange={go}
+            keep={["Countdown"]}
+            drive={blob}
+            lift={logo}
+            render={(t) =>
+              t === "Countdown" ? (
+                <LiveSession key={session} season={season} info={info} />
+              ) : (
+                <Fragment key={visit}>
+                  {t === "Calendar" && <Calendar season={season} />}
+                  {t === "Stats" &&
+                    (season.data ? (
+                      <Spoiler
+                        season={season.data}
+                        year={season.data.year}
+                        kinds={KINDS}
+                      >
+                        <Stats season={season.data} />
+                      </Spoiler>
+                    ) : (
+                      <Loading
+                        label="Loading the season…"
+                        error={season.error}
+                      />
+                    ))}
+                  {t === "Settings" && (
+                    <Settings
+                      drivers={season.data?.drivers ?? []}
+                      teams={season.data?.teams ?? []}
+                    />
+                  )}
+                </Fragment>
+              )
+            }
+          />
+        </SeasonData>
       </Faces>
       <UpdateToast />
     </div>

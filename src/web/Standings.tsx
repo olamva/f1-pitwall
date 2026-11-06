@@ -10,6 +10,7 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
+import { DriverHover } from "./DriverCard.tsx";
 import { Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openConstructor, openDriver, pathPart, pathSegment } from "./path.ts";
@@ -145,11 +146,13 @@ const Cards = ({
                 {driver.code}
               </span>
             )}
-            <span
-              className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
-            >
-              {row.name}
-            </span>
+            <DriverHover id={team ? "" : row.id} className="relative w-fit">
+              <span
+                className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
+              >
+                {row.name}
+              </span>
+            </DriverHover>
             {team ? (
               <Numbers crew={crew} color={color} big={big} />
             ) : (
