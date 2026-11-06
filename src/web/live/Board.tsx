@@ -1,5 +1,11 @@
 import { Focus, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { flushSync } from "react-dom";
 import type { Round } from "../../shared/season.ts";
 import {
@@ -43,6 +49,7 @@ interface BoardProps {
 }
 
 interface StatusProps {
+  ref: React.Ref<HTMLDivElement>;
   lap?: { CurrentLap: number; TotalLaps: number };
   part: string | null;
   banner: React.ReactNode;
@@ -51,8 +58,16 @@ interface StatusProps {
   children: React.ReactNode;
 }
 
-const Status = ({ lap, part, banner, clock, onLap, children }: StatusProps) => (
-  <div className="flex flex-wrap items-center gap-3">
+const Status = ({
+  ref,
+  lap,
+  part,
+  banner,
+  clock,
+  onLap,
+  children,
+}: StatusProps) => (
+  <div ref={ref} className="status-row flex flex-wrap items-center gap-3">
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
@@ -101,6 +116,16 @@ export const Board = ({
   const [editing, setEditing] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [focus, setFocus] = useState(false);
+  const [bar, setBar] = useState(0);
+  const row = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!focus) return;
+    const observer = new ResizeObserver(() =>
+      setBar(row.current!.offsetHeight),
+    );
+    observer.observe(row.current!);
+    return () => observer.disconnect();
+  }, [focus]);
   const hideMap = useTokenHidden() && !!positionsNote;
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
@@ -132,12 +157,23 @@ export const Board = ({
     </div>
   );
   return (
-    <div className="board space-y-4" data-focus={focus || undefined}>
+    <div
+      className="board space-y-4"
+      data-focus={focus || undefined}
+      style={
+        focus
+          ? ({
+              "--tile-top": `calc(var(--page-top) - 0.5rem + ${bar}px)`,
+            } as CSSProperties)
+          : undefined
+      }
+    >
       <h1 className="font-f1 text-xl font-bold">
         <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
         {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
       </h1>
       <Status
+        ref={row}
         lap={state.LapCount}
         part={part}
         banner={banner}

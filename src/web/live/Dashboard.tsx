@@ -12,7 +12,7 @@ import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
-import { Tile } from "./Tile.tsx";
+import { Tile, TOP } from "./Tile.tsx";
 import {
   add,
   columnAt,
@@ -436,7 +436,10 @@ export const Dashboard = ({
           <div
             ref={probe}
             aria-hidden="true"
-            className="pointer-events-none invisible absolute h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] w-0"
+            className="pointer-events-none invisible absolute w-0"
+            style={{
+              height: `calc(100dvh - ${TOP} - env(safe-area-inset-bottom) - 1rem)`,
+            }}
           />
           {!columns.length && (
             <p className="col-span-full row-span-12 py-8 text-center text-sm text-zinc-500">

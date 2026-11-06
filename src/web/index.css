@@ -202,6 +202,11 @@
   color-scheme: light dark;
   touch-action: pan-x pan-y;
   scrollbar-color: var(--color-zinc-700) transparent;
+  --page-top: max(1.5rem, env(safe-area-inset-top));
+
+  @media (display-mode: standalone) {
+    --page-top: calc(env(safe-area-inset-top) + 1.5rem);
+  }
 }
 
 :root[data-theme="light"] {
@@ -1110,6 +1115,18 @@ html:has(dialog[open]) {
 :has(> .board[data-focus]) > :not(.board),
 :root:has(main:not([inert]) .board[data-focus]) header {
   display: none;
+}
+
+.board[data-focus] > .status-row {
+  position: sticky;
+  top: calc(var(--page-top) - 0.5rem);
+  z-index: 20;
+  margin-block: -0.5rem 0;
+  padding-block: 0.5rem 1rem;
+  background: var(--color-zinc-950);
+  box-shadow:
+    -1rem 0 var(--color-zinc-950),
+    1rem 0 var(--color-zinc-950);
 }
 
 :root[data-champion] body {
