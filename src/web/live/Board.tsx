@@ -103,18 +103,6 @@ const Status = ({
 
 const SETTLE_MS = 5_000;
 
-const RACE_LAYOUT = {
-  grid: "lg:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none",
-  tower: "lg:col-span-1",
-  side: "lg:row-span-2 xl:row-span-1",
-};
-
-const SESSION_LAYOUT = {
-  grid: "min-[72rem]:grid-cols-[auto_minmax(0,1fr)] 2xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] 2xl:grid-rows-none",
-  tower: "min-[72rem]:col-span-1",
-  side: "min-[72rem]:row-span-2 2xl:row-span-1",
-};
-
 export const Board = ({
   feed,
   laps,
@@ -136,7 +124,6 @@ export const Board = ({
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = isRace(state.SessionInfo);
   const qualifying = isQualifying(state.SessionInfo);
-  const layout = race ? RACE_LAYOUT : SESSION_LAYOUT;
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
@@ -190,10 +177,8 @@ export const Board = ({
           Focus
         </button>
       </Status>
-      <div
-        className={`grid grid-cols-1 grid-rows-[auto_1fr] gap-4 md:grid-cols-2 ${layout.grid}`}
-      >
-        <div className={`grid min-w-0 md:col-span-2 ${layout.tower}`}>
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(max-content,3fr)_minmax(0,2fr)] 2xl:grid-cols-[minmax(max-content,48rem)_repeat(2,minmax(0,1fr))]">
+        <div className="grid min-w-0 xl:sticky xl:top-[calc(env(safe-area-inset-top)+1rem)] xl:row-span-3 2xl:row-span-1">
           <TimingTower
             rows={rows}
             race={race}
@@ -205,7 +190,7 @@ export const Board = ({
             onToggle={toggle}
           />
         </div>
-        <div className={`flex flex-col gap-4 ${layout.side}`}>
+        <div className="flex min-w-0 flex-col gap-4">
           {race && <Battle rows={rows} />}
           {!hideMap && (
             <TrackMap
@@ -227,42 +212,42 @@ export const Board = ({
               flags={sectorFlags(state)}
             />
           )}
+          {!positionsNote && (
+            <Panel title="Lap compare">
+              <LapCompare outline={outline} drivers={compare} />
+            </Panel>
+          )}
+        </div>
+        <div className="flex min-w-0 flex-col gap-4">
           <RaceControl
             messages={messages(state)}
             rows={rows}
             selected={selected}
             start={sessionStart(state)}
           />
-        </div>
-        <div className="flex flex-col gap-4">
           <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
           <Weather weather={state.WeatherData} trend={trackTemps(state)} />
         </div>
-      </div>
-      <div className="@container grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <LapCharts
-          laps={laps}
-          rows={rows}
-          focus={focus}
-          driver={driver}
-          deleted={deletedLaps(state, driver)}
-          until={feed.t}
-          race={race}
-          periods={periods}
-        />
-        {!positionsNote && (
-          <Panel title="Lap compare">
-            <LapCompare outline={outline} drivers={compare} />
-          </Panel>
-        )}
-        {race && contested(table) && <Championship standings={table} />}
-        <LongRuns
-          laps={laps}
-          rows={rows}
-          until={feed.t}
-          selected={selected}
-          info={state.SessionInfo}
-        />
+        <div className="@container flex min-w-0 flex-col gap-4 2xl:col-span-3 2xl:grid 2xl:grid-cols-[repeat(auto-fit,minmax(24rem,1fr))] 2xl:items-start">
+          {race && contested(table) && <Championship standings={table} />}
+          <LongRuns
+            laps={laps}
+            rows={rows}
+            until={feed.t}
+            selected={selected}
+            info={state.SessionInfo}
+          />
+          <LapCharts
+            laps={laps}
+            rows={rows}
+            focus={focus}
+            driver={driver}
+            deleted={deletedLaps(state, driver)}
+            until={feed.t}
+            race={race}
+            periods={periods}
+          />
+        </div>
       </div>
     </div>
   );
