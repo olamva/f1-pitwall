@@ -403,14 +403,13 @@ export const SessionPodium = ({
         podium(kind === "sprint" ? race.sprint : race.results, (r) =>
           past && kind === "race" ? start(r) : r.time || r.status,
         );
-  return top && top.length >= 3 ? (
-    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} faded={past} />
-  ) : (
+  const rows = top?.map((e, i, all) => gap(e, all[0]!, i));
+  return (rows ? rows.length < 3 : quali.error || practice.error) ? (
     <p className="py-8 text-center text-xs text-zinc-400">
-      {top || quali.error || practice.error
-        ? "Results are not available."
-        : "Loading results…"}
+      Results are not available.
     </p>
+  ) : (
+    <PodiumList entries={rows} faded={past} />
   );
 };
 
