@@ -52,7 +52,9 @@ interface PanelProps {
 }
 
 export const Panel = ({ title, className = "", children }: PanelProps) => (
-  <section className={`bg-surface rounded-xl p-3 ${className}`}>
+  <section
+    className={`bg-surface filled:flex filled:flex-col rounded-xl p-3 ${className}`}
+  >
     <h2 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
       {title}
     </h2>
@@ -82,7 +84,7 @@ export const RaceControl = ({
 }: RaceControlProps) => (
   <Panel title="Race control">
     <ul
-      className="max-h-72 space-y-1 overflow-y-auto text-sm"
+      className="filled:max-h-none filled:min-h-0 filled:flex-1 max-h-72 space-y-1 overflow-y-auto text-sm"
       aria-live="polite"
     >
       {messages.length === 0 && (
@@ -452,7 +454,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
           </div>
         </div>
       )}
-      <ul className="max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
+      <ul className="filled:max-h-none filled:min-h-0 filled:flex-1 max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
         {shown.map((r) => {
           const active = r.url === current?.url;
           const d = by.get(r.number);

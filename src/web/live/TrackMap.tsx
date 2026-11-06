@@ -213,7 +213,7 @@ export const TrackMap = ({
       {(full) => (
         <>
           <div
-            className={`relative ${full ? "min-h-0 w-full flex-1" : "w-full"}`}
+            className={`relative ${full ? "min-h-0 w-full flex-1" : "filled:min-h-0 filled:flex-1 filled:aspect-auto! w-full"}`}
             style={
               full
                 ? undefined

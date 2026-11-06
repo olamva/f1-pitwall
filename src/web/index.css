@@ -22,6 +22,8 @@
   }
 }
 
+@custom-variant filled (&:where([data-fill] *));
+
 *:focus {
   outline: none;
 }
@@ -673,6 +675,19 @@ textarea {
     inset: auto;
     margin: 0.5rem 0 0;
   }
+
+  .add-widget {
+    position-anchor: --add-widget;
+    position-area: bottom span-left;
+    position-try-fallbacks: flip-inline, bottom;
+    inset: auto;
+    margin: 0.5rem 0 0;
+  }
+}
+
+[data-fill] > * {
+  height: 100%;
+  overflow-y: auto;
 }
 
 .live-dot {
