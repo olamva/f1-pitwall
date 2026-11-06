@@ -1,5 +1,5 @@
 import { Fragment, useContext, useState, type CSSProperties } from "react";
-import { BODY, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
+import { BODY, Car, Faces, Figure, lineup, useArt } from "./Headshot.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { logoSrc } from "./TeamLogo.tsx";
 
@@ -15,6 +15,7 @@ interface VersusProps {
   seam: number;
   center: string;
   caption: string;
+  cars?: boolean;
 }
 
 const INK = "#15151e";
@@ -47,6 +48,7 @@ interface PanelProps {
   gone?: Side;
   right: boolean;
   seam: number;
+  cars?: boolean;
 }
 
 const paint = (color: string, right: boolean) =>
@@ -70,7 +72,7 @@ const Panel = ({ side, gone, right, seam }: PanelProps) => (
   </div>
 );
 
-const Figures = ({ side, gone, right, seam }: PanelProps) => {
+const Figures = ({ side, gone, right, seam, cars }: PanelProps) => {
   const faces = useContext(Faces);
   const cast = [gone, side].flatMap((s) =>
     s
@@ -98,6 +100,15 @@ const Figures = ({ side, gone, right, seam }: PanelProps) => {
         className="absolute inset-0 transition-[clip-path] duration-500"
         style={{ clipPath: clip(seam, right) }}
       >
+        {cars &&
+          cast.map(({ s, m }) => (
+            <Car
+              key={s.id}
+              id={s.id}
+              pose={right ? "left" : "right"}
+              className={`absolute top-[14%] w-full max-w-none opacity-80 ${right ? "-right-[42%]" : "-left-[42%]"} ${m}`}
+            />
+          ))}
         {cast.map(({ team: [, mate], m }) => mate && figure(mate, true, m))}
       </div>
       {cast.map(({ team: [lead], m }) => lead && figure(lead, false, m))}
@@ -162,7 +173,7 @@ const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
   );
 };
 
-export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
+export const Versus = ({ sides, seam, center, caption, cars }: VersusProps) => {
   const swaps = [useSwap(sides[0]), useSwap(sides[1])];
   return (
     <div
@@ -179,6 +190,7 @@ export const Versus = ({ sides, seam, center, caption }: VersusProps) => {
           gone={swaps[i]![0]}
           right={i > 0}
           seam={seam}
+          cars={cars}
         />
       ))}
       <div
