@@ -153,7 +153,7 @@ export const Dashboard = ({
   };
   const { spots: placed, ends } = place(columns, rows);
   const sticky = new Set(
-    editing || columns.length < 2
+    columns.length < 2
       ? []
       : columns.flatMap((c, i) =>
           ends[i]! * ROW - GAP <= avail + 1 ? [i] : [],
@@ -167,8 +167,8 @@ export const Dashboard = ({
   );
   frozen.current = stretch;
   const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
-  const latest = useRef({ rows, size, fixed });
-  latest.current = { rows, size, fixed };
+  const latest = useRef({ rows, size, fixed, placed });
+  latest.current = { rows, size, fixed, placed };
 
   useLayoutEffect(() => {
     const read = () => {
@@ -239,10 +239,17 @@ export const Dashboard = ({
       return { edge: "left" };
     if (room && d.x > box.right - ZONE && d.x > d.sx + 24)
       return { edge: "right" };
-    const h = latest.current.rows(d.id) * ROW;
+    const { rows, placed } = latest.current;
+    const col = columnAt(d.start, box.width, d.x - box.left);
+    const lift =
+      d.start[col]?.tiles.flatMap((t) => {
+        const el = t.id !== d.id && cells.current.get(t.id);
+        const spot = placed.get(t.id);
+        return el && spot ? [el.offsetTop - spot.top * ROW] : [];
+      })[0] ?? 0;
     return {
-      col: columnAt(d.start, box.width, d.x - box.left),
-      y: (d.y - d.dy - box.top + h / 2) / ROW,
+      col,
+      y: (d.y - d.dy - box.top - lift + (rows(d.id) * ROW) / 2) / ROW,
     };
   };
 
@@ -262,7 +269,7 @@ export const Dashboard = ({
     if (d.kind === "move") next = drop(d.start, rows, d.id, target(d, box));
     else {
       const spot = place(d.start, rows).spots.get(d.id)!;
-      const content = d.y + d.dy - box.top - spot.top * ROW;
+      const content = d.y + d.dy - box.top - cells.current.get(d.id)!.offsetTop;
       const h =
         Math.abs(content - d.natural) < GAP
           ? null
