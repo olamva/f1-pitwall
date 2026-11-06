@@ -119,69 +119,73 @@ const Cards = ({
         const crew = drivers
           .filter((d) => d.team === row.team && !d.reserve)
           .flatMap((d) => info.get(d.id) ?? []);
+        const Hover = team ? TeamHover : DriverHover;
         return (
-          <Card
+          <Hover
             key={row.id}
-            onClick={() => onSelect?.(row.id)}
-            className={`group relative overflow-hidden rounded-xl text-left transition hover:-translate-y-0.5 ${onSelect ? "cursor-pointer" : ""} ${big ? "champion-card col-span-full p-6 sm:p-8" : "bg-surface p-4 ring-1 ring-zinc-800 hover:ring-zinc-600"}`}
-            style={{
-              backgroundImage: big
-                ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
-                : `linear-gradient(135deg, ${color}40, transparent 65%)`,
-            }}
+            id={row.id}
+            className={big ? "col-span-full" : ""}
           >
-            {team ? (
-              <TeamLogo
-                team={row.team}
-                className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
-              />
-            ) : (
-              <Portrait driver={driver} color={color} big={big} />
-            )}
-            {big && (
-              <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#ebd08a] uppercase sm:text-sm">
-                <Trophy aria-hidden className="size-4" />
-                {champion}
-              </span>
-            )}
-            {driver && !big && (
-              <span className="font-f1 relative block text-xs font-bold text-zinc-400">
-                {driver.code}
-              </span>
-            )}
-            <DriverHover id={team ? "" : row.id} className="relative w-fit">
+            <Card
+              onClick={() => onSelect?.(row.id)}
+              className={`group relative block size-full overflow-hidden rounded-xl text-left transition hover:-translate-y-0.5 ${onSelect ? "cursor-pointer" : ""} ${big ? "champion-card p-6 sm:p-8" : "bg-surface p-4 ring-1 ring-zinc-800 hover:ring-zinc-600"}`}
+              style={{
+                backgroundImage: big
+                  ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
+                  : `linear-gradient(135deg, ${color}40, transparent 65%)`,
+              }}
+            >
+              {team ? (
+                <TeamLogo
+                  team={row.team}
+                  className={`absolute top-1/2 -translate-y-1/2 transition group-hover:scale-105 ${big ? "champion-figure right-6 h-24 w-36 sm:right-12 sm:h-36 sm:w-56" : "right-5 h-14 w-24"}`}
+                />
+              ) : (
+                <Portrait driver={driver} color={color} big={big} />
+              )}
+              {big && (
+                <span className="font-f1 relative flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-[#ebd08a] uppercase sm:text-sm">
+                  <Trophy aria-hidden className="size-4" />
+                  {champion}
+                </span>
+              )}
+              {driver && !big && (
+                <span className="font-f1 relative block text-xs font-bold text-zinc-400">
+                  {driver.code}
+                </span>
+              )}
               <span
                 className={`font-f1 relative block leading-tight font-bold ${big ? "champion-name mt-2 text-3xl font-black sm:text-5xl" : `text-lg ${driver ? "mt-1" : ""}`}`}
               >
                 {row.name}
               </span>
-            </DriverHover>
-            {team ? (
-              <Numbers crew={crew} color={color} big={big} />
-            ) : (
-              <Badge team={row.team} teams={teams} big={big} />
-            )}
-            <span
-              className={`tabular relative flex text-xs text-zinc-400 ${big ? "mt-8 gap-5 sm:gap-8" : "mt-4 gap-5"}`}
-            >
-              {(
-                [
-                  ["Pos", `P${place + 1}`],
-                  ["Pts", row.points],
-                  ["Wins", row.wins],
-                ] as const
-              ).map(([label, value]) => (
-                <span key={label}>
-                  {label}
-                  <span
-                    className={`font-f1 block font-bold text-zinc-50 ${big ? "text-2xl sm:text-3xl" : "text-base"}`}
-                  >
-                    {value}
+              {team ? (
+                <Numbers crew={crew} color={color} big={big} />
+              ) : (
+                <Badge team={row.team} teams={teams} big={big} />
+              )}
+              <span
+                className={`tabular relative flex text-xs text-zinc-400 ${big ? "mt-8 gap-5 sm:gap-8" : "mt-4 gap-5"}`}
+              >
+                {(
+                  [
+                    ["Pos", `P${place + 1}`],
+                    ["Pts", row.points],
+                    ["Wins", row.wins],
+                  ] as const
+                ).map(([label, value]) => (
+                  <span key={label}>
+                    {label}
+                    <span
+                      className={`font-f1 block font-bold text-zinc-50 ${big ? "text-2xl sm:text-3xl" : "text-base"}`}
+                    >
+                      {value}
+                    </span>
                   </span>
-                </span>
-              ))}
-            </span>
-          </Card>
+                ))}
+              </span>
+            </Card>
+          </Hover>
         );
       })}
     </div>
@@ -259,14 +263,14 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
   return (
     <div className="space-y-4">
       {picker}
-      <Swipe
-        items={teams ? CHAMPS : CHAMPS.slice(0, 1)}
-        value={teams ? champ : "drivers"}
-        onChange={setChamp}
-        drive={blob}
-        render={(c) =>
-          c === "drivers" ? (
-            <TeamSeason value={Number(year) === season.year ? season : null}>
+      <TeamSeason value={Number(year) === season.year ? season : null}>
+        <Swipe
+          items={teams ? CHAMPS : CHAMPS.slice(0, 1)}
+          value={teams ? champ : "drivers"}
+          onChange={setChamp}
+          drive={blob}
+          render={(c) =>
+            c === "drivers" ? (
               <Cards
                 rows={data.drivers}
                 season={season}
@@ -274,21 +278,21 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
                 champion={decided(c) ? `${year} World Champion` : undefined}
                 onSelect={openDriver}
               />
-            </TeamSeason>
-          ) : (
-            <Cards
-              rows={data.constructors}
-              drivers={data.drivers}
-              season={season}
-              teams={names}
-              champion={
-                decided(c) ? `${year} Constructors' Champion` : undefined
-              }
-              onSelect={openConstructor}
-            />
-          )
-        }
-      />
+            ) : (
+              <Cards
+                rows={data.constructors}
+                drivers={data.drivers}
+                season={season}
+                teams={names}
+                champion={
+                  decided(c) ? `${year} Constructors' Champion` : undefined
+                }
+                onSelect={openConstructor}
+              />
+            )
+          }
+        />
+      </TeamSeason>
     </div>
   );
 };
