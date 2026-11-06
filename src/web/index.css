@@ -1125,7 +1125,7 @@ html:has(dialog[open]) {
   z-index: 20;
   margin: calc(-1 * var(--page-top)) -1rem 0;
   padding: var(--page-top) 1rem 1rem;
-  background: color-mix(in srgb, var(--color-zinc-950) 40%, transparent);
+  background: color-mix(in srgb, var(--color-zinc-950) 15%, transparent);
   backdrop-filter: blur(16px) saturate(1.5);
 }
 
