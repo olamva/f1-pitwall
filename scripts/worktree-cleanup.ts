@@ -3,13 +3,13 @@ import { realpathSync } from "node:fs";
 import { dirname, sep } from "node:path";
 
 const regenerable = [
-  "node_modules/",
   "node_modules",
-  "dist/",
-  ".vite/",
-  ".pnpm-store/",
-  "infra/.terraform/",
-];
+  "dist",
+  ".vite",
+  ".pnpm-store",
+  "infra/.terraform",
+  "data/jolpica",
+].map((path) => `:!${path}`);
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync("git", args, {
@@ -200,10 +200,11 @@ if (!branchOnly) {
     "--others",
     "--ignored",
     "--exclude-standard",
-    "--directory",
+    "--",
+    ...regenerable,
   )
     .split("\n")
-    .filter((name) => name && !regenerable.includes(name));
+    .filter(Boolean);
   if (kept.length)
     throw new Error(`Preserve the ignored paths: ${kept.join(", ")}`);
   const files = spawnSync(
