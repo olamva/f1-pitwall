@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties } from "react";
+import { DriverHover } from "../DriverCard.tsx";
 import { ink } from "../ink.ts";
 import {
   Count,
@@ -122,9 +123,12 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
           <span className="tabular w-4 shrink-0 text-[9px] leading-none">
             <Move key={seen.order.join()} by={seen.moves.get(s.id) ?? 0} />
           </span>
-          <span className="-ml-1 w-8 shrink-0 text-right text-xs text-zinc-300">
+          <DriverHover
+            id={s.id}
+            className="-ml-1 w-8 shrink-0 text-right text-xs text-zinc-300"
+          >
             {s.label}
-          </span>
+          </DriverHover>
           <div className="relative h-full flex-1 *:delay-(--delay)">
             <span
               className={`${MORPH} absolute top-1/2 h-px bg-zinc-500 transition-[left,width]`}
