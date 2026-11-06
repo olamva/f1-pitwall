@@ -355,6 +355,7 @@ export const Dashboard = ({
     };
     const key = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      e.stopPropagation();
       finish(false);
       off();
     };
@@ -362,12 +363,12 @@ export const Dashboard = ({
       removeEventListener("pointermove", moved, true);
       removeEventListener("pointerup", ended);
       removeEventListener("pointercancel", ended);
-      removeEventListener("keydown", key);
+      removeEventListener("keydown", key, true);
     };
     addEventListener("pointermove", moved, true);
     addEventListener("pointerup", ended);
     addEventListener("pointercancel", ended);
-    addEventListener("keydown", key);
+    addEventListener("keydown", key, true);
   };
 
   const present = new Set(saved.flatMap((c) => c.tiles.map((t) => t.id)));
@@ -378,10 +379,11 @@ export const Dashboard = ({
 
   return (
     <>
-      {editing &&
-        slot &&
+      {slot &&
         createPortal(
           <EditBar
+            editing={editing}
+            onEdit={onEdit}
             sizes={sizes}
             size={size}
             onSize={setView}
