@@ -60,9 +60,5 @@ export const user = (c: Context): string | null => {
   return c.get("oidcAuth")?.email || null;
 };
 
-export const requireGoogle: MiddlewareHandler = async (c, next) => {
-  if (user(c)) return next();
-  return c.get("oidcAuth")
-    ? c.json({ error: "This Google account has no access." }, 403)
-    : c.json({ error: "Sign in with Google to use this." }, 401);
-};
+export const requireGoogle: MiddlewareHandler = async (c, next) =>
+  user(c) ? next() : c.json({ error: "Sign in with Google to use this." }, 401);

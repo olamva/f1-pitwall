@@ -1,0 +1,13 @@
+{
+  "id": "ec20e785",
+  "ts": "2026-11-06T12:01:16+00:00",
+  "text": "worktree:cleanup removed node_modules before it threw on the PR check, so later pnpm scripts failed",
+  "tags": [
+    "scripts"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "732c1222",
+  "where": "scripts/worktree-cleanup.ts",
+  "branch": "t3/drop-account-denied"
+}
