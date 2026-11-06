@@ -1,4 +1,5 @@
 import {
+  Check,
   LayoutDashboard,
   Monitor,
   Plus,
@@ -230,10 +231,12 @@ export const EditBar = ({
       )}
       <button
         type="button"
+        aria-label="Done"
+        title="Done"
         onClick={onDone}
-        className="h-[2.625rem] shrink-0 cursor-pointer rounded-full bg-red-600 px-4 text-sm font-semibold text-white"
+        className="grid size-[2.625rem] shrink-0 cursor-pointer place-items-center rounded-full bg-red-600 text-white"
       >
-        Done
+        <Check aria-hidden="true" className="size-5" />
       </button>
     </>
   );
