@@ -206,12 +206,7 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
           event={events[0]!.name}
         />
       )}
-      <p className="my-2 text-xs text-zinc-500">
-        {by === null &&
-          `The points ${a} need to secure ${prize} at ${events[0]!.name}. `}
-        A single position means that the other car scores no points.
-      </p>
-      <table className="tabular w-full text-sm">
+      <table className="tabular mt-2 w-full text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
             <th className="w-1/2 py-1 pr-4">{b} at most</th>
