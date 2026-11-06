@@ -100,6 +100,7 @@ const remaining = (season: Season, sessions: SessionRef[]): Entry[] => {
           start: `${s.at.toLocaleDateString("sv")}T${time(s.at)}`,
           time: time(s.at),
         }))
+        .filter((s) => !sessions.some((r) => r.name === s.name))
     : [];
 };
 
