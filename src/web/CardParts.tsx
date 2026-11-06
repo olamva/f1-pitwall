@@ -35,7 +35,7 @@ export const Shell = ({
   children,
 }: ShellProps) => (
   <div
-    className={`relative -m-3 ${crown ? "after:pointer-events-none after:absolute after:inset-0 after:rounded-xl after:ring-2 after:ring-[#facc15] after:ring-inset" : ""}`}
+    className={`relative -m-3 ${crown ? "after:pointer-events-none after:absolute after:inset-0 after:rounded-xl after:ring-2 after:ring-[#d4af37] after:ring-inset" : ""}`}
   >
     <div
       className="relative h-35 overflow-hidden px-3 pt-3 text-white"
@@ -57,7 +57,7 @@ export const Shell = ({
             {title}
           </span>
           {crown && (
-            <span className="font-f1 mt-1 flex items-center gap-1 text-[10px] font-bold tracking-[0.2em] text-[#fef08a] uppercase">
+            <span className="font-f1 mt-1 flex items-center gap-1 text-[10px] font-bold tracking-[0.2em] text-[#ebd08a] uppercase">
               <Trophy aria-hidden className="size-3" />
               {crown}
             </span>

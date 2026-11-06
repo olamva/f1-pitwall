@@ -61,6 +61,7 @@
   --font-f1-wide: "Formula1Wide", var(--font-sans);
   --color-surface: light-dark(#fff, #18181b);
   --color-purple: light-dark(#9333ea, #a855f7);
+  --color-gold: light-dark(#a8842c, #d4af37);
   --color-zinc-50: light-dark(oklch(14.1% 0.005 285.823), oklch(98.5% 0 none));
   --color-zinc-100: light-dark(
     oklch(21% 0.006 285.885),
@@ -1092,7 +1093,7 @@ html:has(dialog[open]) {
   background-image:
     radial-gradient(
       ellipse 120% 50% at 30% 0%,
-      rgb(250 204 21 / 0.3),
+      rgb(212 175 55 / 0.3),
       transparent 70%
     ),
     linear-gradient(
@@ -1129,8 +1130,8 @@ html:has(dialog[open]) {
   --color-zinc-50: #fff;
   --color-zinc-400: rgb(255 255 255 / 0.7);
   box-shadow:
-    0 0 0 2px #facc15,
-    0 16px 56px -16px rgb(250 204 21 / 0.7);
+    0 0 0 2px #d4af37,
+    0 16px 56px -16px rgb(212 175 55 / 0.7);
 }
 
 .champion-card::after {
@@ -1212,7 +1213,7 @@ html:has(dialog[open]) {
 }
 
 .champion-rows > :nth-child(even) .champion-ticker {
-  color: rgb(250 204 21 / 0.16);
+  color: rgb(212 175 55 / 0.16);
 }
 
 @keyframes champion-drift {
@@ -1232,7 +1233,7 @@ html:has(dialog[open]) {
 }
 
 .champion-name {
-  background: linear-gradient(100deg, #fff 40%, #fde68a 50%, #fff 60%);
+  background: linear-gradient(100deg, #fff 40%, #f7e7a1 50%, #fff 60%);
   background-size: 250% 100%;
   background-clip: text;
   color: transparent;
@@ -1244,8 +1245,8 @@ html:has(dialog[open]) {
 }
 
 .champion-figure {
-  filter: drop-shadow(0 0 1px #fef08a)
-    drop-shadow(0 0 32px rgb(250 204 21 / 0.55));
+  filter: drop-shadow(0 0 1px #f7e7a1)
+    drop-shadow(0 0 32px rgb(212 175 55 / 0.55));
 }
 
 .swipe > [inert] .champion-card::after,

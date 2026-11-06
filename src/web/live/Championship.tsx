@@ -29,7 +29,7 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
       </h3>
       {crowned && (
         <p className="mb-2 flex items-center gap-2 rounded-lg bg-amber-950 px-3 py-2 text-sm font-semibold text-amber-100">
-          <Trophy aria-hidden className="size-4 shrink-0 text-yellow-300" />
+          <Trophy aria-hidden className="text-gold size-4 shrink-0" />
           {crowned.name} {title === "decided" ? "is" : "will be"}{" "}
           {CHAMPION[champ]}
         </p>
