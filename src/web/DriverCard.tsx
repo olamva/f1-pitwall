@@ -169,7 +169,6 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
               name: info.get(s.id)?.name ?? s.id,
             }))}
             self={id}
-            color={teamColor(driver.team)}
             champion={champion}
           />
         )

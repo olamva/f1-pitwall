@@ -115,7 +115,6 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
                 name: name(t.id),
               }))}
               self={team}
-              color={color}
               champion={champion}
             />
           </div>
