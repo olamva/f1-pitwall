@@ -1108,16 +1108,8 @@ html:has(dialog[open]) {
 
 .board[data-focus] > h1,
 :has(> .board[data-focus]) > :not(.board),
-:root:has(main:not([inert]) .board[data-focus]) header > button {
-  display: none;
-}
-
 :root:has(main:not([inert]) .board[data-focus]) header {
-  display: contents;
-
-  @variant sm {
-    display: none;
-  }
+  display: none;
 }
 
 :root[data-champion] body {

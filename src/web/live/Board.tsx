@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
+import { Focus, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 import type { Round } from "../../shared/season.ts";
@@ -159,9 +159,9 @@ export const Board = ({
           className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
         >
           {focus ? (
-            <ArrowUpToLine aria-hidden="true" size={16} />
+            <X aria-hidden="true" size={16} />
           ) : (
-            <ArrowDownToLine aria-hidden="true" size={16} />
+            <Focus aria-hidden="true" size={16} />
           )}
           {focus ? "Exit focus" : "Focus"}
         </button>
