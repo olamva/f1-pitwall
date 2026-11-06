@@ -89,8 +89,10 @@ const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
   const src = useArt(id)?.headshot;
   return (
     <span
-      className="size-10 shrink-0 overflow-hidden rounded-lg border-b-2 bg-zinc-800"
-      style={{ borderColor: color }}
+      className="size-10 shrink-0 overflow-hidden rounded-lg"
+      style={{
+        background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
+      }}
     >
       {src && (
         <Headshot src={src} className="size-full object-cover object-top" />
@@ -114,10 +116,15 @@ export const PodiumList = ({ entries }: { entries: PodiumEntry[] }) => (
         </span>
         <Face id={e.id} color={e.color} />
         <span className="min-w-0">
-          <span className="block text-sm leading-tight font-semibold">
+          <span className="block text-[13px] leading-tight font-bold">
             {e.name}
           </span>
-          {e.team && <TeamLogo team={e.team} className="block h-4 w-6" />}
+          {e.team && (
+            <TeamLogo
+              team={e.team}
+              className="mt-0.5 block h-3.5 w-6 object-left"
+            />
+          )}
         </span>
         <span className="tabular ml-auto shrink-0 text-xs text-zinc-400">
           {e.value}

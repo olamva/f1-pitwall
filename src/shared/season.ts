@@ -109,6 +109,7 @@ export type RaceArchive = {
       positionText: string;
       points: number;
       status: string;
+      time: string;
     }[];
     sprint: RaceArchive["races"][number]["results"];
   }[];

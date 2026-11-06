@@ -351,6 +351,21 @@ const PracticeBody = ({
   );
 };
 
+const LAP = /^(\d+):(\d\d\.\d+)$/;
+
+const seconds = (time: string) => {
+  const [, minutes, rest] = LAP.exec(time) ?? [];
+  return Number(minutes) * 60 + Number(rest);
+};
+
+const gap = (entry: PodiumEntry, leader: PodiumEntry, index: number) =>
+  index && LAP.test(entry.value) && LAP.test(leader.value)
+    ? {
+        ...entry,
+        value: `+${(seconds(entry.value) - seconds(leader.value)).toFixed(3)}`,
+      }
+    : entry;
+
 interface SessionPodiumProps {
   year: string;
   round: number;
@@ -378,9 +393,13 @@ export const SessionPodium = ({
     ? quali.data && podium(qualifyingRows(quali.data, known), best)
     : practiced
       ? practice.data && podium(practiceRows(practice.data, known), lap)
-      : race && podium(kind === "sprint" ? race.sprint : race.results, points);
+      : race &&
+        podium(
+          kind === "sprint" ? race.sprint : race.results,
+          (result) => result.time || result.status,
+        );
   return top && top.length >= 3 ? (
-    <PodiumList entries={top} />
+    <PodiumList entries={top.map((e, i) => gap(e, top[0], i))} />
   ) : (
     <p className="py-8 text-center text-xs text-zinc-400">
       {top || quali.error || practice.error
