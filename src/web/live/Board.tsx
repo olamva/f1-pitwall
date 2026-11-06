@@ -163,7 +163,7 @@ export const Board = ({
       style={
         focus
           ? ({
-              "--tile-top": `calc(var(--page-top) - 0.5rem + ${bar}px)`,
+              "--tile-top": `${bar}px`,
             } as CSSProperties)
           : undefined
       }

@@ -1115,20 +1115,18 @@ html:has(dialog[open]) {
 
 .board[data-focus] > h1,
 :has(> .board[data-focus]) > :not(.board),
-:root:has(main:not([inert]) .board[data-focus]) header {
+:root:has(main:not([inert]) .board[data-focus]) :is(header, .top-band) {
   display: none;
 }
 
 .board[data-focus] > .status-row {
   position: sticky;
-  top: calc(var(--page-top) - 0.5rem);
+  top: 0;
   z-index: 20;
-  margin-block: -0.5rem 0;
-  padding-block: 0.5rem 1rem;
-  background: var(--color-zinc-950);
-  box-shadow:
-    -1rem 0 var(--color-zinc-950),
-    1rem 0 var(--color-zinc-950);
+  margin: calc(-1 * var(--page-top)) -1rem 0;
+  padding: var(--page-top) 1rem 1rem;
+  background: color-mix(in srgb, var(--color-zinc-950) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(1.5);
 }
 
 :root[data-champion] body {
