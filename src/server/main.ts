@@ -13,6 +13,7 @@ import {
   qualifying,
   seasonSessions,
   replay,
+  scrub,
   stateAt,
   stints,
   type Replay,
@@ -289,6 +290,9 @@ app.get("/api/replay/trace", async (c) =>
 );
 app.get("/api/replay/periods", async (c) =>
   c.json((await withReplay(c.req.query("path"))).session.periods),
+);
+app.get("/api/replay/scrub", async (c) =>
+  c.json(scrub(await withReplay(c.req.query("path")))),
 );
 app.get("/api/replay/outline", async (c) => {
   const r = await withReplay(c.req.query("path"));

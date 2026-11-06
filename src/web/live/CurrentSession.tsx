@@ -29,6 +29,7 @@ import { Board } from "./Board.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
+import { ScrubCard } from "./ScrubCard.tsx";
 import { clockSync, lapSync, splitSync } from "./sync.ts";
 import { useFeed, type Feed } from "./useFeed.ts";
 import { lapStarts, lapTime } from "./view.ts";
@@ -323,6 +324,7 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
     () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
     [race, laps.data, feed?.start],
   );
+  const at = (feed?.src === url ? null : play.t) ?? feed?.t ?? 0;
   const share = (t: number) => setSearchParam("t", `${Math.floor(t / 1000)}`);
   const seek = (t: number) => {
     share(t);
@@ -342,7 +344,7 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
         starts={starts}
         start={feed?.start ?? 0}
         end={feed?.duration ?? 0}
-        at={(feed?.src === url ? null : play.t) ?? feed?.t ?? 0}
+        at={at}
         periods={periods.data}
         playing={!!play.on}
         speed={play.speed}
@@ -354,6 +356,15 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
           setPlay((s) => ({ ...s, speed, t: feed?.t ?? s.t }))
         }
         onSeek={seek}
+        preview={(t) => (
+          <ScrubCard
+            url={`/api/replay/scrub?${q}`}
+            t={t}
+            at={at}
+            start={feed?.start ?? 0}
+            starts={starts}
+          />
+        )}
       />
       {!feed ? (
         <Loading

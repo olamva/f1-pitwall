@@ -2,6 +2,8 @@ import { useRef, useState, type ReactNode } from "react";
 
 interface HoverCardProps {
   card: ReactNode;
+  at?: number;
+  interactive?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -9,12 +11,20 @@ interface HoverCardProps {
 const WIDTH = 288;
 const MARGIN = 12;
 
-export const HoverCard = ({ card, className, children }: HoverCardProps) => {
+export const HoverCard = ({
+  card,
+  at,
+  interactive = false,
+  className,
+  children,
+}: HoverCardProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef(0);
   const [open, setOpen] = useState(false);
-  const [place, setPlace] = useState<{ shift: number; below: boolean }>();
+  const [box, setBox] = useState<DOMRect>();
   if (!card) return children;
+  const edge = WIDTH / 2 + MARGIN;
+  const mid = box && box.left + (at ?? box.width / 2);
   return (
     <div
       ref={ref}
@@ -22,13 +32,7 @@ export const HoverCard = ({ card, className, children }: HoverCardProps) => {
       onPointerEnter={(e) => {
         if (e.pointerType !== "mouse") return;
         timer.current = window.setTimeout(() => {
-          const r = ref.current!.getBoundingClientRect();
-          const mid = r.left + r.width / 2;
-          const edge = WIDTH / 2 + MARGIN;
-          setPlace({
-            shift: Math.min(Math.max(mid, edge), innerWidth - edge) - mid,
-            below: r.top < 320,
-          });
+          setBox(ref.current!.getBoundingClientRect());
           setOpen(true);
         }, 300);
       }}
@@ -38,17 +42,22 @@ export const HoverCard = ({ card, className, children }: HoverCardProps) => {
       }}
     >
       {children}
-      {place && (
+      {box && (
         <div
-          aria-hidden="true"
+          aria-hidden={!interactive}
           hidden={!open}
-          className={`bg-surface pointer-events-none absolute left-1/2 z-30 rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700 ${place.below ? "top-full mt-2" : "bottom-full mb-2"}`}
+          className={`absolute z-30 ${interactive ? "" : "pointer-events-none"} ${box.top < 320 ? "top-full pt-2" : "bottom-full pb-2"}`}
           style={{
             width: WIDTH,
-            translate: `calc(-50% + ${place.shift}px)`,
+            left:
+              Math.min(Math.max(mid!, edge), innerWidth - edge) -
+              box.left -
+              WIDTH / 2,
           }}
         >
-          {card}
+          <div className="bg-surface rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
+            {card}
+          </div>
         </div>
       )}
     </div>

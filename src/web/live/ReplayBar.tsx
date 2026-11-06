@@ -9,6 +9,7 @@ import {
 import { Flag, Pause, Play } from "lucide-react";
 import type { Period } from "../../shared/timing.ts";
 import { useRefraction } from "../Glass.tsx";
+import { HoverCard } from "../HoverCard.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { StealthInput } from "./StealthInput.tsx";
 import { clockSeconds, lapPosition, lapTime } from "./view.ts";
@@ -33,10 +34,11 @@ interface ReplayBarProps {
   onToggle: () => void;
   onSpeed?: (speed: number) => void;
   onSeek: (t: number) => void;
+  preview?: (t: number) => ReactNode;
   children?: ReactNode;
 }
 
-const clock = (ms: number) => {
+export const clock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
@@ -53,9 +55,11 @@ export const ReplayBar = ({
   onToggle,
   onSpeed,
   onSeek,
+  preview,
   children,
 }: ReplayBarProps) => {
   const [drag, setDrag] = useState<number | null>(null);
+  const [hover, setHover] = useState({ x: 0, v: 0 });
   const [held, setHeld] = useState(false);
   const [unit, setUnit] = useState<(typeof UNITS)[number]>("time");
   const [flags, setFlags] = useState(false);
@@ -72,6 +76,8 @@ export const ReplayBar = ({
   const toT = (v: number) => (laps ? starts[v]! : v);
   const min = laps ? 0 : start;
   const max = laps ? starts.length - 1 : end;
+  const step = laps ? 1 : 1000;
+  const card = (v: number) => max > min && preview?.(toT(v));
   const position = laps ? lap : value;
   const progress = Math.max(
     0,
@@ -149,7 +155,7 @@ export const ReplayBar = ({
   return (
     <div
       ref={bar}
-      className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
+      className="glass-panel relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
     >
       <button
         onClick={onToggle}
@@ -164,64 +170,85 @@ export const ReplayBar = ({
         )}
       </button>
       <div className="order-first flex min-w-0 flex-1 basis-full items-center gap-3 sm:order-1 sm:basis-60">
-        <div
-          ref={seek}
-          className="glass-seek relative min-w-0 flex-1"
-          data-held={held}
-          data-disabled={max <= min}
-          style={{ "--progress": progress } as CSSProperties}
+        <HoverCard
+          card={card(hover.v)}
+          at={hover.x}
+          interactive
+          className="min-w-0 flex-1"
         >
-          {bands.map((b) => (
-            <span
-              key={b.from}
-              aria-hidden="true"
-              className={`absolute top-[28px] h-1 rounded-full ${TONES[b.kind]}`}
-              style={{
-                left: `calc(14px + (100% - 28px) * ${b.left})`,
-                width: `max(4px, calc((100% - 28px) * ${b.width}))`,
+          <div
+            ref={seek}
+            className="glass-seek relative min-w-0 flex-1"
+            data-held={held}
+            data-disabled={max <= min}
+            style={{ "--progress": progress } as CSSProperties}
+            onPointerMove={(e) => {
+              if (e.pointerType !== "mouse") return;
+              const box = e.currentTarget.getBoundingClientRect();
+              const x = (e.clientX - box.left - 14) / (box.width - 28);
+              setHover({
+                x: e.clientX - box.left,
+                v:
+                  min +
+                  Math.round(
+                    (Math.max(0, Math.min(1, x)) * (max - min)) / step,
+                  ) *
+                    step,
+              });
+            }}
+          >
+            {bands.map((b) => (
+              <span
+                key={b.from}
+                aria-hidden="true"
+                className={`absolute top-[28px] h-1 rounded-full ${TONES[b.kind]}`}
+                style={{
+                  left: `calc(14px + (100% - 28px) * ${b.left})`,
+                  width: `max(4px, calc((100% - 28px) * ${b.width}))`,
+                }}
+              />
+            ))}
+            <span aria-hidden="true" className="glass-seek-track glass-label" />
+            <span aria-hidden="true" className="glass-lens absolute inset-0">
+              <span className="glass-seek-track" />
+            </span>
+            <span ref={thumb} aria-hidden="true" className="glass-seek-thumb" />
+            <input
+              type="range"
+              aria-label={laps ? "Seek to lap" : "Seek to time"}
+              aria-valuetext={readout}
+              min={min}
+              max={max}
+              disabled={max <= min}
+              step={step}
+              value={position}
+              onChange={(e) => setDrag(toT(Number(e.target.value)))}
+              onPointerDown={(e) => {
+                if (!e.isPrimary || e.button !== 0) return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                down.current = e.clientX;
+                setHeld(true);
+                setDrag(toT(Number(e.currentTarget.value)));
               }}
+              onPointerUp={(e) => {
+                if (!held) return;
+                onSeek(tapped(e)?.from ?? toT(Number(e.currentTarget.value)));
+                cancel();
+              }}
+              onPointerCancel={cancel}
+              onLostPointerCapture={cancel}
+              onKeyUp={() => {
+                if (drag !== null) onSeek(drag);
+                setDrag(null);
+              }}
+              onBlur={() => {
+                if (drag !== null) onSeek(drag);
+                cancel();
+              }}
+              className="glass-seek-input"
             />
-          ))}
-          <span aria-hidden="true" className="glass-seek-track glass-label" />
-          <span aria-hidden="true" className="glass-lens absolute inset-0">
-            <span className="glass-seek-track" />
-          </span>
-          <span ref={thumb} aria-hidden="true" className="glass-seek-thumb" />
-          <input
-            type="range"
-            aria-label={laps ? "Seek to lap" : "Seek to time"}
-            aria-valuetext={readout}
-            min={min}
-            max={max}
-            disabled={max <= min}
-            step={laps ? 1 : 1000}
-            value={position}
-            onChange={(e) => setDrag(toT(Number(e.target.value)))}
-            onPointerDown={(e) => {
-              if (!e.isPrimary || e.button !== 0) return;
-              e.currentTarget.setPointerCapture(e.pointerId);
-              down.current = e.clientX;
-              setHeld(true);
-              setDrag(toT(Number(e.currentTarget.value)));
-            }}
-            onPointerUp={(e) => {
-              if (!held) return;
-              onSeek(tapped(e)?.from ?? toT(Number(e.currentTarget.value)));
-              cancel();
-            }}
-            onPointerCancel={cancel}
-            onLostPointerCapture={cancel}
-            onKeyUp={() => {
-              if (drag !== null) onSeek(drag);
-              setDrag(null);
-            }}
-            onBlur={() => {
-              if (drag !== null) onSeek(drag);
-              cancel();
-            }}
-            className="glass-seek-input"
-          />
-        </div>
+          </div>
+        </HoverCard>
         <span className="tabular font-mono text-zinc-300">
           {laps ? (
             <>

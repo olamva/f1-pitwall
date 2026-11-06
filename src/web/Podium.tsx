@@ -85,11 +85,15 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
   </div>
 );
 
-const Face = ({ id, color }: Pick<PodiumEntry, "id" | "color">) => {
+export const Face = ({
+  id,
+  color,
+  size = "size-10",
+}: Pick<PodiumEntry, "id" | "color"> & { size?: string }) => {
   const src = useArt(id)?.headshot;
   return (
     <span
-      className="size-10 shrink-0 overflow-hidden rounded-lg"
+      className={`${size} shrink-0 overflow-hidden rounded-lg`}
       style={{
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}
