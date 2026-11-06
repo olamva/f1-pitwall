@@ -137,7 +137,7 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
       figure={
         <Figure
           id={id}
-          pose="front"
+          pose="right"
           transform={BUST(0.6)}
           className="absolute right-4 bottom-0 h-24"
         />
