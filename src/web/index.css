@@ -1125,8 +1125,16 @@ html:has(dialog[open]) {
   z-index: 20;
   margin: calc(-1 * var(--page-top)) -1rem 0;
   padding: var(--page-top) 1rem 1rem;
-  background: color-mix(in srgb, var(--color-zinc-950) 70%, transparent);
+}
+
+.board[data-focus] > .status-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--color-zinc-950) 15%, transparent);
   backdrop-filter: blur(16px) saturate(1.5);
+  mask-image: linear-gradient(black calc(100% - 2rem), transparent);
 }
 
 :root[data-champion] body {
