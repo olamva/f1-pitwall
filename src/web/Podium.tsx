@@ -21,7 +21,7 @@ interface PodiumProps {
   onSelect?: (id: string) => void;
 }
 
-export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
+export const METALS = ["#d4af37", "#d4d4d8", "#d97706"];
 const HEIGHTS = ["h-28", "h-20", "h-16"];
 const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
@@ -52,7 +52,7 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
                 {i === 0 && (
                   <Trophy
                     aria-hidden
-                    className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
+                    className="text-gold mb-1 size-5 drop-shadow-[0_0_6px_rgb(212_175_55_/_0.6)]"
                   />
                 )}
                 <span
