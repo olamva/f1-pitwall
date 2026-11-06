@@ -126,7 +126,7 @@ export const Tabs = <T extends string>({
     observer.observe(track);
     observer.observe(button);
     return () => observer.disconnect();
-  }, [items, value]);
+  }, [items.join("\n"), value]);
 
   useLayoutEffect(() => {
     if (!drive) return;

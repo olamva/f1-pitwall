@@ -62,9 +62,10 @@ export const Stints = ({ stints, scale }: StintsProps) => {
   );
 };
 
-export const useCover = () => {
+export const useCover = (on: boolean) => {
   const table = useRef<HTMLTableElement>(null);
   useLayoutEffect(() => {
+    if (!on) return;
     const node = table.current!;
     const measure = () => {
       const cells = [
