@@ -89,14 +89,15 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
 );
 
 interface FaceProps extends Pick<PodiumEntry, "id" | "color"> {
+  size?: string;
   faded?: boolean;
 }
 
-const Face = ({ id, color, faded }: FaceProps) => {
+export const Face = ({ id, color, size = "size-10", faded }: FaceProps) => {
   const src = useArt(id)?.headshot ?? FALLBACK;
   return (
     <span
-      className={`size-10 shrink-0 overflow-hidden rounded-lg ${faded ? "grayscale-35" : ""}`}
+      className={`${size} shrink-0 overflow-hidden rounded-lg ${faded ? "grayscale-35" : ""}`}
       style={{
         background: `light-dark(var(--color-zinc-800), color-mix(in srgb, ${color} 20%, transparent))`,
       }}

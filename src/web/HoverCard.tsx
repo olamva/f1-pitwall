@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 
 interface HoverCardProps {
   card: ReactNode;
+  at?: number;
+  interactive?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -11,18 +13,20 @@ const WIDTH = 288;
 const MARGIN = 12;
 const GAP = 8;
 
-export const HoverCard = ({ card, className, children }: HoverCardProps) => {
+export const HoverCard = ({
+  card,
+  at,
+  interactive = false,
+  className,
+  children,
+}: HoverCardProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const pop = useRef<HTMLDivElement>(null);
   const timer = useRef(0);
-  const [place, setPlace] = useState<{
-    left: number;
-    top?: number;
-    bottom?: number;
-  }>();
+  const [box, setBox] = useState<DOMRect>();
   useEffect(() => {
-    if (place) pop.current?.showPopover();
-  }, [place]);
+    if (box) pop.current?.showPopover();
+  }, [box]);
   if (!card) return children;
   return (
     <div
@@ -30,18 +34,10 @@ export const HoverCard = ({ card, className, children }: HoverCardProps) => {
       className={className}
       onPointerEnter={(e) => {
         if (e.pointerType !== "mouse") return;
-        timer.current = window.setTimeout(() => {
-          const r = ref.current!.getBoundingClientRect();
-          const left = Math.min(
-            Math.max(r.left + r.width / 2 - WIDTH / 2, MARGIN),
-            innerWidth - WIDTH - MARGIN,
-          );
-          setPlace(
-            r.top < 320
-              ? { left, top: r.bottom + GAP }
-              : { left, bottom: innerHeight - r.top + GAP },
-          );
-        }, 300);
+        timer.current = window.setTimeout(
+          () => setBox(ref.current!.getBoundingClientRect()),
+          300,
+        );
       }}
       onPointerLeave={() => {
         clearTimeout(timer.current);
@@ -49,16 +45,27 @@ export const HoverCard = ({ card, className, children }: HoverCardProps) => {
       }}
     >
       {children}
-      {place &&
+      {box &&
         createPortal(
           <div
             ref={pop}
             popover="manual"
-            aria-hidden="true"
-            className="bg-surface pointer-events-none fixed inset-auto m-0 rounded-xl p-3 text-left text-sm text-zinc-100 shadow-2xl ring-1 ring-zinc-700"
-            style={{ width: WIDTH, ...place }}
+            aria-hidden={!interactive}
+            className={`fixed inset-auto m-0 overflow-visible bg-transparent text-sm text-zinc-100 ${interactive ? "" : "pointer-events-none"}`}
+            style={{
+              width: WIDTH,
+              left: Math.min(
+                Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
+                innerWidth - WIDTH - MARGIN,
+              ),
+              ...(box.top < 320
+                ? { top: box.bottom, paddingTop: GAP }
+                : { bottom: innerHeight - box.top, paddingBottom: GAP }),
+            }}
           >
-            {card}
+            <div className="bg-surface rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
+              {card}
+            </div>
           </div>,
           document.body,
         )}

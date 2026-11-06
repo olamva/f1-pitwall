@@ -22,6 +22,7 @@ import {
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
+import { setScrubAhead, useScrubAhead } from "./scrubAhead.ts";
 import { setSpoilerMode } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
 import { setTokenHidden } from "./tokenHidden.ts";
@@ -104,6 +105,7 @@ interface SettingsProps {
 export const Settings = ({ drivers, teams }: SettingsProps) => {
   const favourite = useFavourite();
   const team = useFavouriteTeam();
+  const scrubAhead = useScrubAhead();
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [denied, setDenied] = useState<number | null>(null);
   const [value, setValue] = useState("");
@@ -246,6 +248,12 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
           }}
         >
           Install new versions automatically
+        </GlassSwitch>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Replays</h2>
+        <GlassSwitch checked={scrubAhead} onChange={setScrubAhead}>
+          Show the order ahead of the replay point in the scrub preview
         </GlassSwitch>
       </section>
       {denied ? (
