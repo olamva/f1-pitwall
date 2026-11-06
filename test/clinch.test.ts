@@ -6,6 +6,7 @@ import {
   finishesAtLeast,
   finishesAtMost,
   othersAfterWin,
+  outscoreBy,
   earliestClinch,
   hasClinched,
   isEliminated,
@@ -210,6 +211,7 @@ test("2026 constructors: Mercedes win in Brazil when they outscore Ferrari by 3 
   const events = [20, 21, 22, 23].map((n) => race(n, `R${n}`));
   const needs = constructorNeeds(table, events, "mercedes", "ferrari");
   assert.equal(needs.find((n) => n.rival === 18)!.need, 21);
+  assert.equal(outscoreBy(needs), 3);
 });
 
 test("a rival points cap lists the best finish pairs that stay within it", () => {

@@ -9,6 +9,7 @@ import {
   maxGain,
   OUTSIDE,
   othersAfterWin,
+  outscoreBy,
   settled,
   type Cell,
   type Championship,
@@ -176,14 +177,60 @@ const Places = ({ list, empty }: { list: Finish[]; empty: string }) => (
   </span>
 );
 
+interface MarginProps {
+  by: number;
+  a: string;
+  b: string;
+  color: string;
+  rivalColor: string;
+  prize: string;
+  event: string;
+}
+
+const Margin = ({ by, a, b, color, rivalColor, prize, event }: MarginProps) => (
+  <div
+    className="font-f1 relative flex max-w-lg items-center gap-4 overflow-hidden rounded-xl px-4 py-3 text-white uppercase scheme-dark"
+    style={{
+      background: `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.04) 0 1px, transparent 1px 9px), radial-gradient(circle at 85% 50%, color-mix(in srgb, ${color} 45%, transparent), transparent 65%), #15151e`,
+    }}
+  >
+    <div className="min-w-0 flex-1">
+      <p className="text-[10px] leading-snug font-bold tracking-[0.15em] text-balance text-white/70 sm:text-xs">
+        {a} secure {prize} at the {event} if they
+      </p>
+      <p className="mt-2 text-2xl leading-none font-black sm:text-3xl">
+        {by > 0 ? "Outscore" : "Trail"}
+      </p>
+      <p className="text-2xl leading-none font-black sm:text-3xl">
+        <span style={{ color: `color-mix(in srgb, ${rivalColor} 85%, white)` }}>
+          {b}
+        </span>{" "}
+        by {by > 0 ? "" : "no more than"}
+      </p>
+    </div>
+    <div className="flex flex-col items-center">
+      <span
+        className="tabular text-8xl leading-[0.8] font-black sm:text-9xl"
+        style={{ color: `color-mix(in srgb, ${color} 85%, white)` }}
+      >
+        {Math.abs(by)}
+      </span>
+      <span className="mt-1 text-lg font-black tracking-wide">
+        {Math.abs(by) === 1 ? "Point" : "Points"}
+      </span>
+    </div>
+  </div>
+);
+
 const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
-  const needs = useMemo(
-    () =>
-      constructorNeeds(table, events, focus, rival).filter(
-        (n, i, all) => n.need !== null && n.need !== all[i - 1]?.need,
-      ),
+  const all = useMemo(
+    () => constructorNeeds(table, events, focus, rival),
     [table, events, focus, rival],
   );
+  const needs = all.filter(
+    (n, i) => n.need !== null && n.need !== all[i - 1]?.need,
+  );
+  const by = outscoreBy(all);
   const [a, b] = [who.get(focus)?.name ?? focus, who.get(rival)?.name ?? rival];
   if (!needs.length)
     return (
@@ -193,7 +240,18 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
     );
   return (
     <div>
-      <p className="mb-2 text-sm text-zinc-400">
+      {by !== null && (
+        <Margin
+          by={by}
+          a={a}
+          b={b}
+          color={who.get(focus)?.color ?? "#888"}
+          rivalColor={who.get(rival)?.color ?? "#888"}
+          prize={prize}
+          event={events[0]!.name}
+        />
+      )}
+      <p className="my-2 text-sm text-zinc-400">
         The points {a} need at {events[0]!.name} to secure {prize} there, for
         each score of {b}. This assumes that every other team can still score
         the maximum. The finishes show the best results for {b} and the worst
