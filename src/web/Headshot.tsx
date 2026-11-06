@@ -14,6 +14,12 @@ export const useArt = (id: string) => useContext(Faces).get(id);
 export const artSrc = (art: string, pose: Pose, transform = BODY) =>
   `https://media.formula1.com/image/upload/${transform}/q_auto/${art}${pose}.webp`;
 
+export const carSrc = (art: string, pose: Pose, transform = "c_lfill,w_800") =>
+  art.replace(
+    /^(common\/f1\/(\d+)\/(\w+))\/.*$/,
+    `https://media.formula1.com/image/upload/${transform}/q_auto/$1/$2$3car${pose}.webp`,
+  );
+
 export const lineup = (faces: Map<string, DriverInfo>, id: string) =>
   faces.has(id)
     ? [faces.get(id)!]
@@ -61,4 +67,9 @@ interface FigureProps extends ComponentProps<"img"> {
 export const Figure = ({ id, pose, transform, ...props }: FigureProps) => {
   const art = useArt(id)?.art;
   return art && <Headshot src={artSrc(art, pose, transform)} {...props} />;
+};
+
+export const Car = ({ id, pose, transform, ...props }: FigureProps) => {
+  const art = lineup(useContext(Faces), id)[0]?.art;
+  return art && <Headshot src={carSrc(art, pose, transform)} {...props} />;
 };
