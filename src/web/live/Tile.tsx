@@ -23,7 +23,7 @@ const place = (
           alignSelf: "start",
         }),
       }
-    : { gridColumn: col + 1, paddingBottom: GAP };
+    : { gridColumn: col + 1 };
 
 interface TileProps {
   id: WidgetId;
@@ -63,7 +63,7 @@ export const Tile = ({
   <div
     ref={cell}
     onPointerDown={(e) => !editing && onPress("move", e)}
-    className={`min-w-0 ${spot ? "relative" : "invisible absolute inset-x-0 top-0"}`}
+    className={`min-w-0 has-[.map-fullscreen]:z-50 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
     style={place(col, spot, stuck)}
   >
     {moving && (
