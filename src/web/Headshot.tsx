@@ -13,10 +13,16 @@ export const Faces = createContext(new Map<string, DriverInfo>());
 export const useArt = (id: string) => useContext(Faces).get(id);
 export const artSrc = (art: string, pose: Pose, transform = BODY) =>
   `https://media.formula1.com/image/upload/${transform}/q_auto/${art}${pose}.webp`;
+const TEMPLATE = "common/f1/2026/fallback/driver/2026fallbackdriver";
 export const FALLBACK = artSrc(
-  "common/f1/2026/fallback/driver/2026fallbackdriver",
+  TEMPLATE,
   "right",
   "c_crop,g_north,w_0.75,h_0.32/c_scale,h_432",
+);
+export const PORTRAIT = artSrc(
+  TEMPLATE,
+  "front",
+  "c_thumb,g_face,w_432,h_432,z_0.5",
 );
 
 export const carSrc = (art: string, pose: Pose, transform = "c_lfill,w_800") =>
@@ -69,10 +75,12 @@ interface FigureProps extends ComponentProps<"img"> {
   transform?: string;
 }
 
-export const Figure = ({ id, pose, transform, ...props }: FigureProps) => {
-  const art = useArt(id)?.art;
-  return art && <Headshot src={artSrc(art, pose, transform)} {...props} />;
-};
+export const Figure = ({ id, pose, transform, ...props }: FigureProps) => (
+  <Headshot
+    src={artSrc(useArt(id)?.art ?? TEMPLATE, pose, transform)}
+    {...props}
+  />
+);
 
 export const Car = ({ id, pose, transform, ...props }: FigureProps) => {
   const art = lineup(useContext(Faces), id)[0]?.art;
