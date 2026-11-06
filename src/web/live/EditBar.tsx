@@ -17,7 +17,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Tabs } from "../Tabs.tsx";
 import type { Size } from "./layout.ts";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
@@ -160,7 +160,6 @@ export const EditBar = ({
   const [away, setAway] = useState(false);
   const float = useRef<HTMLDivElement>(null);
   const on = useRef(false);
-  const last = useRef<DOMRect>(undefined);
 
   useLayoutEffect(() => {
     const el = box.current!;
@@ -194,17 +193,13 @@ export const EditBar = ({
 
   useEffect(() => {
     if (!editing) return setAway((on.current = false));
-    const check = () => {
-      const next =
-        box.current!.getBoundingClientRect().top <
-        float.current!.getBoundingClientRect().top;
-      if (next === on.current) return;
-      last.current = (
-        on.current ? float : box
-      ).current!.firstElementChild!.getBoundingClientRect();
-      setAway((on.current = next));
-    };
-    check();
+    const pinned = () =>
+      box.current!.firstElementChild!.getBoundingClientRect().top <
+      float.current!.firstElementChild!.getBoundingClientRect().top;
+    setAway((on.current = pinned()));
+    const check = () =>
+      pinned() !== on.current &&
+      flushSync(() => setAway((on.current = !on.current)));
     const key = (e: KeyboardEvent) =>
       e.key === "Escape" &&
       !document.querySelector("dialog[open]") &&
@@ -216,20 +211,6 @@ export const EditBar = ({
       removeEventListener("keydown", key);
     };
   }, [editing]);
-
-  useLayoutEffect(() => {
-    const from = last.current;
-    const el = (away ? float : box).current!;
-    if (!from || !editing || still()) return;
-    const to = el.firstElementChild!.getBoundingClientRect();
-    el.animate(
-      [
-        { translate: `${from.left - to.left}px ${from.top - to.top}px` },
-        { translate: "0 0" },
-      ],
-      { duration: 320, easing: EASE },
-    );
-  }, [away]);
 
   const controls = (
     <>
@@ -292,7 +273,7 @@ export const EditBar = ({
             ref={float}
             className={`glass-panel fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(calc(0.625rem-1px),env(safe-area-inset-right))] z-50 flex items-center gap-2 rounded-full p-1.5 shadow-xl ${away ? "" : "invisible"}`}
           >
-            {away && controls}
+            {controls}
           </div>,
           document.body,
         )}
