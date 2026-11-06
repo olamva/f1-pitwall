@@ -1,0 +1,14 @@
+{
+  "id": "d9f01e76",
+  "ts": "2026-11-06T04:45:41+00:00",
+  "text": "pnpm shot always uses Playwright animations: disabled, so it cannot capture a mid-cycle frame of an infinite CSS animation such as the live-dot pulse; I wrote a custom Playwright script for the motion review",
+  "tags": [
+    "screenshots",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cc84d191",
+  "where": "scripts/shot.ts",
+  "branch": "t3/reduce-live-tab-cpu-gpu"
+}

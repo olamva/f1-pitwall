@@ -348,7 +348,7 @@ export const TimingTower = ({
   const tyres = view === "Tyres";
   const hide = tyres ? "invisible" : "";
   const cover = race ? hide : "";
-  const table = useCover();
+  const table = useCover(tyres);
   const scale = Math.max(
     1,
     ...rows.map((r) => r.stints.reduce((total, s) => total + s.laps, 0)),
