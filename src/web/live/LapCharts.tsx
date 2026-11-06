@@ -112,14 +112,16 @@ export const LapCharts = ({
           view === "Chart"
             ? range === "All"
               ? "Lap times (all laps)"
-              : "Lap times (last 15, within 108% of the fastest)"
+              : "Lap times (last 15)"
             : "Lap times"
         }
       >
         <div className="mb-2 flex flex-wrap gap-2">
           <Tabs items={VIEWS} value={view} onChange={setView} small />
           {view === "Chart" && (
-            <Tabs items={RANGES} value={range} onChange={setRange} small />
+            <div title="Last 15 shows only laps within 108% of the fastest">
+              <Tabs items={RANGES} value={range} onChange={setRange} small />
+            </div>
           )}
         </div>
         {view === "Laps" ? (
@@ -166,14 +168,18 @@ export const LapCharts = ({
         <Panel
           title={reference ? `Gap to ${reference} (s)` : "Gap to leader (s)"}
         >
-          <LineChart
-            series={gaps}
-            bands={bands}
-            xLabel="Lap"
-            yFormat={(v) => v.toFixed(0)}
-            invert
-            height={400}
-          />
+          {gaps.some((s) => s.points.length) ? (
+            <LineChart
+              series={gaps}
+              bands={bands}
+              xLabel="Lap"
+              yFormat={(v) => v.toFixed(0)}
+              invert
+              height={400}
+            />
+          ) : (
+            <p className="text-sm text-zinc-500">No laps yet.</p>
+          )}
         </Panel>
       )}
     </>
