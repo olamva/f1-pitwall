@@ -147,15 +147,6 @@
   --animate-place: place 3.6s ease both;
   --animate-rumble: rumble 90ms steps(2) infinite;
   --animate-roll: roll 480ms cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-drop-in: drop-in 260ms cubic-bezier(0.2, 0, 0, 1);
-
-  @keyframes drop-in {
-    from {
-      opacity: 0;
-      translate: 0 -0.75rem;
-      scale: 0.96;
-    }
-  }
 
   @keyframes place {
     0%,
