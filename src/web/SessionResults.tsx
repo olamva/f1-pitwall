@@ -17,8 +17,8 @@ import { openDriver } from "./path.ts";
 import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { TeamHover } from "./TeamCard.tsx";
 
 export const SESSIONS = [
   "fp1",
@@ -151,9 +151,10 @@ const ResultsTable = <T extends Entry>({
                   disabled={!row.driver}
                   className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
                 >
-                  <TeamLogo
+                  <TeamHover
                     team={row.team}
-                    className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
+                    className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
+                    logo="h-4 w-6"
                   />
                   {row.name}
                 </button>

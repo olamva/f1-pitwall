@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 interface HoverCardProps {
@@ -24,25 +24,54 @@ export const HoverCard = ({
   const pop = useRef<HTMLDivElement>(null);
   const timer = useRef(0);
   const [box, setBox] = useState<DOMRect>();
-  useEffect(() => {
-    if (box) pop.current?.showPopover();
+  const [edge, setEdge] = useState<{ top?: number; bottom?: number }>();
+  useLayoutEffect(() => {
+    if (!box) return;
+    pop.current!.showPopover();
+    const height = pop.current!.offsetHeight;
+    setEdge(
+      box.top >= height
+        ? { bottom: innerHeight - box.top }
+        : innerHeight - box.bottom >= height
+          ? { top: box.bottom }
+          : {
+              top: Math.max(
+                MARGIN - GAP,
+                Math.min(
+                  box.top > innerHeight - box.bottom
+                    ? box.top - height
+                    : box.bottom,
+                  innerHeight - height - MARGIN + GAP,
+                ),
+              ),
+            },
+    );
   }, [box]);
+  const close = () => {
+    clearTimeout(timer.current);
+    timer.current = 0;
+    pop.current?.hidePopover();
+  };
   if (!card) return children;
   return (
     <div
       ref={ref}
+      data-hover
       className={className}
-      onPointerEnter={(e) => {
+      onPointerOver={(e) => {
         if (e.pointerType !== "mouse") return;
-        timer.current = window.setTimeout(
+        const target = e.target as Element;
+        if (
+          target.closest("[data-hover]") !== ref.current &&
+          !pop.current?.contains(target)
+        )
+          return close();
+        timer.current ||= window.setTimeout(
           () => setBox(ref.current!.getBoundingClientRect()),
           300,
         );
       }}
-      onPointerLeave={() => {
-        clearTimeout(timer.current);
-        pop.current?.hidePopover();
-      }}
+      onPointerLeave={close}
     >
       {children}
       {box &&
@@ -58,12 +87,11 @@ export const HoverCard = ({
                 Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
                 innerWidth - WIDTH - MARGIN,
               ),
-              ...(box.top < 320
-                ? { top: box.bottom, paddingTop: GAP }
-                : { bottom: innerHeight - box.top, paddingBottom: GAP }),
+              ...edge,
+              paddingBlock: GAP,
             }}
           >
-            <div className="bg-surface rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
+            <div className="bg-surface overflow-hidden rounded-xl p-3 text-left shadow-2xl ring-1 ring-zinc-700">
               {card}
             </div>
           </div>,

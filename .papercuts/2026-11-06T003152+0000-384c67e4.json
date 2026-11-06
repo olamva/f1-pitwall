@@ -1,0 +1,14 @@
+{
+  "id": "384c67e4",
+  "ts": "2026-11-06T00:31:52+00:00",
+  "text": "pnpm shot has no --hover option; hover cards need an --eval that dispatches a synthetic pointerover with pointerType mouse",
+  "tags": [
+    "screenshots",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bf3a1e22",
+  "where": "scripts/shot.ts",
+  "branch": "t3/team-hover-card"
+}
