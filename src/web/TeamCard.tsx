@@ -7,7 +7,7 @@ import { HoverCard } from "./HoverCard.tsx";
 import { ink } from "./ink.ts";
 import { fresh, KINDS, useSeen } from "./spoilers.ts";
 import { qualifyingHeadToHead } from "./stats/derive.ts";
-import { logoSrc } from "./TeamLogo.tsx";
+import { logoSrc, TeamLogo } from "./TeamLogo.tsx";
 
 export const TeamSeason = createContext<Season | null>(null);
 
@@ -31,8 +31,8 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
   const color = teamColor(team);
   const table = season.constructorStandings;
   const place = table.findIndex((t) => t.id === team);
-  const rival = table[place ? place - 1 : 1];
-  const gap = rival && Math.abs(rival.points - table[place]!.points);
+  const start = Math.max(place - 2, 0);
+  const mine = table[place]!.points;
   const name = (id: string) =>
     season.teams.find((t) => t.id === id)?.name ?? id;
   const points = (id: string) =>
@@ -132,20 +132,30 @@ const TeamCard = ({ season, team }: TeamCardProps) => {
                 </div>
               </>
             )}
-            <div className="mt-3 flex items-baseline justify-between text-xs first:mt-0">
-              <span>
-                <b>{table[place]!.points} pts</b>{" "}
-                <span className="text-[11px] text-zinc-400">team total</span>
-              </span>
-              {rival && (
-                <span className="text-zinc-400">
-                  {gap} {place ? "behind" : "ahead of"}{" "}
-                  <b style={{ color: ink(teamColor(rival.id)) }}>
-                    {name(rival.id)}
-                  </b>
-                </span>
-              )}
-            </div>
+            <ol className="tabular mt-3 text-xs first:mt-0">
+              {table.slice(start, place + 3).map((t, i) => (
+                <li
+                  key={t.id}
+                  className={`flex items-center gap-2 rounded-md px-1.5 py-1 ${t.id === team ? "bg-zinc-800 font-bold" : ""} ${Math.abs(start + i - place) > 1 ? "opacity-35" : ""}`}
+                >
+                  <span className="font-f1 w-4 text-right font-bold">
+                    {start + i + 1}
+                  </span>
+                  <TeamLogo team={t.id} className="h-3.5 w-5 shrink-0" />
+                  <span className="truncate">{name(t.id)}</span>
+                  <span
+                    className="ml-auto"
+                    style={{ color: t.id === team ? ink(color) : undefined }}
+                  >
+                    {t.points}
+                  </span>
+                  <span className="w-9 text-right text-zinc-400">
+                    {t.id !== team &&
+                      `${t.points >= mine ? "+" : "−"}${Math.abs(t.points - mine)}`}
+                  </span>
+                </li>
+              ))}
+            </ol>
           </div>
         </>
       )}
