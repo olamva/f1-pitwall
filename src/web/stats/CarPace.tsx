@@ -1,7 +1,6 @@
 import { SLIDE, type Box } from "../charts/Bars.tsx";
 import { summary } from "../charts/summary.ts";
 import { Car } from "../Headshot.tsx";
-import { ink } from "../ink.ts";
 import { TeamLogo } from "../TeamLogo.tsx";
 
 interface CarPaceProps {
@@ -25,7 +24,7 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
     (_, i) => i * step,
   );
   const x = (gap: number) =>
-    `calc(${CAR} + (100% - ${CAR}) * ${1 - gap / span})`;
+    `calc(${CAR} + (100% - ${CAR} - 0.375rem) * ${1 - gap / span})`;
   return (
     <div className="relative" style={{ height: HEAD + teams.length * ROW }}>
       <div className="absolute inset-y-0 right-0" style={{ left: GUTTER }}>
@@ -41,7 +40,7 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
               {gap ? `+${gap.toFixed(step < 1 ? 1 : 0)}s` : "Fastest"}
             </span>
             <span
-              className={`absolute bottom-0 border-l ${gap ? "border-dashed border-zinc-700" : "border-zinc-400"}`}
+              className={`absolute bottom-0 ${gap ? "w-px bg-zinc-800" : "w-1.5 bg-[repeating-conic-gradient(var(--color-zinc-50)_0_25%,var(--color-zinc-900)_0_50%)] bg-size-[6px_6px]"}`}
               style={{ top: HEAD - 4 }}
             />
           </div>
@@ -65,13 +64,6 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
             </span>
           </div>
           <div className="absolute inset-y-0 right-0" style={{ left: GUTTER }}>
-            <span
-              className={`${SLIDE} absolute top-1/2 right-0 h-0.5 -translate-y-1/2 opacity-70 transition-[left]`}
-              style={{
-                left: x(medians[i]! - best),
-                background: ink(t.color),
-              }}
-            />
             <Car
               id={t.id}
               pose="right"
