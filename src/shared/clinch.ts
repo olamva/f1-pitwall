@@ -248,6 +248,13 @@ export function constructorNeeds(
   });
 }
 
+export const outscoreBy = (needs: Need[]): number | null => {
+  const m = Math.min(
+    ...needs.flatMap((n) => (n.need === null ? [] : [n.need - n.rival])),
+  );
+  return needs.at(-1)?.need === m ? m : null;
+};
+
 export type Finish = { best: number; other: number | null };
 
 const below = (kind: EventKind, best: number): number[] =>
