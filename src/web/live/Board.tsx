@@ -192,7 +192,7 @@ export const Board = ({
               ? "Show the full page"
               : "Show only the timing, the lap count and the flags"
           }
-          className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm max-sm:aria-pressed:mr-auto"
+          className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm max-sm:mr-auto"
         >
           {focus ? (
             <X aria-hidden="true" size={16} />
