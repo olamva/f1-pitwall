@@ -262,7 +262,7 @@ export const EditBar = ({
         createPortal(
           <div
             ref={float}
-            className={`fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-[max(0.625rem,env(safe-area-inset-right))] z-50 flex items-center gap-2 p-1.5 ${away ? "" : "invisible"}`}
+            className={`fixed top-(--top-bar) right-[max(0.625rem,env(safe-area-inset-right))] z-50 flex items-center gap-2 p-1.5 ${away ? "" : "invisible"}`}
           >
             {controls}
             <span

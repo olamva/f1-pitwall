@@ -3,7 +3,7 @@ import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { GAP, ROW, type Spot } from "./layout.ts";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
 
-export const TOP = "var(--tile-top, calc(env(safe-area-inset-top) + 1rem))";
+export const TOP = "var(--tile-top, var(--top-bar))";
 
 type Bind = (el: HTMLDivElement | null) => void;
 
