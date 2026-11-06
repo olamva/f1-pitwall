@@ -7,7 +7,6 @@ import * as token from "../src/server/token.ts";
 
 const SECRET = "a-session-secret-of-at-least-32-characters";
 Object.assign(process.env, {
-  ALLOWED_EMAILS: "ola@example.com",
   OIDC_AUTH_SECRET: SECRET,
   OIDC_CLIENT_ID: "123-abc.apps.googleusercontent.com",
   OIDC_CLIENT_SECRET: "secret",
@@ -27,15 +26,15 @@ const app = new Hono()
 
 const request = async (path: string, email?: string, secret?: string) =>
   app.request(`https://f1.example.com${path}`, {
-    headers: email ? { cookie: await cookie(email, secret) } : {},
+    headers: email !== undefined ? { cookie: await cookie(email, secret) } : {},
   });
 
-test("only invited Google accounts reach the token routes", async () => {
+test("any verified Google account reaches the token routes", async () => {
   const status = async (path: string, email?: string, secret?: string) =>
     (await request(path, email, secret)).status;
   assert.equal(await status("/api/token"), 401);
-  assert.equal(await status("/api/token", "someone@example.com"), 403);
-  assert.equal(await status("/api/token", "Ola@example.com"), 200);
+  assert.equal(await status("/api/token", ""), 403);
+  assert.equal(await status("/api/token", "someone@example.com"), 200);
   assert.equal(
     await status(
       "/api/token",
@@ -47,7 +46,7 @@ test("only invited Google accounts reach the token routes", async () => {
   assert.equal(await status("/api/live"), 200);
 });
 
-test("an invited Google sign-in outlives the browser session", async () => {
+test("a Google sign-in outlives the browser session", async () => {
   const res = await request("/api/token", "ola@example.com");
   const [session] = res.headers
     .getSetCookie()
