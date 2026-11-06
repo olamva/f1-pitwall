@@ -23,7 +23,6 @@ import {
   PitStops,
   PositionChart,
   SpeedTraps,
-  TyreStrategy,
 } from "./Extras.tsx";
 import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { contested, standings } from "./prediction.ts";
@@ -206,6 +205,7 @@ export const Board = ({
       <Dashboard
         ref={grid}
         editing={editing}
+        onEdit={() => setEditing(true)}
         onDone={() => setEditing(false)}
         off={{
           battle: !race,
@@ -216,7 +216,6 @@ export const Board = ({
           runs: state.SessionInfo?.Type !== "Practice",
           gaps: !race,
           stops: !race,
-          strategy: !race,
           positions: !race,
           movers: !race,
         }}
@@ -337,13 +336,6 @@ export const Board = ({
               laps={laps}
               rows={rows}
               until={feed.t}
-              selected={selected}
-            />
-          ),
-          strategy: () => (
-            <TyreStrategy
-              rows={rows}
-              total={state.LapCount?.TotalLaps ?? 0}
               selected={selected}
             />
           ),

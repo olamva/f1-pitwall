@@ -675,19 +675,26 @@ textarea {
     inset: auto;
     margin: 0.5rem 0 0;
   }
-
-  .add-widget {
-    position-anchor: --add-widget;
-    position-area: bottom span-left;
-    position-try-fallbacks: flip-inline, bottom;
-    inset: auto;
-    margin: 0.5rem 0 0;
-  }
 }
 
 [data-fill] > * {
   height: 100%;
   overflow-y: auto;
+}
+
+@keyframes jiggle {
+  from {
+    rotate: -0.3deg;
+  }
+  to {
+    rotate: 0.3deg;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jiggle {
+    animation: jiggle 0.25s ease-in-out infinite alternate;
+  }
 }
 
 .live-dot {

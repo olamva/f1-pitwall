@@ -1,5 +1,3 @@
-import { FoldVertical, GripVertical, MoveDiagonal2, X } from "lucide-react";
-import { EditBar } from "./EditBar.tsx";
 import {
   useEffect,
   useLayoutEffect,
@@ -11,23 +9,46 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
+import { EditBar } from "./EditBar.tsx";
+import { Tile } from "./Tile.tsx";
 import {
   add,
-  columns,
+  columnAt,
+  drop,
   GAP,
-  move,
-  pack,
+  MAX_COLUMNS,
+  place,
+  remove,
+  resize,
   ROW,
-  rowsOf,
   same,
-  type Item,
-  type Layout,
+  SIZES,
+  tidy,
+  widen,
+  type Column,
   type Size,
+  type Target,
 } from "./layout.ts";
 import { DEFAULT_LAYOUT, isWidget, WIDGETS, type WidgetId } from "./widgets.ts";
 
 const QUERIES = ["(width >= 80rem)", "(width >= 48rem)"].map(matchMedia);
+const KEYS: Record<Size, string> = {
+  phone: "layoutPhone",
+  tablet: "layoutTablet",
+  desktop: "layoutDesktop",
+};
+const PREVIEW: Record<Size, string | undefined> = {
+  phone: "430px",
+  tablet: "1024px",
+  desktop: undefined,
+};
+const ESTIMATE = 30;
+const EDIT_MIN = 12;
+const MIN_ROWS = 6;
+const EDGE = 64;
+const ZONE = 40;
 
 const sizeNow = (): Size =>
   QUERIES[0]!.matches ? "desktop" : QUERIES[1]!.matches ? "tablet" : "phone";
@@ -41,29 +62,37 @@ const useSize = () =>
 
 const useLayout = (size: Size) => {
   const raw = useSyncExternalStore(subscribe, () =>
-    localStorage.getItem("layout"),
+    localStorage.getItem(KEYS[size]),
   );
-  const saved = useMemo<Layout | null>(() => JSON.parse(raw ?? "null"), [raw]);
-  const items = (saved ?? DEFAULT_LAYOUT)[size].filter((i) => isWidget(i.id));
-  const set = (next: Item[]) =>
-    save("layout", { ...(saved ?? DEFAULT_LAYOUT), [size]: next });
-  return [items, set] as const;
+  const columns = useMemo<Column[]>(
+    () =>
+      tidy(
+        (JSON.parse(raw ?? "null") ?? DEFAULT_LAYOUT[size]).map(
+          (c: Column) => ({
+            ...c,
+            tiles: c.tiles.filter((t) => isWidget(t.id)),
+          }),
+        ),
+      ),
+    [raw, size],
+  );
+  return [columns, (next: Column[]) => save(KEYS[size], tidy(next))] as const;
 };
 
-const ESTIMATE = 30;
-const EDIT_MIN = 12;
-const MIN_ROWS = 6;
-const EDGE = 64;
+const prevent = (e: TouchEvent) => e.preventDefault();
 
 type Drag = {
   kind: "move" | "size";
   id: string;
   dx: number;
   dy: number;
+  sx: number;
+  sy: number;
   x: number;
   y: number;
-  start: Item[];
+  start: Column[];
   live: boolean;
+  natural: number;
 };
 
 interface DashboardProps {
@@ -71,6 +100,7 @@ interface DashboardProps {
   tiles: Record<WidgetId, () => ReactNode>;
   off: Partial<Record<WidgetId, boolean>>;
   editing: boolean;
+  onEdit: () => void;
   onDone: () => void;
 }
 
@@ -79,66 +109,97 @@ export const Dashboard = ({
   tiles,
   off,
   editing,
+  onEdit,
   onDone,
 }: DashboardProps) => {
-  const size = useSize();
-  const cols = columns(size);
+  const real = useSize();
+  const sizes = SIZES.slice(0, SIZES.indexOf(real) + 1);
+  const [view, setView] = useState<Size | null>(null);
+  const size = editing && view && sizes.includes(view) ? view : real;
   const [saved, setSaved] = useLayout(size);
-  const [draft, setDraft] = useState<Item[] | null>(null);
+  const [draft, setDraft] = useState<Column[] | null>(null);
   const [active, setActive] = useState<Drag | null>(null);
-  const [rows, setRows] = useState<Record<string, number>>({});
+  const [px, setPx] = useState<Record<string, number>>({});
+  const [avail, setAvail] = useState(Infinity);
   const [added, setAdded] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
+  const probe = useRef<HTMLDivElement>(null);
   const cells = useRef(new Map<string, HTMLDivElement>());
   const cards = useRef(new Map<string, HTMLDivElement>());
   const contents = useRef(new Map<string, HTMLDivElement>());
   const drag = useRef<Drag | null>(null);
-  const draftRef = useRef<Item[] | null>(null);
+  const draftRef = useRef<Column[] | null>(null);
   const spots = useRef(new Map<string, [number, number]>());
-  const items = (draft ?? saved).filter(
-    (i) => editing || !off[i.id as WidgetId],
+  const frozen = useRef(new Set<string>());
+  const columns = draft ?? saved;
+  const fixed = new Map(
+    columns.flatMap((c) => c.tiles.map((t) => [t.id, t.h])),
   );
-  const fixed = new Map(items.map((i) => [i.id, i.h]));
-  const height = (id: string) => {
-    const h = fixed.get(id) ?? rows[id] ?? ESTIMATE;
-    return editing ? Math.max(EDIT_MIN, h) : h;
+  const rows = (id: string) => {
+    if (!editing && off[id as WidgetId]) return 0;
+    const h = fixed.get(id);
+    const r =
+      h != null
+        ? h + GAP / ROW
+        : px[id] === undefined
+          ? ESTIMATE
+          : px[id]
+            ? Math.ceil((px[id] + GAP) / ROW)
+            : 0;
+    return editing ? Math.max(EDIT_MIN, r) : r;
   };
-  const shown = items.filter(
-    (i) => editing || i.h !== null || rows[i.id] !== 0,
+  const { spots: placed, ends } = place(columns, rows);
+  const sticky = new Set(
+    editing || columns.length < 2
+      ? []
+      : columns.flatMap((c, i) =>
+          ends[i]! * ROW - GAP <= avail + 1 ? [i] : [],
+        ),
   );
-  const places = pack(shown, height);
-  const ids = items.map((i) => i.id).join();
+  const stretch = new Set(
+    [...sticky].flatMap((i) => {
+      const last = columns[i]!.tiles.findLast((t) => placed.has(t.id));
+      return last && last.h === null ? [last.id] : [];
+    }),
+  );
+  frozen.current = stretch;
+  const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
+  const latest = useRef({ rows, size, fixed });
+  latest.current = { rows, size, fixed };
 
   useLayoutEffect(() => {
-    const read = () =>
-      setRows((old) => {
+    const read = () => {
+      setAvail(probe.current!.offsetHeight);
+      setPx((old) => {
         let next = old;
         contents.current.forEach((el, id) => {
-          const px = el.offsetHeight;
-          const value = px ? rowsOf(px) : 0;
-          if (old[id] !== value) next = { ...next, [id]: value };
+          if (frozen.current.has(id) || latest.current.fixed.get(id) != null)
+            return;
+          const value = el.offsetHeight;
+          if (Math.abs((old[id] ?? -99) - value) > 1)
+            next = { ...next, [id]: value };
         });
         return next;
       });
+    };
     read();
     const observer = new ResizeObserver(read);
     contents.current.forEach((el) => observer.observe(el));
+    observer.observe(probe.current!);
     return () => observer.disconnect();
-  }, [ids, editing]);
+  }, [ids, editing, size]);
 
   useLayoutEffect(() => {
     if (!editing) return spots.current.clear();
-    const box = grid.current!.getBoundingClientRect();
     cells.current.forEach((el, id) => {
-      const r = el.getBoundingClientRect();
-      const spot: [number, number] = [r.left - box.left, r.top - box.top];
+      const spot: [number, number] = [el.offsetLeft, el.offsetTop];
       const was = spots.current.get(id);
       spots.current.set(id, spot);
       if (!was || id === drag.current?.id) return;
       const [dx, dy] = [was[0] - spot[0], was[1] - spot[1]];
       if (dx || dy)
         el.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], {
-          duration: 180,
+          duration: 220,
           easing: "cubic-bezier(0.2, 0, 0, 1)",
         });
     });
@@ -148,28 +209,43 @@ export const Dashboard = ({
     if (!added) return;
     cells.current
       .get(added)
-      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
     setAdded(null);
   }, [added]);
 
   const follow = () => {
     const d = drag.current;
     const card = d && cards.current.get(d.id);
-    if (!d || !card || d.kind !== "move" || !d.live) return;
-    const cell = cells.current.get(d.id)!.getBoundingClientRect();
-    card.style.translate = `${d.x - d.dx - cell.left}px ${d.y - d.dy - cell.top}px`;
+    const cell = d && cells.current.get(d.id);
+    if (!d || !card || !cell || d.kind !== "move" || !d.live) return;
+    const box = grid.current!.getBoundingClientRect();
+    card.style.translate = `${d.x - d.dx - box.left - cell.offsetLeft}px ${d.y - d.dy - box.top - cell.offsetTop}px`;
   };
 
   useLayoutEffect(follow);
 
-  const commit = (next: Item[]) => {
-    draftRef.current = next;
-    setDraft(next);
+  const target = (d: Drag, box: DOMRect): Target => {
+    const room =
+      tidy(
+        d.start.map((c) => ({
+          ...c,
+          tiles: c.tiles.filter((t) => t.id !== d.id),
+        })),
+      ).length < MAX_COLUMNS[latest.current.size];
+    if (room && d.x < box.left + ZONE && d.x < d.sx - 24)
+      return { edge: "left" };
+    if (room && d.x > box.right - ZONE && d.x > d.sx + 24)
+      return { edge: "right" };
+    const h = latest.current.rows(d.id) * ROW;
+    return {
+      col: columnAt(d.start, box.width, d.x - box.left),
+      y: (d.y - d.dy - box.top + h / 2) / ROW,
+    };
   };
 
   const frame = () => {
     const d = drag.current;
-    if (!d) return;
+    if (!d?.live) return;
     const scroll =
       d.y < EDGE
         ? -(EDGE - d.y) / 3
@@ -178,37 +254,26 @@ export const Dashboard = ({
           : 0;
     if (scroll) scrollBy(0, scroll);
     const box = grid.current!.getBoundingClientRect();
-    const step = (box.width + GAP) / cols;
-    const current = draftRef.current ?? d.start;
-    let next: Item[];
-    if (d.kind === "move")
-      next = move(
-        d.start,
-        height,
-        d.id,
-        Math.round((d.x - d.dx - box.left) / step),
-        Math.round((d.y - d.dy - box.top) / ROW),
-        cols,
-      );
+    const { rows } = latest.current;
+    let next: Column[];
+    if (d.kind === "move") next = drop(d.start, rows, d.id, target(d, box));
     else {
-      const cell = cells.current.get(d.id)!.getBoundingClientRect();
-      next = current.map((i) =>
-        i.id === d.id
-          ? {
-              ...i,
-              w: Math.max(
-                Math.min(3, cols),
-                Math.min(
-                  cols - i.x,
-                  Math.round((d.x - cell.left + GAP) / step),
-                ),
-              ),
-              h: Math.max(MIN_ROWS, Math.round((d.y - cell.top + GAP) / ROW)),
-            }
-          : i,
+      const spot = place(d.start, rows).spots.get(d.id)!;
+      const content = d.y + d.dy - box.top - spot.top * ROW;
+      const h =
+        Math.abs(content - d.natural) < GAP
+          ? null
+          : Math.max(MIN_ROWS, Math.round(content / ROW));
+      next = resize(
+        widen(d.start, box.width, spot.col, d.x + d.dx - box.left),
+        d.id,
+        h,
       );
     }
-    if (!same(next, current)) commit(next);
+    if (!same(next, draftRef.current ?? d.start)) {
+      draftRef.current = next;
+      setDraft(next);
+    }
     follow();
     requestAnimationFrame(frame);
   };
@@ -217,6 +282,7 @@ export const Dashboard = ({
     const d = drag.current;
     if (!d) return;
     drag.current = null;
+    document.removeEventListener("touchmove", prevent);
     cards.current.get(d.id)?.style.removeProperty("translate");
     if (keep && d.live && draftRef.current) setSaved(draftRef.current);
     draftRef.current = null;
@@ -224,38 +290,63 @@ export const Dashboard = ({
     setActive(null);
   };
 
-  const start = (
+  const begin = (
     kind: Drag["kind"],
     id: string,
     event: ReactPointerEvent<HTMLElement>,
   ) => {
     if (event.button !== 0 || drag.current) return;
-    event.preventDefault();
-    event.stopPropagation();
+    const mouse = event.pointerType === "mouse";
+    if (mouse && !editing) return;
+    if (kind === "size") event.preventDefault();
+    if (editing) event.stopPropagation();
     const card = cards.current.get(id)!.getBoundingClientRect();
     const d: Drag = {
       kind,
       id,
-      dx: event.clientX - card.left,
-      dy: event.clientY - card.top,
+      dx:
+        kind === "move"
+          ? event.clientX - card.left
+          : card.right - event.clientX,
+      dy:
+        kind === "move"
+          ? event.clientY - card.top
+          : card.bottom - GAP - event.clientY,
+      sx: event.clientX,
+      sy: event.clientY,
       x: event.clientX,
       y: event.clientY,
-      start: items,
+      start: saved,
       live: false,
+      natural: px[id] ?? 0,
     };
     drag.current = d;
+    const go = () => {
+      if (d.live || drag.current !== d) return;
+      d.live = true;
+      if (!editing) onEdit();
+      document.addEventListener("touchmove", prevent, { passive: false });
+      setActive({ ...d });
+      requestAnimationFrame(frame);
+    };
+    const hold =
+      kind === "size"
+        ? 0
+        : mouse
+          ? 0
+          : window.setTimeout(go, editing ? 150 : 500);
     const moved = (e: PointerEvent) => {
       if (e.pointerId !== event.pointerId) return;
       d.x = e.clientX;
       d.y = e.clientY;
-      if (d.live || Math.hypot(d.x - event.clientX, d.y - event.clientY) < 6)
-        return;
-      d.live = true;
-      setActive({ ...d });
-      requestAnimationFrame(frame);
+      if (d.live) return claim(e);
+      const far = Math.hypot(d.x - d.sx, d.y - d.sy);
+      if (hold && far > 8) ended(e);
+      else if (!hold && far > 4) go();
     };
     const ended = (e: PointerEvent) => {
       if (e.pointerId !== event.pointerId) return;
+      clearTimeout(hold);
       finish(e.type === "pointerup");
       off();
     };
@@ -265,37 +356,34 @@ export const Dashboard = ({
       off();
     };
     const off = () => {
-      removeEventListener("pointermove", moved);
+      removeEventListener("pointermove", moved, true);
       removeEventListener("pointerup", ended);
       removeEventListener("pointercancel", ended);
       removeEventListener("keydown", key);
     };
-    addEventListener("pointermove", moved);
+    addEventListener("pointermove", moved, true);
     addEventListener("pointerup", ended);
     addEventListener("pointercancel", ended);
     addEventListener("keydown", key);
   };
 
+  const present = new Set(saved.flatMap((c) => c.tiles.map((t) => t.id)));
   const missing = (Object.keys(WIDGETS) as WidgetId[]).filter(
-    (id) => !saved.some((i) => i.id === id),
+    (id) => !present.has(id),
   );
-  const fit = (id: string) =>
-    setSaved(saved.map((i) => (i.id === id ? { ...i, h: null } : i)));
+  const total = Math.max(1, ...ends);
 
   return (
     <div className="space-y-3">
       {editing && (
         <EditBar
-          phone={size === "phone"}
+          sizes={sizes}
+          size={size}
+          onSize={setView}
           missing={missing}
+          preview={(id) => (off[id] ? null : tiles[id]())}
           onAdd={(id) => {
-            const item = {
-              id,
-              x: 0,
-              w: Math.min(cols, WIDGETS[id].w),
-              h: null,
-            };
-            setSaved(add(saved, height, item, cols));
+            setSaved(add(saved, rows, id));
             setAdded(id);
           }}
           onReset={() => setSaved(DEFAULT_LAYOUT[size])}
@@ -303,134 +391,73 @@ export const Dashboard = ({
         />
       )}
       <div
-        ref={(el) => {
-          grid.current = el;
-          if (typeof ref === "function") ref(el);
-          else if (ref) ref.current = el;
-        }}
-        className="relative grid scroll-mt-[calc(env(safe-area-inset-top)+1rem)] gap-x-4"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          gridAutoRows: ROW,
-        }}
+        className="mx-auto"
+        style={{ maxWidth: editing ? PREVIEW[size] : undefined }}
       >
-        {items.length === 0 && (
-          <p className="col-span-full py-8 text-center text-sm text-zinc-500">
-            Add a widget to fill the screen.
-          </p>
-        )}
-        {(Object.keys(WIDGETS) as WidgetId[]).flatMap((id) => {
-          const item = items.find((i) => i.id === id);
-          if (!item) return [];
-          const place = places.find((p) => p.id === id);
-          const render = off[id] ? null : tiles[id];
-          const moving = active?.id === id && active.kind === "move";
-          const fill = item.h !== null;
-          return [
-            <div
-              key={id}
-              ref={(el) => {
-                if (el) cells.current.set(id, el);
-                else cells.current.delete(id);
-              }}
-              className={`relative min-w-0 ${place ? "" : "invisible absolute inset-x-0 top-0"}`}
-              style={{
-                gridColumn: `${(place ?? item).x + 1} / span ${(place ?? item).w}`,
-                gridRow: place && `${place.y + 1} / span ${place.h}`,
-                paddingBottom: GAP,
-              }}
-            >
-              {moving && (
-                <div className="absolute inset-x-0 top-0 bottom-4 rounded-xl border-2 border-dashed border-zinc-500 bg-zinc-500/10" />
-              )}
-              <div
-                ref={(el) => void (el && cards.current.set(id, el))}
-                className={`relative h-full ${moving ? "z-30 rounded-xl shadow-2xl" : ""}`}
-              >
-                <div
-                  ref={(el) => {
-                    if (el) contents.current.set(id, el);
-                    else contents.current.delete(id);
-                  }}
-                  data-fill={fill || undefined}
-                  inert={editing}
-                  className={fill ? "h-full" : undefined}
-                >
-                  {render ? (
-                    render()
-                  ) : (
-                    <section className="bg-surface h-full rounded-xl p-3">
-                      <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-                        {WIDGETS[id].title}
-                      </h2>
-                    </section>
-                  )}
-                </div>
-                {editing && (
-                  <div
-                    onPointerDown={(e) =>
-                      e.pointerType === "mouse" && start("move", id, e)
-                    }
-                    className={`light:bg-white/55 absolute inset-0 z-10 flex flex-col overflow-hidden rounded-xl bg-black/45 outline-2 -outline-offset-2 outline-zinc-500 select-none ${moving ? "cursor-grabbing" : "cursor-grab"}`}
-                  >
-                    <div className="bg-surface flex items-center gap-1 border-b border-zinc-700 p-1">
-                      <button
-                        type="button"
-                        aria-label={`Move ${WIDGETS[id].title}`}
-                        title="Drag to move"
-                        onPointerDown={(e) => start("move", id, e)}
-                        className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-zinc-200 hover:bg-zinc-800"
-                      >
-                        <GripVertical aria-hidden="true" className="size-5" />
-                      </button>
-                      <span className="font-f1 min-w-0 grow truncate text-sm font-bold tracking-wider text-zinc-50 uppercase">
-                        {WIDGETS[id].title}
-                      </span>
-                      {fill && (
-                        <button
-                          type="button"
-                          aria-label={`Fit ${WIDGETS[id].title} to its content`}
-                          title="Fit the height to the content"
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onClick={() => fit(id)}
-                          className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-zinc-200 hover:bg-zinc-800"
-                        >
-                          <FoldVertical aria-hidden="true" className="size-5" />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        aria-label={`Remove ${WIDGETS[id].title}`}
-                        title="Remove"
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={() =>
-                          setSaved(saved.filter((i) => i.id !== id))
-                        }
-                        className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-zinc-200 hover:bg-zinc-800"
-                      >
-                        <X aria-hidden="true" className="size-5" />
-                      </button>
-                    </div>
-                    {!render && WIDGETS[id].only && (
-                      <p className="px-3 text-sm text-zinc-300">
-                        {WIDGETS[id].only}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      aria-label={`Resize ${WIDGETS[id].title}`}
-                      title="Drag to resize"
-                      onPointerDown={(e) => start("size", id, e)}
-                      className="absolute right-0 bottom-0 grid size-11 cursor-nwse-resize touch-none place-items-center rounded-lg text-zinc-200 hover:bg-zinc-800"
-                    >
-                      <MoveDiagonal2 aria-hidden="true" className="size-5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>,
-          ];
-        })}
+        <div
+          ref={(el) => {
+            grid.current = el;
+            if (typeof ref === "function") ref(el);
+            else if (ref) ref.current = el;
+          }}
+          onClick={(e) => editing && e.target === e.currentTarget && onDone()}
+          className="relative grid scroll-mt-[calc(env(safe-area-inset-top)+1rem)] [-webkit-touch-callout:none] pointer-coarse:select-none"
+          style={{
+            columnGap: GAP,
+            gridTemplateColumns: columns
+              .map((c) => `minmax(0, ${c.w}fr)`)
+              .join(" "),
+            gridTemplateRows: `repeat(${total}, ${ROW}px)`,
+          }}
+        >
+          <div
+            ref={probe}
+            aria-hidden="true"
+            className="pointer-events-none invisible absolute h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] w-0"
+          />
+          {!columns.length && (
+            <p className="col-span-full row-span-12 py-8 text-center text-sm text-zinc-500">
+              Tap + to add a widget.
+            </p>
+          )}
+          {(Object.keys(WIDGETS) as WidgetId[]).flatMap((id, n) => {
+            const spot = placed.get(id);
+            const col = columns.findIndex((c) =>
+              c.tiles.some((t) => t.id === id),
+            );
+            if (col < 0 || (!editing && off[id])) return [];
+            return [
+              <Tile
+                key={id}
+                id={id}
+                index={n}
+                col={col}
+                spot={spot}
+                stuck={!!spot && sticky.has(spot.col)}
+                tall={
+                  spot && stretch.has(id)
+                    ? Math.max(0, avail - spot.top * ROW)
+                    : null
+                }
+                fixed={fixed.get(id) != null}
+                editing={editing}
+                moving={active?.id === id && active.kind === "move"}
+                render={off[id] ? null : tiles[id]}
+                cell={(el) => {
+                  if (el) cells.current.set(id, el);
+                  else cells.current.delete(id);
+                }}
+                card={(el) => void (el && cards.current.set(id, el))}
+                content={(el) => {
+                  if (el) contents.current.set(id, el);
+                  else contents.current.delete(id);
+                }}
+                onPress={(kind, e) => begin(kind, id, e)}
+                onRemove={() => setSaved(remove(saved, id))}
+              />,
+            ];
+          })}
+        </div>
       </div>
     </div>
   );

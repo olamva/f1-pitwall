@@ -1,69 +1,123 @@
-export const COLS = 12;
 export const ROW = 8;
 export const GAP = 16;
+export const NEW_WIDTH = 4;
+const MIN_WIDTH = 2;
 
 export type Size = "phone" | "tablet" | "desktop";
-export type Item = { id: string; x: number; w: number; h: number | null };
-export type Layout = Record<Size, Item[]>;
-export type Place = { id: string; x: number; y: number; w: number; h: number };
+export type Tile = { id: string; h: number | null };
+export type Column = { w: number; tiles: Tile[] };
+export type Spot = { col: number; top: number; height: number };
+export type Target = { col: number; y: number } | { edge: "left" | "right" };
 
-export const columns = (size: Size) => (size === "phone" ? 1 : COLS);
+export const SIZES: Size[] = ["phone", "tablet", "desktop"];
+export const MAX_COLUMNS: Record<Size, number> = {
+  phone: 2,
+  tablet: 3,
+  desktop: 4,
+};
 
-export const rowsOf = (px: number) => Math.ceil((px + GAP) / ROW);
-
-export const pack = (items: Item[], height: (id: string) => number) => {
-  const taken: [from: number, to: number][][] = Array.from(
-    { length: COLS },
-    () => [],
+export const place = (columns: Column[], height: (id: string) => number) => {
+  const spots = new Map<string, Spot>();
+  const ends = columns.map((c, col) =>
+    c.tiles.reduce((top, t) => {
+      const h = height(t.id);
+      if (!h) return top;
+      spots.set(t.id, { col, top, height: h });
+      return top + h;
+    }, 0),
   );
-  return items.map(({ id, x, w }): Place => {
-    const h = height(id);
-    const span = taken.slice(x, x + w);
-    const fits = (y: number) =>
-      span.every((col) => col.every(([a, b]) => y + h <= a || y >= b));
-    const y = [0, ...span.flat().map(([, b]) => b)]
-      .sort((a, b) => a - b)
-      .find(fits)!;
-    span.forEach((col) => col.push([y, y + h]));
-    return { id, x, y, w, h };
+  return { spots, ends };
+};
+
+export const bounds = (columns: Column[], width: number) => {
+  const unit =
+    (width - GAP * (columns.length - 1)) / columns.reduce((n, c) => n + c.w, 0);
+  let left = 0;
+  return columns.map((c) => {
+    const span = { left, width: c.w * unit };
+    left += span.width + GAP;
+    return span;
   });
 };
 
-export const move = (
-  items: Item[],
-  height: (id: string) => number,
-  id: string,
-  x: number,
-  y: number,
-  cols: number,
-) => {
-  const me = items.find((i) => i.id === id)!;
-  const others = items.filter((i) => i !== me);
-  const center = y + height(id) / 2;
-  const above = new Set(
-    pack(others, height)
-      .filter((p) => p.y + p.h / 2 < center)
-      .map((p) => p.id),
-  );
-  return [
-    ...others.filter((i) => above.has(i.id)),
-    { ...me, x: Math.max(0, Math.min(cols - me.w, x)) },
-    ...others.filter((i) => !above.has(i.id)),
-  ];
+export const columnAt = (columns: Column[], width: number, x: number) => {
+  const spans = bounds(columns, width);
+  const i = spans.findIndex((s) => x < s.left + s.width + GAP / 2);
+  return i < 0 ? columns.length - 1 : i;
 };
 
-export const add = (
-  items: Item[],
-  height: (id: string) => number,
-  item: Item,
-  cols: number,
-) =>
-  Array.from({ length: cols - item.w + 1 }, (_, x) => [
-    ...items,
-    { ...item, x },
-  ]).reduce((best, next) =>
-    pack(next, height).at(-1)!.y < pack(best, height).at(-1)!.y ? next : best,
-  );
+const without = (columns: Column[], id: string) =>
+  columns.map((c) => ({ ...c, tiles: c.tiles.filter((t) => t.id !== id) }));
 
-export const same = (a: Item[], b: Item[]) =>
+export const drop = (
+  columns: Column[],
+  height: (id: string) => number,
+  id: string,
+  target: Target,
+) => {
+  const tile = columns.flatMap((c) => c.tiles).find((t) => t.id === id)!;
+  const rest = without(columns, id);
+  if ("edge" in target) {
+    const column = { w: NEW_WIDTH, tiles: [tile] };
+    return target.edge === "left" ? [column, ...rest] : [...rest, column];
+  }
+  const { spots } = place(rest, height);
+  const others = rest[target.col]!.tiles;
+  const at = others.filter((t) => {
+    const s = spots.get(t.id);
+    return s && s.top + s.height / 2 < target.y;
+  }).length;
+  return rest.map((c, i) =>
+    i === target.col
+      ? { ...c, tiles: [...others.slice(0, at), tile, ...others.slice(at)] }
+      : c,
+  );
+};
+
+export const tidy = (columns: Column[]) =>
+  columns.filter((c) => c.tiles.length);
+
+export const remove = (columns: Column[], id: string) =>
+  tidy(without(columns, id));
+
+export const add = (
+  columns: Column[],
+  height: (id: string) => number,
+  id: string,
+) => {
+  if (!columns.length) return [{ w: 12, tiles: [{ id, h: null }] }];
+  const { ends } = place(columns, height);
+  const col = ends.indexOf(Math.min(...ends));
+  return columns.map((c, i) =>
+    i === col ? { ...c, tiles: [...c.tiles, { id, h: null }] } : c,
+  );
+};
+
+export const widen = (
+  columns: Column[],
+  width: number,
+  col: number,
+  right: number,
+) => {
+  const next = columns[col + 1];
+  if (!next) return columns;
+  const spans = bounds(columns, width);
+  const unit = spans[col]!.width / columns[col]!.w;
+  const pair = columns[col]!.w + next.w;
+  const w = Math.max(
+    MIN_WIDTH,
+    Math.min(pair - MIN_WIDTH, Math.round((right - spans[col]!.left) / unit)),
+  );
+  return columns.map((c, i) =>
+    i === col ? { ...c, w } : i === col + 1 ? { ...c, w: pair - w } : c,
+  );
+};
+
+export const resize = (columns: Column[], id: string, h: number | null) =>
+  columns.map((c) => ({
+    ...c,
+    tiles: c.tiles.map((t) => (t.id === id ? { ...t, h } : t)),
+  }));
+
+export const same = (a: Column[], b: Column[]) =>
   JSON.stringify(a) === JSON.stringify(b);

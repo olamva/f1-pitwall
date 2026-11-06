@@ -5,7 +5,7 @@ import { LineChart } from "../charts/LineChart.tsx";
 import { ink } from "../ink.ts";
 import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import { Tabs } from "../Tabs.tsx";
-import { Compound, tyreColor } from "../Tyre.tsx";
+import { Compound } from "../Tyre.tsx";
 import { movers, pitStops, trapSpeeds, TRAPS, type Trap } from "./extras.ts";
 import { Panel } from "./Panels.tsx";
 import type { Row } from "./view.ts";
@@ -142,46 +142,6 @@ export const PitStops = ({
       ) : (
         <p className="text-sm text-zinc-500">No pit stops yet.</p>
       )}
-    </Panel>
-  );
-};
-
-export const TyreStrategy = ({
-  rows,
-  total,
-  selected,
-}: {
-  rows: Row[];
-  total: number;
-  selected: Set<string>;
-}) => {
-  const span = Math.max(
-    total,
-    ...rows.map((r) => r.stints.reduce((n, s) => n + s.laps, 0)),
-    1,
-  );
-  return (
-    <Panel title="Tyre strategy">
-      <ul className="space-y-1 text-sm">
-        {rows.map((r) => (
-          <li
-            key={r.number}
-            className={`grid grid-cols-[2.5rem_1fr] items-center gap-2 rounded px-1 ${selected.has(r.number) ? "bg-zinc-800" : ""}`}
-          >
-            <Driver row={r} />
-            <span className="flex h-4 gap-0.5">
-              {r.stints.map((s, i) => (
-                <span
-                  key={i}
-                  title={`${s.compound} · ${s.laps} laps${s.new ? "" : " · used"}`}
-                  className={`h-full rounded-sm border-2 bg-current/25 ${tyreColor(s.compound)} ${s.new ? "" : "border-dashed"}`}
-                  style={{ width: `${(s.laps / span) * 100}%` }}
-                />
-              ))}
-            </span>
-          </li>
-        ))}
-      </ul>
     </Panel>
   );
 };

@@ -28,6 +28,7 @@ const EASE = "translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1)";
 const touch = matchMedia("(any-pointer: coarse)").matches;
 const Level = createContext({ depth: 0, active: true });
 const claimed = new WeakSet<Event>();
+export const claim = (event: Event) => void claimed.add(event);
 let busy = false;
 let pending: (() => void) | null = null;
 let last = { at: -Infinity, depth: 0 };
