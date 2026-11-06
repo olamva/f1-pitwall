@@ -126,3 +126,28 @@ This review covers 44 open reports.
 | `19248a02` | left open | Two-driver season data. The report has no fixture. |
 
 The review changes no global instruction file.
+
+## Review of 6 November 2026
+
+This review covers 36 open reports.
+
+| IDs | Type | Fault and resolution |
+| --- | --- | --- |
+| `5cd83d32`, `384c67e4` | fixed | No hover in `pnpm shot`. `--hover <selector>` keeps the mouse on the element. A desktop capture shows the driver hover card. |
+| `d9f01e76` | fixed | `pnpm shot` stops infinite animations. `--animate` keeps them running and captures the current frame. |
+| `f938d1e7` | fixed | Missing champion poster. `pnpm shot` now waits for open `/api/` requests, such as `/api/season`, before the image wait. |
+| `f3c0d589` | fixed | `--browser chromium` refused. The check looked for full Chromium, but headless launch uses the installed headless shell. The command now launches and prints the install command only on failure. |
+| `344ac3b9` | fixed | Cloudinary crop width. `Headshot.tsx` uses `w_1.0` with a relative `h`. |
+| `4b0f7cbb`, `1d0577ae`, `fcaaa15e`, `ebf93be5`, `6b89bb2e`, `0717c076`, `d9f004fa`, `603b60b4`, `8b548cf1`, `ad510117`, `dff6cc4c`, `ef413476`, `12815f50`, `24130e98`, `bf22b93d`, `e7b561cf` | avoided | T3 snapshot timeouts. All reports precede `pnpm shot`. AGENTS.md and the screenshots skill forbid T3 preview screenshots. |
+| `27213a59` | avoided | Playwright version mismatch. The repo pins `playwright-core` 1.64.1 to the cached browsers. |
+| `bc4bd6ff` | avoided | OpenF1 timeouts. The API answers in 0.2 s in this review. Each request aborts after 10 s. |
+| `e137744b`, `38aab58e` | skill | SSH `publickey` failure. The tool-failures skill gives an HTTPS fetch that keeps the `origin/*` refs. SSH works in this review. |
+| `24fd8729` | skill | Global instruction symlink. The codex-mirror skill names `~/.agents/AGENTS.md` as the file to edit. |
+| `162aee91`, `a09b7184`, `7cbdf48a` | skill | WebKit range drag, slow uncached pace rounds, and hidden iOS swipe artifacts. The screenshots skill holds the workarounds. |
+| `79d462ec` | skill | pnpm `-s` flag. The skill already holds this workaround. |
+| `29e5d13e` | left open | Missing `origin/main` ref. The fault does not occur in this review. |
+| `669e27f2` | left open | Dev server restart after a build. Two builds in this review do not restart the dev server. |
+| `76edbe97`, `27002807` | left open | Auto-mode reviewer denials. The permission reviewer refused the skill edit again. |
+| `19248a02` | left open | Two-driver season data. The report has no fixture. |
+
+The review changes no global instruction file. It changes the personal tool-failures and codex-mirror skills in `~/.agents`.

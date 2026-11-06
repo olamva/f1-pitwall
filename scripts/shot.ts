@@ -1,10 +1,16 @@
 import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
-import { existsSync, mkdirSync, symlinkSync } from "node:fs";
+import { mkdirSync, symlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { chromium, webkit, type Browser, type Page } from "playwright-core";
+import {
+  chromium,
+  webkit,
+  type Browser,
+  type Page,
+  type Request,
+} from "playwright-core";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
@@ -31,11 +37,13 @@ const { values: o, positionals: paths } = parseArgs({
     favourite: { type: "string" },
     team: { type: "string" },
     click: { type: "string", multiple: true, default: [] },
+    hover: { type: "string" },
     wait: { type: "string" },
     eval: { type: "string" },
     element: { type: "string" },
     full: { type: "boolean", default: false },
     confetti: { type: "boolean", default: false },
+    animate: { type: "boolean", default: false },
     name: { type: "string" },
     out: { type: "string" },
     help: { type: "boolean", default: false },
@@ -54,11 +62,13 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --favourite <id:CODE>  Favourite driver, such as piastri:PIA
   --team <id>         Favourite team, such as mclaren
   --click <selector>  Click before the capture; repeat for more steps
+  --hover <selector>  Keep the mouse on this element for the capture
   --wait <selector>   Wait for this element before the capture
   --eval <js>         Run this in the page before the capture
   --element <selector>  Capture only this element, without the tab bar
   --full              Capture the full page
   --confetti          Show the confetti (off by default, as it slows WebKit)
+  --animate           Keep animations running and capture their current frame
   --name <name>       File name prefix (default from the path)
   --out <dir>         Output directory (default the T3 attachments directory)
 
@@ -131,10 +141,18 @@ const checkout = (ref: string) => {
 
 const errors: string[] = [];
 
-const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
+const shoot = async (
+  page: Page,
+  file: string,
+  warn: (t: string) => void,
+  loading: () => number,
+) => {
   const visible = (selector: string) =>
     page.locator(selector).filter({ visible: true }).first();
   const settle = async () => {
+    for (let end = Date.now() + 20_000; loading() && Date.now() < end;)
+      await page.waitForTimeout(100);
+    if (loading()) warn("API requests still open");
     await page
       .waitForFunction(
         () =>
@@ -154,7 +172,11 @@ const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
     await visible(target).click();
     await settle();
   }
-  await page.mouse.move(size.width - 1, 0);
+  if (o.hover) {
+    await visible(o.hover).hover();
+    await page.waitForTimeout(400);
+    await settle();
+  } else await page.mouse.move(size.width - 1, 0);
   if (o.wait) await visible(o.wait).waitFor();
   if (o.eval) await page.evaluate(o.eval);
   if (o.element) await visible(o.element).scrollIntoViewIfNeeded();
@@ -178,7 +200,7 @@ const shoot = async (page: Page, file: string, warn: (t: string) => void) => {
   await page.waitForTimeout(300);
   const shot = {
     path: file,
-    animations: "disabled" as const,
+    animations: o.animate ? ("allow" as const) : ("disabled" as const),
     timeout: SNAPSHOT,
     style: o.element ? "header nav { visibility: hidden !important; }" : "",
   };
@@ -208,28 +230,38 @@ const capture = async (browser: Browser, base: string, label: string) => {
         colorScheme: theme as "dark" | "light",
       });
       context.setDefaultTimeout(10_000);
-      await context.addInitScript((confetti) => {
-        localStorage.setItem("spoilers", "0");
-        addEventListener(
-          "animationstart",
-          () =>
-            document
-              .getAnimations()
-              .filter((a) => a.effect?.getTiming().iterations === Infinity)
-              .forEach((a) => a.cancel()),
-          true,
-        );
-        const media = matchMedia;
-        if (!confetti)
-          window.matchMedia = (query) =>
-            media(query === "(prefers-reduced-motion)" ? "all" : query);
-      }, o.confetti);
+      await context.addInitScript(
+        ({ confetti, animate }) => {
+          localStorage.setItem("spoilers", "0");
+          if (!animate)
+            addEventListener(
+              "animationstart",
+              () =>
+                document
+                  .getAnimations()
+                  .filter((a) => a.effect?.getTiming().iterations === Infinity)
+                  .forEach((a) => a.cancel()),
+              true,
+            );
+          const media = matchMedia;
+          if (!confetti)
+            window.matchMedia = (query) =>
+              media(query === "(prefers-reduced-motion)" ? "all" : query);
+        },
+        { confetti: o.confetti, animate: o.animate },
+      );
       await context.route("**/api/settings", (route) =>
         route.request().method() === "GET"
           ? route.fulfill({ json: settings })
           : route.fulfill({ status: 204 }),
       );
       const page = await context.newPage();
+      const open = new Set<Request>();
+      const api = (r: Request) =>
+        r.url().includes("/api/") && !/\/stream\b/.test(r.url());
+      page.on("request", (r) => api(r) && open.add(r));
+      page.on("requestfinished", (r) => open.delete(r));
+      page.on("requestfailed", (r) => open.delete(r));
       const warn = (text: string) => errors.push(`${label} ${path}: ${text}`);
       page.on("pageerror", (e) => warn(String(e)));
       page.on("response", (r) => {
@@ -238,7 +270,7 @@ const capture = async (browser: Browser, base: string, label: string) => {
       });
       try {
         await page.goto(url, { waitUntil: "domcontentloaded" });
-        await shoot(page, file, warn);
+        await shoot(page, file, warn, () => open.size);
         files.push(file);
       } catch (error) {
         const failed = file.replace(/\.png$/, "-error.png");
@@ -260,16 +292,15 @@ const capture = async (browser: Browser, base: string, label: string) => {
 const full = paths.some((path) => /^https?:/.test(path));
 if (full && o.before) throw new Error("--before needs paths, not URLs");
 const engine = o.browser === "chromium" ? chromium : webkit;
-if (!existsSync(engine.executablePath()))
+const browser = await engine.launch().catch((error: Error) => {
   throw new Error(
-    `Run pnpm exec playwright-core install ${o.browser} to get the browser`,
+    `${error.message.split("\n")[0]}\nRun pnpm exec playwright-core install ${o.browser === "chromium" ? "--only-shell chromium" : "webkit"}`,
   );
-
+});
 const before = o.before ? checkout(o.before) : null;
 const servers = full
   ? []
   : await Promise.all([serve("."), ...(before ? [serve(before)] : [])]);
-const browser = await engine.launch();
 try {
   const files = await capture(
     browser,

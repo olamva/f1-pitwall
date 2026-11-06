@@ -19,8 +19,8 @@ pnpm shot /calendar/2026/19 --favourite piastri:PIA --team williams --before ori
 - `--before <ref>` also captures the ref from a temporary checkout under `/tmp`. The command captures the two states one after the other, and removes the checkout at the end.
 - The command prints one PNG path for each capture. The default directory is `~/.t3/userdata/attachments/<branch>`, so you can embed the files directly.
 - The file name is `<path>-[before|after]-<theme>.png`.
-- The command waits for the loading indicators, the fonts, and the visible images. Do not add fixed sleeps.
-- CSS animations and transitions show their end state. The command cancels infinite animations when they start, because each repaint is slow in headless WebKit.
+- The command waits for open `/api/` requests, the loading indicators, the fonts, and the visible images. Do not add fixed sleeps.
+- CSS animations and transitions show their end state. The command cancels infinite animations when they start, because each repaint is slow in headless WebKit. Add `--animate` to keep them running and capture their current frame.
 - A failed step stops after 10 seconds. The capture itself stops after 30 seconds. The error names the step and the path of a `-error.png` capture of the page state.
 - Run the command again after each edit. Each run takes about 5 to 30 seconds.
 
@@ -33,11 +33,13 @@ Options:
 | `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.        |
 | `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                          |
 | `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps. |
+| `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.               |
 | `--wait <selector>`                | Wait for a visible element.                                                |
 | `--eval <js>`                      | Run JavaScript in the page before the capture.                             |
 | `--element <selector>`             | Capture one element. The tab bar is hidden.                                |
 | `--full`                           | Capture the full page.                                                     |
 | `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.     |
+| `--animate`                        | Keep animations running, such as the live-dot pulse.                       |
 | `--name`, `--out`                  | File name prefix and output directory.                                     |
 
 A full `http://` URL uses a server that already runs. Then `--before` is not available.
@@ -70,7 +72,7 @@ A full `http://` URL uses a server that already runs. Then `--before` is not ava
 ## Look at the images
 
 - The Read tool scales an image taller than 2000 pixels down. Use `--element` or a smaller `--size` to see details.
-- Hover states do not show. The command moves the pointer to the top-right corner after each click.
+- Use `--hover` for hover states and hover cards. Hover cards need a desktop or iPad size, because they react only to a mouse. Without `--hover`, the command moves the pointer to the top-right corner.
 - Compare the before and after images before you report a match.
 
 ## Publish to the PR
@@ -88,6 +90,8 @@ pnpm shot:publish <pr-number> ~/.t3/userdata/attachments/<branch>/*.png
 
 - A screenshot does not show a transition. To check motion, record a video with Playwright `recordVideo` or with the iOS Simulator. Then check the frames one by one before you report the motion as correct. Check the frames around each release and state change.
 - Paused animation frames (`getAnimations()` with a set `currentTime`) miss CSS transitions that start in the same frame. Check the real recording at full size, cropped to the moving edge. Also check the case where the layout moves.
+- Headless WebKit does not move an `opacity: 0` range input on a mouse drag. Use Chromium for a drag on a range input, or set its value and dispatch `input`.
+- The first `/api/pace` request for a round can take more than 60 seconds, because the local servers share the Jolpica rate limit. Request each round once with `curl` before a motion test. The `DATA_DIR` store then keeps it for all worktrees.
 - Desktop WebKit has no `Touch` constructor. Use Chromium with the CDP command `Input.dispatchTouchEvent` for touch gestures.
 - Headless WebKit does not show iOS swipe, overscroll, and home-screen app artifacts. Use the iOS Simulator through the T3 device tools for these bugs.
 - To open the home-screen app in the simulator, run `open com.apple.springboard`, then `press 'label="F1 Pitwall"'`. A tap on the icon by coordinates can open Safari instead.
