@@ -1,0 +1,14 @@
+{
+  "id": "889ee72b",
+  "ts": "2026-11-06T20:01:41+00:00",
+  "text": "Dev server serves no manifest.webmanifest, so a simulator home-screen app of pnpm dev is not display-mode standalone and gets different top padding than production",
+  "tags": [
+    "ios",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "94d9747e",
+  "where": "vite.config.ts",
+  "branch": "t3/focus-mode-scroll-lock"
+}
