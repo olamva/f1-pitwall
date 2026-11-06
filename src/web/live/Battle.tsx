@@ -27,6 +27,7 @@ export const Battle = ({ rows }: { rows: Row[] }) => {
         seam={50}
         center={chaser.interval.replace(/^\+/, "")}
         caption="Interval"
+        cars
         sides={[
           { id: ahead.tla, color: ahead.color, note: `P${ahead.position}` },
           { id: chaser.tla, color: chaser.color, note: `P${chaser.position}` },
