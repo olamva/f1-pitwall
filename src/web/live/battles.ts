@@ -6,6 +6,7 @@ const CLEAN_LAPS = 3;
 const MIN_RATE = 0.1;
 const HORIZON = 10;
 const WINDOW = 5;
+const MAX_CARS = 4;
 
 export const NEXT = "next";
 
@@ -33,10 +34,16 @@ export const battles = (rows: Row[]): Pair[][] =>
       return groups;
     }, []);
 
-export const label = (group: Pair[]) =>
-  group.length > 1
-    ? `P${group[0]!.ahead.position}–P${group.at(-1)!.chaser.position} ×${group.length + 1}`
-    : `P${group[0]!.ahead.position}`;
+export const label = (group: Pair[]) => `P${group[0]!.ahead.position}`;
+
+export const contenders = (group: Pair[], focus: Pair) => {
+  const start = Math.max(
+    0,
+    Math.min(group.indexOf(focus) - 1, group.length - MAX_CARS + 1),
+  );
+  const shown = group.slice(start, start + MAX_CARS - 1);
+  return { pairs: shown, more: group.length - shown.length };
+};
 
 const lapsBy = (rows: LapRow[] | undefined, from: number, until: number) =>
   new Map(

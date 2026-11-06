@@ -4,6 +4,7 @@ import type { LapRow, Period } from "../src/shared/timing.ts";
 import {
   battles,
   choose,
+  contenders,
   forecast,
   label,
   NEXT,
@@ -37,7 +38,23 @@ const history = (gaps: number[], pit: Record<number, "in" | "out"> = {}) =>
 test("cars within 1 s of the car ahead form one train", () => {
   const rows = grid("", "+0.5", "+0.8", "+2.0", "+0.3", "+5.0", "+0.9");
   rows[5]!.status = "PIT";
-  assert.deepEqual(battles(rows).map(label), ["P1–P3 ×3", "P4"]);
+  const groups = battles(rows);
+  assert.deepEqual(groups.map(label), ["P1", "P4"]);
+  assert.deepEqual(
+    groups.map((g) => g.map((p) => p.chaser.number)),
+    [["2", "3"], ["5"]],
+  );
+});
+
+test("a long train shows 4 cars around the focused pair", () => {
+  const [train] = battles(grid("", ...Array(7).fill("+0.5")));
+  const shown = (focus: number) => {
+    const { pairs, more } = contenders(train!, train![focus]!);
+    return [pairs[0]!.ahead.position, pairs.at(-1)!.chaser.position, more];
+  };
+  assert.deepEqual(shown(0), [1, 4, 4]);
+  assert.deepEqual(shown(3), [3, 6, 4]);
+  assert.deepEqual(shown(6), [5, 8, 4]);
 });
 
 test("the shown battle follows selection, tap, favourite, then position", () => {

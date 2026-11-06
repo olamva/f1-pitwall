@@ -17,7 +17,7 @@ interface VersusProps {
   caption: string;
   cars?: boolean;
   dim?: boolean;
-  detail?: string;
+  detail?: string[];
 }
 
 const INK = "#15151e";
@@ -53,8 +53,8 @@ interface PanelProps {
   cars?: boolean;
 }
 
-const paint = (color: string, right: boolean) =>
-  `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${right ? 75 : 25}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
+const paint = (color: string, x: number) =>
+  `repeating-linear-gradient(-62deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 9px), radial-gradient(circle at ${x}% 35%, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 30%, color-mix(in srgb, ${color} 30%, ${INK}) 75%)`;
 
 const Panel = ({ side, gone, right, seam }: PanelProps) => (
   <div
@@ -67,7 +67,7 @@ const Panel = ({ side, gone, right, seam }: PanelProps) => (
           <div
             key={s.id}
             className={`absolute inset-0 ${gone && s !== gone ? "versus-fade" : ""}`}
-            style={{ background: paint(s.color, right) }}
+            style={{ background: paint(s.color, right ? 75 : 25) }}
           />
         ),
     )}
@@ -247,11 +247,93 @@ export const Versus = ({
           {center}
         </span>
         {detail && (
-          <span className="tabular mt-0.5 text-[10px] font-bold whitespace-nowrap text-zinc-600 sm:text-xs">
-            {detail}
+          <span className="tabular mt-0.5 flex gap-2 text-[10px] font-bold whitespace-nowrap text-zinc-600 sm:text-xs">
+            {detail.map((d) => (
+              <span key={d}>{d}</span>
+            ))}
           </span>
         )}
       </div>
+    </div>
+  );
+};
+
+const slice = (l: number, r: number) =>
+  `polygon(${l + SLANT + 0.5}% 0, ${r + SLANT - 0.5}% 0, ${r - SLANT - 0.5}% 100%, ${l - SLANT + 0.5}% 100%)`;
+
+interface SlicesProps {
+  sides: Side[];
+  gaps: string[];
+  more: number;
+}
+
+export const Slices = ({ sides, gaps, more }: SlicesProps) => {
+  const w = 100 / sides.length;
+  const mid = (i: number) => `${(i + 0.5) * w}%`;
+  return (
+    <div
+      className="@container relative isolate h-64 max-w-lg overflow-hidden rounded-xl text-white scheme-dark sm:h-80"
+      style={{ background: INK }}
+    >
+      {sides.map((s, i) => (
+        <div
+          key={s.id}
+          className="absolute inset-0"
+          style={{
+            clipPath: slice(
+              i ? i * w : -SLANT - 1,
+              i < sides.length - 1 ? (i + 1) * w : 100 + SLANT + 1,
+            ),
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: paint(s.color, (i + 0.5) * w) }}
+          />
+          <Figure
+            id={s.id}
+            pose="front"
+            transform={BODY}
+            className="absolute top-[8%] h-[150%] max-w-none -translate-x-1/2 drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)]"
+            style={{ left: mid(i) }}
+          />
+        </div>
+      ))}
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/2"
+        style={{ background: `linear-gradient(transparent, ${INK} 85%)` }}
+      />
+      {sides.map((s, i) => (
+        <div
+          key={s.id}
+          className="font-f1 absolute bottom-3 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5"
+          style={{ left: mid(i) }}
+        >
+          <p className="text-xl leading-none font-black tracking-wide sm:text-3xl">
+            {s.id}
+          </p>
+          <p
+            className="tabular px-1.5 py-0.5 text-xs font-bold sm:text-sm"
+            style={{ background: s.color }}
+          >
+            {s.note}
+          </p>
+        </div>
+      ))}
+      {gaps.map((g, i) => (
+        <div
+          key={i}
+          className="font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 bg-white px-2 py-1 text-lg leading-none font-black text-zinc-950 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] sm:text-2xl"
+          style={{ left: `${(i + 1) * w}%` }}
+        >
+          {g}
+        </div>
+      ))}
+      {more > 0 && (
+        <p className="font-f1 tabular absolute top-3 right-3 z-10 rounded bg-black/60 px-1.5 py-0.5 text-xs font-bold">
+          +{more}
+        </p>
+      )}
     </div>
   );
 };

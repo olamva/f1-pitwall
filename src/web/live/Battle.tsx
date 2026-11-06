@@ -2,17 +2,18 @@ import { useMemo, useRef, useState } from "react";
 import type { LapRow, Period } from "../../shared/timing.ts";
 import { useFavourite } from "../favourite.ts";
 import { Tabs } from "../Tabs.tsx";
-import { Versus } from "../Versus.tsx";
+import { Slices, Versus } from "../Versus.tsx";
 import {
   battles,
   choose,
   closest,
+  contenders,
   forecast,
   label,
   NEXT,
   ongoing,
-  type Forecast,
   type Pair,
+  type View,
 } from "./battles.ts";
 import type { Row } from "./view.ts";
 
@@ -38,7 +39,7 @@ const Card = ({
   center: string;
   caption: string;
   dim?: boolean;
-  detail?: string;
+  detail?: string[];
 }) => (
   <Versus
     key={pair.ahead.tla + pair.chaser.tla}
@@ -80,20 +81,19 @@ export const Battle = ({
   const fan = rows.find((r) => r.tla === favourite?.code)?.number;
   const view = choose(groups, next, selected, tapped, fan);
   if (view?.group) last.current = view.pair;
-  const nextChip = next && `Next · ${lapsText(next.laps)}`;
+  const nextChip = next && `Next ${lapsText(next.laps)}`;
   const key = [...groups.map(label), nextChip].filter(Boolean).join("\n");
   const chips = useMemo(() => (key ? key.split("\n") : []), [key]);
-  const shown = view?.pair ?? last.current;
-  const trend = (f: Forecast) =>
-    `+${f.interval.toFixed(1)} s · −${f.rate.toFixed(1)} s/lap`;
+  const lead =
+    view?.group?.[0]!.ahead ?? view?.pair.ahead ?? last.current?.ahead;
   return (
     <section className="bg-surface space-y-2 rounded-xl p-3">
       <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-        {!shown
+        {!lead
           ? "Battle"
-          : `${view && !view.group ? "Next battle" : "Battle"} for P${shown.ahead.position}`}
+          : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`}
       </h2>
-      <div className="-mx-3 h-10 [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3">
+      <div className="-mx-3 h-[50px] [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3 py-1">
         <div className="w-max">
           {chips.length > 0 && (
             <Tabs
@@ -111,32 +111,50 @@ export const Battle = ({
           )}
         </div>
       </div>
-      {view?.group ? (
-        <Card
-          pair={view.pair}
-          center={view.pair.chaser.interval.replace(/^\+/, "")}
-          caption="Interval"
-        />
-      ) : view ? (
-        <Card
-          pair={view.pair}
-          center={lapsText(view.pair.laps).toUpperCase()}
-          caption="Battle in"
-          detail={trend(view.pair)}
-          dim
-        />
-      ) : shown ? (
-        <Card
-          pair={shown}
-          center={shown.chaser.interval.replace(/^\+/, "")}
-          caption="Last battle"
-          dim
-        />
-      ) : (
-        <div className="flex h-64 max-w-lg items-center justify-center rounded-xl bg-zinc-800/50 text-sm text-zinc-400 sm:h-80">
-          No battle within 1 s
-        </div>
-      )}
+      <Stage view={view} last={last.current} />
     </section>
+  );
+};
+
+const interval = (p: Pair) => p.chaser.interval.replace(/^\+/, "");
+
+const Stage = ({ view, last }: { view: View | null; last: Pair | null }) => {
+  if (view?.group) {
+    const { pairs, more } = contenders(view.group, view.pair);
+    return pairs.length > 1 ? (
+      <Slices
+        sides={[pairs[0]!.ahead, ...pairs.map((p) => p.chaser)].map((r) => ({
+          id: r.tla,
+          color: r.color,
+          note: `P${r.position}`,
+        }))}
+        gaps={pairs.map(interval)}
+        more={more}
+      />
+    ) : (
+      <Card pair={view.pair} center={interval(view.pair)} caption="Interval" />
+    );
+  }
+  if (view)
+    return (
+      <Card
+        pair={view.pair}
+        center={lapsText(view.pair.laps).toUpperCase()}
+        caption="Battle in"
+        detail={[
+          `+${view.pair.interval.toFixed(1)} s`,
+          `−${view.pair.rate.toFixed(1)} s/lap`,
+        ]}
+        dim
+      />
+    );
+  if (last)
+    return (
+      <Card pair={last} center={interval(last)} caption="Last battle" dim />
+    );
+  return (
+    <div className="flex h-64 max-w-lg items-center justify-center rounded-xl bg-zinc-800/50 text-sm text-zinc-400 sm:h-80">
+      No battle within 1 s
+    </div>
   );
 };
