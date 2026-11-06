@@ -1,0 +1,13 @@
+{
+  "id": "7da18c12",
+  "ts": "2026-11-06T12:00:12+00:00",
+  "text": "pnpm worktree:cleanup . 531 --branch-only --apply threw 'The worktree does not match the merged PR.' with HEAD at the merged PR head",
+  "tags": [
+    "scripts"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "732c1222",
+  "where": "scripts/worktree-cleanup.ts",
+  "branch": "t3/drop-account-denied"
+}

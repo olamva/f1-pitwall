@@ -107,7 +107,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
   const team = useFavouriteTeam();
   const scrubAhead = useScrubAhead();
   const [status, setStatus] = useState<TokenStatus | null>(null);
-  const [denied, setDenied] = useState<number | null>(null);
+  const [signedOut, setSignedOut] = useState(false);
   const [value, setValue] = useState("");
   const [autoplay, setAutoplay] = useState(
     () => localStorage.getItem("autoplay") === "1",
@@ -145,7 +145,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
   useEffect(() => {
     fetch("/api/token").then(
       async (res) =>
-        res.ok ? setStatus(await res.json()) : setDenied(res.status),
+        res.ok ? setStatus(await res.json()) : setSignedOut(res.status === 401),
       () => undefined,
     );
     pushState().then(setPush, (e: Error) => setPushNote(e.message));
@@ -256,23 +256,21 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
           Show the order ahead of the replay point in the scrub preview
         </GlassSwitch>
       </section>
-      {denied ? (
+      {signedOut ? (
         <section className="bg-surface space-y-3 rounded-xl p-4">
           <h2 className="font-f1 text-lg font-bold">Account</h2>
           <p className="text-sm text-zinc-400">
-            {denied === 401
-              ? "Sign in with Google to use your TV delay, favourite driver and favourite team on all devices, transcribe new radio messages, get session reminders, and add your own F1TV token."
-              : "Your Google account has no access to settings sync, new transcripts, reminders, and F1TV tokens."}
+            Sign in with Google to use your TV delay, favourite driver and
+            favourite team on all devices, transcribe new radio messages, get
+            session reminders, and add your own F1TV token.
           </p>
-          {denied === 401 && (
-            <a
-              href={SIGN_IN}
-              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
-            >
-              <LogIn aria-hidden="true" className="size-4" />
-              Sign in with Google
-            </a>
-          )}
+          <a
+            href={SIGN_IN}
+            className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
+          >
+            <LogIn aria-hidden="true" className="size-4" />
+            Sign in with Google
+          </a>
         </section>
       ) : status ? (
         <>

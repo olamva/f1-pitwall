@@ -19,6 +19,7 @@ import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { Tabs } from "./Tabs.tsx";
 import { TeamHover } from "./TeamCard.tsx";
+import { TeamLogo } from "./TeamLogo.tsx";
 
 export const SESSIONS = [
   "fp1",
@@ -106,6 +107,7 @@ const practiceRows = (data: Practice, known: Known) => {
 };
 
 const lap = (row: { time: string | null }) => row.time ?? "";
+const BADGE = "relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2";
 
 interface ResultsTableProps<T extends Entry> {
   rows: T[];
@@ -151,11 +153,9 @@ const ResultsTable = <T extends Entry>({
                   disabled={!row.driver}
                   className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
                 >
-                  <TeamHover
-                    team={row.team}
-                    className="relative z-10 mr-1.5 inline-block align-[-3px] sm:mr-2"
-                    logo="h-4 w-6"
-                  />
+                  <TeamHover id={row.team} className={BADGE}>
+                    <TeamLogo team={row.team} className="block h-4 w-6" />
+                  </TeamHover>
                   {row.name}
                 </button>
               </DriverHover>
