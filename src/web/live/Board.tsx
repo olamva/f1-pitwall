@@ -102,9 +102,9 @@ const Status = ({
         {banner}
       </div>
     )}
-    <div className="ml-auto flex items-center gap-3">
+    <span className="tabular ml-auto font-mono text-xl">{clock}</span>
+    <div className="flex items-center justify-end gap-3 max-sm:basis-full">
       {children}
-      <span className="tabular font-mono text-xl">{clock}</span>
     </div>
   </div>
 );
