@@ -1,0 +1,14 @@
+{
+  "id": "d3475b18",
+  "ts": "2026-11-06T20:57:14+00:00",
+  "text": "iPhone 18 Pro simulator held by another agent-device session (t3-018d2079abc75605c54adab1); device-bound brief could not run",
+  "tags": [
+    "devices",
+    "tools"
+  ],
+  "who": "implementation-subagent",
+  "model": "opus-5.5",
+  "session": "da84d90b",
+  "where": "agent-device",
+  "branch": "t3/ios-pwa-top-blur-fix"
+}

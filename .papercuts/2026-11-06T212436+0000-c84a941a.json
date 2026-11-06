@@ -1,0 +1,14 @@
+{
+  "id": "c84a941a",
+  "ts": "2026-11-06T21:24:36+00:00",
+  "text": "agent-device swipe and gesture pan in the iOS app switcher fail with 'Gesture trajectory does not fit inside the viewport'; close com.apple.webapp works to relaunch a home-screen app",
+  "tags": [
+    "devices",
+    "tools"
+  ],
+  "who": "implementation-subagent",
+  "model": "opus-5.5",
+  "session": "cbc7fbd1",
+  "where": "agent-device",
+  "branch": "t3/ios-pwa-top-blur-fix"
+}
