@@ -1,8 +1,21 @@
-import { Plus, X } from "lucide-react";
+import {
+  Monitor,
+  Plus,
+  RotateCcw,
+  Smartphone,
+  Tablet,
+  X,
+  type LucideIcon,
+  type LucideProps,
+} from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { Tabs } from "../Tabs.tsx";
 import type { Size } from "./layout.ts";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
+
+const Landscape = ((props: LucideProps) => (
+  <Tablet {...props} className={`${props.className ?? ""} rotate-90`} />
+)) as unknown as LucideIcon;
 
 interface EditBarProps {
   sizes: Size[];
@@ -63,6 +76,8 @@ export const EditBar = ({
             value={size}
             onChange={onSize}
             labels={{ phone: "Phone", tablet: "Tablet", desktop: "Desktop" }}
+            icons={{ phone: Smartphone, tablet: Landscape, desktop: Monitor }}
+            iconOnly
           />
         )}
       </div>
@@ -81,8 +96,20 @@ export const EditBar = ({
         className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 top-auto bottom-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border-t border-zinc-800 text-zinc-100 backdrop:bg-black/60 sm:bottom-auto sm:my-auto sm:rounded-3xl sm:border"
       >
         <div className="space-y-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-          <div className="flex items-center justify-between">
-            <h2 className="font-f1 text-lg font-bold">Widgets</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-f1 grow text-lg font-bold">Widgets</h2>
+            <button
+              type="button"
+              onClick={() => {
+                if (!confirm("Reset the layout for this screen size?")) return;
+                onReset();
+                sheet.current?.close();
+              }}
+              className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-zinc-800 px-3.5 text-sm font-semibold hover:bg-zinc-700"
+            >
+              <RotateCcw aria-hidden="true" className="size-4" />
+              Reset
+            </button>
             <button
               type="button"
               aria-label="Close"
@@ -124,17 +151,6 @@ export const EditBar = ({
               All widgets are on the screen.
             </p>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              if (!confirm("Reset the layout for this screen size?")) return;
-              onReset();
-              sheet.current?.close();
-            }}
-            className="cursor-pointer text-sm font-semibold text-red-400"
-          >
-            Reset to the default layout
-          </button>
         </div>
       </dialog>
     </div>

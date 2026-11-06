@@ -112,7 +112,7 @@ export const Tile = ({
             onPointerDown={(e) => onPress("size", e)}
             className="absolute right-0 bottom-0 size-12 cursor-nwse-resize touch-none"
           >
-            <span className="absolute right-1 bottom-1 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-50 drop-shadow" />
+            <span className="light:border-zinc-400 absolute right-1 bottom-1 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
           </span>
         </div>
       )}
