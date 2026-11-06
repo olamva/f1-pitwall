@@ -1,41 +1,31 @@
-import {
-  createContext,
-  useContext,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import type { DriverProfile, Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
-import { FALLBACK, Headshot, PORTRAIT } from "./Headshot.tsx";
+import { Shell, Snippet } from "./CardParts.tsx";
+import { BUST, Figure, Headshot, PORTRAIT } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
+import { ink } from "./ink.ts";
 import { METALS } from "./Podium.tsx";
 import { useHidden } from "./spoilers.ts";
-import { driverTables, latest } from "./stats/derive.ts";
+import { clinched, driverTables, latest } from "./stats/derive.ts";
 import { SHORT } from "./stats/DriverProfile.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
-import { TeamLogo } from "./TeamLogo.tsx";
 
 export const SeasonData = createContext<Season | null>(null);
-
-const SUFFIX: Record<string, string> = {
-  one: "st",
-  two: "nd",
-  few: "rd",
-  other: "th",
-};
-const ordinal = new Intl.PluralRules("en", { type: "ordinal" });
-const nth = (n: number) => `${n}${SUFFIX[ordinal.select(n)]}`;
 
 interface CardProps {
   id: string;
   name: string;
   number: string | null;
   team: string;
-  src: string | null | undefined;
-  line: (string | false | undefined)[];
+  line?: string;
+  figure: ReactNode;
+  place?: number;
+  crown?: string;
   tiles: [string, number | null][];
   form?: { label: string; place: number | null }[];
+  table?: ReactNode;
 }
 
 const Card = ({
@@ -43,70 +33,77 @@ const Card = ({
   name,
   number,
   team,
-  src,
   line,
+  figure,
+  place,
+  crown,
   tiles,
   form,
+  table,
 }: CardProps) => {
   const color = teamColor(team);
   return (
-    <div
-      className="light:bg-none relative -m-3 overflow-hidden rounded-xl bg-linear-135 from-(--team)/25 to-transparent to-60% p-3"
-      style={{ "--team": color } as CSSProperties}
-    >
-      <div className="relative -mt-3 -mr-3 pt-3 pr-3">
-        {src && (
-          <Headshot
-            src={src}
-            className="absolute top-0 right-0 h-full mask-l-from-60%"
-          />
-        )}
-        <div className="relative">
+    <Shell
+      color={color}
+      team={team}
+      title={name}
+      subtitle={
+        line && <p className="mt-0.5 text-[11px] text-white/75">{line}</p>
+      }
+      place={place}
+      crown={crown}
+      art={
+        <>
           {number && (
             <TeamNumber
               id={id}
               number={number}
-              color={color}
-              className="flex h-8 mask-left! text-3xl"
+              color="white"
+              className="absolute bottom-3 left-3 flex h-8 text-3xl"
             />
           )}
-          <p className="font-f1 mt-1 text-lg leading-tight font-bold">{name}</p>
-          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-400">
-            <TeamLogo team={team} className="h-3.5 w-5 shrink-0" />
-            {line.filter(Boolean).join(" · ")}
-          </p>
-        </div>
-      </div>
-      <div className="mt-3.5 grid grid-cols-3 gap-1.5">
+          {figure}
+        </>
+      }
+    >
+      <div className="grid grid-cols-3 px-3 py-2.5 text-center">
         {tiles.map(([label, value]) => (
-          <div key={label} className="rounded-lg bg-zinc-800 p-1.5 text-center">
-            <b className="font-f1 tabular block text-base">{value ?? "—"}</b>
-            <small className="text-[10px] text-zinc-400">{label}</small>
+          <div key={label}>
+            <div
+              className="font-f1 text-xl leading-tight font-black italic"
+              style={{ color: ink(color) }}
+            >
+              {value ?? "—"}
+            </div>
+            <div className="text-[11px] text-zinc-400">{label}</div>
           </div>
         ))}
       </div>
-      {form && form.length > 0 && (
-        <>
-          <p className="mt-2.5 text-[11px] text-zinc-400">
-            Last {form.length} {form.length === 1 ? "race" : "races"}
-          </p>
-          <ol className="mt-2 flex gap-1">
-            {form.map(({ label, place }, i) => {
-              const metal = place && METALS[place - 1];
-              return (
-                <li
-                  key={i}
-                  className={`tabular flex-1 rounded py-0.5 text-center text-[11px] font-extrabold ${metal ? "text-black" : "bg-zinc-800"}`}
-                  style={metal ? { background: metal } : undefined}
-                >
-                  {label}
-                </li>
-              );
-            })}
-          </ol>
-        </>
-      )}
-    </div>
+      <div className="px-3 pb-3 empty:hidden">
+        {form && form.length > 0 && (
+          <>
+            <div className="mb-1 text-center text-[11px] text-zinc-400">
+              Last {form.length} {form.length === 1 ? "race" : "races"}
+            </div>
+            <ol className="flex gap-1">
+              {form.map(({ label, place }, i) => {
+                const metal = place && METALS[place - 1];
+                return (
+                  <li
+                    key={i}
+                    className={`tabular flex-1 rounded py-0.5 text-center text-[11px] font-extrabold ${metal ? "text-black" : "bg-zinc-800"}`}
+                    style={metal ? { background: metal } : undefined}
+                  >
+                    {label}
+                  </li>
+                );
+              })}
+            </ol>
+          </>
+        )}
+        {table}
+      </div>
+    </Shell>
   );
 };
 
@@ -118,14 +115,15 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
       !hidden.has(`${round}/${kind}`);
   const driver = season.drivers.find((d) => d.id === id)!;
   const races = season.races.filter(keep("race"));
-  const table = latest(
-    driverTables({
-      ...season,
-      races,
-      sprints: season.sprints.filter(keep("sprint")),
-    }),
-  );
+  const shown = {
+    ...season,
+    races,
+    sprints: season.sprints.filter(keep("sprint")),
+  };
+  const table = latest(driverTables(shown));
   const place = table.findIndex((s) => s.id === id);
+  const champion = clinched(shown, "drivers");
+  const info = new Map(season.drivers.map((d) => [d.id, d]));
   const results = races.flatMap((r) =>
     r.results.filter((x) => x.driver === id),
   );
@@ -136,12 +134,16 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
       name={driver.name}
       number={driver.number}
       team={driver.team}
-      src={driver.headshot ?? FALLBACK}
-      line={[
-        season.teams.find((t) => t.id === driver.team)?.name,
-        place >= 0 && nth(place + 1),
-        place >= 0 && `${table[place]!.points} pts`,
-      ]}
+      figure={
+        <Figure
+          id={id}
+          pose="right"
+          transform={BUST(0.6)}
+          className="absolute right-4 bottom-0 h-24"
+        />
+      }
+      place={place >= 0 ? place : undefined}
+      crown={champion && !place ? `${season.year} Champion` : undefined}
       tiles={[
         ["Wins", positions.filter((p) => p === 1).length],
         ["Podiums", positions.filter((p) => p && p <= 3).length],
@@ -158,6 +160,20 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
         label: r.position ? `P${r.position}` : (SHORT[r.status] ?? "DNF"),
         place: r.position,
       }))}
+      table={
+        place >= 0 && (
+          <Snippet
+            rows={table.map((s) => ({
+              ...s,
+              team: info.get(s.id)?.team ?? "",
+              name: info.get(s.id)?.name ?? s.id,
+            }))}
+            self={id}
+            color={teamColor(driver.team)}
+            champion={champion}
+          />
+        )
+      }
     />
   );
 };
@@ -179,13 +195,20 @@ const CareerCard = ({ id }: { id: string }) => {
       name={data.name}
       number={data.number}
       team={last?.team ?? ""}
-      src={data.portrait ?? PORTRAIT}
       line={[
         last?.teamName,
         data.firstSeason === data.lastSeason
-          ? `${data.firstSeason}`
+          ? data.firstSeason
           : `${data.firstSeason}–${data.lastSeason}`,
-      ]}
+      ]
+        .filter(Boolean)
+        .join(" · ")}
+      figure={
+        <Headshot
+          src={data.portrait ?? PORTRAIT}
+          className="absolute top-0 right-0 h-full mask-l-from-60%"
+        />
+      }
       tiles={[
         ["Wins", data.wins],
         ["Podiums", data.podiums],
