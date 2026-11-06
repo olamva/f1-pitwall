@@ -1,6 +1,6 @@
-import { execFileSync, spawn, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
-import { mkdirSync, symlinkSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -11,6 +11,7 @@ import {
   type Page,
   type Request,
 } from "playwright-core";
+import { checkout, git } from "./checkout.ts";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
@@ -24,9 +25,6 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-const git = (...args: string[]) =>
-  execFileSync("git", args, { encoding: "utf8" }).trim();
-
 const { values: o, positionals: paths } = parseArgs({
   allowPositionals: true,
   options: {
@@ -36,6 +34,9 @@ const { values: o, positionals: paths } = parseArgs({
     browser: { type: "string", default: "webkit" },
     favourite: { type: "string" },
     team: { type: "string" },
+    replay: { type: "string", default: process.env.LIVE_REPLAY },
+    from: { type: "string", default: process.env.LIVE_REPLAY_FROM ?? "0" },
+    play: { type: "string", default: "0" },
     click: { type: "string", multiple: true, default: [] },
     hover: { type: "string" },
     wait: { type: "string" },
@@ -61,6 +62,9 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --browser <b>       webkit or chromium (default webkit)
   --favourite <id:CODE>  Favourite driver, such as piastri:PIA
   --team <id>         Favourite team, such as mclaren
+  --replay <file>     Replay a recording, such as recordings/2026-bahrain-fp3.jsonl.gz
+  --from <minutes>    Start the replay at this minute (default 0)
+  --play <seconds>    Capture this many seconds after the replay start (default 0)
   --click <selector>  Click before the capture; repeat for more steps
   --hover <selector>  Keep the mouse on this element for the capture
   --wait <selector>   Wait for this element before the capture
@@ -73,7 +77,8 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --out <dir>         Output directory (default the T3 attachments directory)
 
 Selectors are Playwright selectors: CSS, text=Reveal or role=button[name="Reveal"].
-A full http URL uses that server. Then --before is not available.`);
+A full http URL uses that server. Then --before and --replay are not available.
+With --replay, each capture gets a new server, so all images show the same moment.`);
   process.exit(paths.length || o.help ? 0 : 1);
 }
 
@@ -105,13 +110,24 @@ mkdirSync(out, { recursive: true });
 const serve = async (cwd: string) => {
   const child = spawn(process.execPath, ["scripts/dev.ts"], {
     cwd,
-    env: { ...process.env, PORT: "0", VITE_PORT: "0", DEV_WATCH: "0" },
+    env: {
+      ...process.env,
+      PORT: "0",
+      VITE_PORT: "0",
+      DEV_WATCH: "0",
+      ...(o.replay && {
+        LIVE_REPLAY: resolve(o.replay),
+        LIVE_REPLAY_FROM: o.from,
+      }),
+    },
     stdio: ["ignore", "pipe", "pipe"],
   });
   let log = "";
+  let started = 0;
   const url = await new Promise<string>((done, fail) => {
     const read = (chunk: Buffer) => {
       log += chunk;
+      if (!started && /listening on/.test(log)) started = Date.now();
       const match = /Local:\s+(http\S+?)\/?\s/.exec(log);
       if (match) done(match[1]!);
     };
@@ -123,8 +139,9 @@ const serve = async (cwd: string) => {
       30_000,
     ).unref();
   });
-  return { url, child };
+  return { url, child, started };
 };
+type Server = Awaited<ReturnType<typeof serve>>;
 
 const stop = async (child: ChildProcess) => {
   if (child.exitCode !== null) return;
@@ -132,11 +149,70 @@ const stop = async (child: ChildProcess) => {
   await once(child, "exit");
 };
 
-const checkout = (ref: string) => {
-  const dir = `/tmp/shot-${git("rev-parse", "--short", ref)}-${process.pid}`;
-  git("worktree", "add", "--detach", dir, ref);
-  symlinkSync(resolve("node_modules"), join(dir, "node_modules"));
-  return dir;
+const hint = async (page: Page, selector: string) => {
+  const all = await page
+    .locator(selector)
+    .count()
+    .catch(() => -1);
+  if (all < 0) return "The selector is not valid.";
+  if (all) return `${all} matches, but none is visible.`;
+  const text = /^text=(.+)$|name="([^"]+)"|has-text\("([^"]+)"\)/
+    .exec(selector)
+    ?.slice(1)
+    .find(Boolean)
+    ?.replace(/^"|"$/g, "");
+  if (!text) return "No match.";
+  const near = await page.evaluate((text) => {
+    const distance = (a: string, b: string) => {
+      let row = [...Array(b.length + 1).keys()];
+      for (let i = 1; i <= a.length; i++) {
+        const next = [i];
+        for (let j = 1; j <= b.length; j++)
+          next[j] = Math.min(
+            row[j]! + 1,
+            next[j - 1]! + 1,
+            row[j - 1]! + Number(a[i - 1] !== b[j - 1]),
+          );
+        row = next;
+      }
+      return row[b.length]!;
+    };
+    const shown = (e: Element) => {
+      const r = e.getBoundingClientRect();
+      return (
+        e.checkVisibility() &&
+        !e.closest("[inert]") &&
+        r.bottom > 0 &&
+        r.right > 0 &&
+        r.top < innerHeight &&
+        r.left < innerWidth
+      );
+    };
+    const labels = [
+      ...new Set(
+        [
+          ...document.querySelectorAll<HTMLElement>(
+            "button, a, [role], h1, h2, h3, label, summary",
+          ),
+        ]
+          .filter(shown)
+          .map((e) =>
+            e.innerText
+              .trim()
+              .replace(/\s+/g, " ")
+              .replace(/^(.+) \1$/, "$1"),
+          )
+          .filter((t) => t && t.length <= 40),
+      ),
+    ];
+    const query = text.toLowerCase();
+    return labels
+      .map((t) => [t, distance(t.toLowerCase(), query)] as const)
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5)
+      .map(([t]) => t);
+  }, text);
+  return `No match. Closest visible labels: ${near.map((t) => JSON.stringify(t)).join(", ")}`;
 };
 
 const errors: string[] = [];
@@ -146,9 +222,23 @@ const shoot = async (
   file: string,
   warn: (t: string) => void,
   loading: () => number,
+  started: number,
 ) => {
   const visible = (selector: string) =>
     page.locator(selector).filter({ visible: true }).first();
+  const step = async (
+    name: string,
+    selector: string | undefined,
+    run: () => Promise<unknown>,
+  ) => {
+    try {
+      await run();
+    } catch (error) {
+      const message = (error as Error).message.split("\n")[0];
+      const extra = selector ? `\n${await hint(page, selector)}` : "";
+      throw new Error(`${name} failed: ${message}${extra}`);
+    }
+  };
   const settle = async () => {
     for (let end = Date.now() + 20_000; loading() && Date.now() < end;)
       await page.waitForTimeout(100);
@@ -169,17 +259,26 @@ const shoot = async (
   };
   await settle();
   for (const target of o.click!) {
-    await visible(target).click();
+    await step(`--click ${target}`, target, () => visible(target).click());
     await settle();
   }
   if (o.hover) {
-    await visible(o.hover).hover();
+    await step(`--hover ${o.hover}`, o.hover, () => visible(o.hover!).hover());
     await page.waitForTimeout(400);
     await settle();
   } else await page.mouse.move(size.width - 1, 0);
-  if (o.wait) await visible(o.wait).waitFor();
-  if (o.eval) await page.evaluate(o.eval);
-  if (o.element) await visible(o.element).scrollIntoViewIfNeeded();
+  if (o.wait)
+    await step(`--wait ${o.wait}`, o.wait, () => visible(o.wait!).waitFor());
+  if (o.eval) await step("--eval", undefined, () => page.evaluate(o.eval!));
+  if (o.element)
+    await step(`--element ${o.element}`, o.element, () =>
+      visible(o.element!).scrollIntoViewIfNeeded(),
+    );
+  if (o.replay) {
+    const left = started + Number(o.play) * 1000 - Date.now();
+    if (left < 0) warn(`the page was ready ${-left} ms after the --play time`);
+    await page.waitForTimeout(Math.max(0, left));
+  }
   await page
     .waitForFunction(() =>
       [...document.images]
@@ -209,15 +308,20 @@ const shoot = async (
   else await page.screenshot({ ...shot, fullPage: o.full });
 };
 
-const capture = async (browser: Browser, base: string, label: string) => {
+const capture = async (
+  browser: Browser,
+  server: () => Promise<Server | undefined>,
+  label: string,
+) => {
   const files: string[] = [];
   for (const path of paths) {
-    const url = /^https?:/.test(path) ? path : base + path;
-    const name =
-      o.name ??
-      (new URL(url).pathname.replace(/^\/|\/$/g, "").replace(/\W+/g, "-") ||
-        "home");
     for (const theme of themes) {
+      const host = await server();
+      const url = /^https?:/.test(path) ? path : host!.url + path;
+      const name =
+        o.name ??
+        (new URL(url).pathname.replace(/^\/|\/$/g, "").replace(/\W+/g, "-") ||
+          "home");
       const file = join(
         out,
         [name, label, theme].filter(Boolean).join("-") + ".png",
@@ -270,7 +374,7 @@ const capture = async (browser: Browser, base: string, label: string) => {
       });
       try {
         await page.goto(url, { waitUntil: "domcontentloaded" });
-        await shoot(page, file, warn, () => open.size);
+        await shoot(page, file, warn, () => open.size, host?.started ?? 0);
         files.push(file);
       } catch (error) {
         const failed = file.replace(/\.png$/, "-error.png");
@@ -283,6 +387,7 @@ const capture = async (browser: Browser, base: string, label: string) => {
         throw new Error(`${(error as Error).message}\nState: ${state}`);
       } finally {
         await context.close();
+        await (o.replay && host && stop(host.child));
       }
     }
   }
@@ -290,29 +395,35 @@ const capture = async (browser: Browser, base: string, label: string) => {
 };
 
 const full = paths.some((path) => /^https?:/.test(path));
-if (full && o.before) throw new Error("--before needs paths, not URLs");
+if (full && (o.before || o.replay))
+  throw new Error("--before and --replay need paths, not URLs");
 const engine = o.browser === "chromium" ? chromium : webkit;
 const browser = await engine.launch().catch((error: Error) => {
   throw new Error(
     `${error.message.split("\n")[0]}\nRun pnpm exec playwright-core install ${o.browser === "chromium" ? "--only-shell chromium" : "webkit"}`,
   );
 });
-const before = o.before ? checkout(o.before) : null;
-const servers = full
-  ? []
-  : await Promise.all([serve("."), ...(before ? [serve(before)] : [])]);
+const before = o.before ? checkout(o.before, "shot") : null;
+const shared =
+  full || o.replay
+    ? []
+    : [serve("."), ...(before ? [serve(before)] : [])].map((p) => {
+        p.catch(() => undefined);
+        return p;
+      });
+const source = (i: number, cwd: string | null) => () =>
+  full ? Promise.resolve(undefined) : (shared[i] ?? serve(cwd!));
 try {
-  const files = await capture(
-    browser,
-    servers[0]?.url ?? "",
-    before ? "after" : "",
-  );
-  if (servers[1])
-    files.push(...(await capture(browser, servers[1].url, "before")));
+  const files = await capture(browser, source(0, "."), before ? "after" : "");
+  if (before)
+    files.push(...(await capture(browser, source(1, before), "before")));
   for (const file of files.sort()) console.log(file);
 } finally {
   await browser.close();
-  await Promise.all(servers.map(({ child }) => stop(child)));
+  for (const p of shared) {
+    const host = await p.catch(() => undefined);
+    if (host) await stop(host.child);
+  }
   if (before) git("worktree", "remove", before);
   for (const error of [...new Set(errors)].slice(0, 10))
     console.error(`warning: ${error}`);

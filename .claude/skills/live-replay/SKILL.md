@@ -36,6 +36,29 @@ gunzip -c recordings/2026-bahrain-fp3.jsonl.gz | node -e 'let s="";process.stdin
 
 Use the minute as `LIVE_REPLAY_FROM`. Start one or two minutes early, so that the page connects before the moment.
 
+## Capture a moment
+
+```sh
+pnpm shot / --replay recordings/2026-united-states-race.jsonl.gz --from 109 --play 15 --before origin/main
+```
+
+- `--from` sets the replay start minute. `--play` sets the capture time in seconds after that start. Do not wait with `setTimeout` in `--eval`.
+- Use `--play` when the page must see an event happen, such as an overtake. Otherwise set `--from` to the moment and omit `--play`.
+- Each capture gets a new server. All images then show the same moment within one second, also the `--before` images.
+- A page that loads after the `--play` time gives a warning. Increase `--play`.
+
+## Measure performance
+
+```sh
+pnpm perf / --before origin/main --replay recordings/2026-united-states-race.jsonl.gz --from 40 --wait "text=Lap compare"
+```
+
+- The command builds both states, starts a production server for each state at the same time, and opens a phone page at 3x density.
+- It measures 60 seconds in WebKit and then in Chromium. It prints the CPU time of the content, GPU, and other browser processes.
+- Compare the `total s` column. Two runs of the same code differ by about 2% at 60 seconds. The split between content and GPU time varies more.
+- The command takes about 3 minutes. Run it in the background. Use `--browser webkit` or `--seconds` for a shorter run.
+- Use `--eval` to scroll to a part of the page before the measurement.
+
 ## Race and qualifying topics
 
 A practice recording has no race or qualifying data, such as `DriverRaceInfo`.

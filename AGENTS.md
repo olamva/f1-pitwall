@@ -51,10 +51,8 @@ Ask only about decisions that change the design or need visual approval.
 ## Live timing
 
 Test live timing changes with a recorded session. Follow `.claude/skills/live-replay/SKILL.md`.
-Measure live screen performance in Playwright WebKit at 3x density, and also in Chrome. The user watches live timing on an iPhone, as an installed PWA.
-Count the CPU time of the WebKit WebContent and GPU processes with `ps`.
-Delete `window.PushManager` in an init script for WebKit runs. WebKit kills its content process silently on `pushManager.getSubscription()`.
-For an A/B test, start two replay servers at the same time with the same `LIVE_REPLAY_FROM` and different `DIST_DIR`.
+Measure live screen performance with `pnpm perf`. The user watches live timing on an iPhone, as an installed PWA.
+Delete `window.PushManager` in an init script for your own WebKit scripts. WebKit kills its content process silently on `pushManager.getSubscription()`.
 
 ## UI code
 

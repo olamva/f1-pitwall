@@ -147,7 +147,7 @@ This review covers 36 open reports.
 | `79d462ec` | skill | pnpm `-s` flag. The skill already holds this workaround. |
 | `29e5d13e` | left open | Missing `origin/main` ref. The fault does not occur in this review. |
 | `669e27f2` | left open | Dev server restart after a build. Two builds in this review do not restart the dev server. |
-| `76edbe97`, `27002807` | left open | Auto-mode reviewer denials. The permission reviewer refused the skill edit again. |
+| `76edbe97`, `27002807` | skill | Auto-mode reviewer denials. With user approval, the tool-failures skill now gives the Read tool fallback and one retry. |
 | `19248a02` | left open | Two-driver season data. The report has no fixture. |
 
 The review changes no global instruction file. It changes the personal tool-failures and codex-mirror skills in `~/.agents`.
