@@ -45,7 +45,7 @@ interface EditBarProps {
 
 const Preview = ({ children }: { children: ReactNode }) => (
   <span className="bg-surface pointer-events-none relative block h-36 overflow-hidden rounded-xl ring-1 ring-zinc-800">
-    <span inert className="block w-[250%] origin-top-left [zoom:0.4]">
+    <span inert className="block w-[250%] origin-top-left scale-40">
       {children}
     </span>
   </span>
