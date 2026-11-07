@@ -1,0 +1,14 @@
+{
+  "id": "3c16fe1d",
+  "ts": "2026-11-07T12:35:35+00:00",
+  "text": "pnpm shot in headless WebKit does not render backdrop-filter, so glass looks see-through; screenshots skill does not say so",
+  "tags": [
+    "docs",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "963064e7",
+  "where": ".claude/skills/screenshots/SKILL.md",
+  "branch": "t3/liquid-glass-sheet-reset-label"
+}
