@@ -68,7 +68,7 @@ const Dominance = ({ outline, course, deltas, pair }: DominanceProps) => {
         aria-label={`Track dominance: ${pair.map((d, i) => `${d.tla} is faster in ${wins[i]!.length} of ${MINI_SECTORS} mini-sectors`).join(", ")}`}
         className="mx-auto block max-h-96 w-full overflow-visible"
       >
-        <polyline
+        <polygon
           points={track}
           fill="none"
           className="stroke-zinc-700"

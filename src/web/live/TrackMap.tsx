@@ -255,7 +255,7 @@ export const TrackMap = ({
                 strokeLinejoin="round"
                 strokeLinecap="round"
               />
-              <polyline
+              <polygon
                 points={path}
                 fill="none"
                 className="stroke-zinc-700"
