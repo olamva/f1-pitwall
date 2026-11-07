@@ -194,18 +194,12 @@ export const EditBar = ({
       easing: EASE,
     }).onfinish = () => el.style.removeProperty("overflow-x");
     [...el.children].forEach((child, i, all) =>
-      child.animate(
-        [
-          { opacity: 0, scale: 0.9 },
-          { opacity: 1, scale: 1 },
-        ],
-        {
-          duration: 220,
-          delay: (all.length - 1 - i) * 40,
-          easing: EASE,
-          fill: "backwards",
-        },
-      ),
+      child.animate([{ opacity: 0, scale: 0.9, offset: 0 }], {
+        duration: 220,
+        delay: (all.length - 1 - i) * 40,
+        easing: EASE,
+        fill: "backwards",
+      }),
     );
   }, [editing]);
 

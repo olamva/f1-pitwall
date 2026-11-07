@@ -52,6 +52,7 @@ interface BoardProps {
 
 interface StatusProps {
   ref: React.Ref<HTMLDivElement>;
+  heading: React.ReactNode;
   lap?: { CurrentLap: number; TotalLaps: number };
   part: string | null;
   banner: React.ReactNode;
@@ -62,6 +63,7 @@ interface StatusProps {
 
 const Status = ({
   ref,
+  heading,
   lap,
   part,
   banner,
@@ -70,6 +72,7 @@ const Status = ({
   children,
 }: StatusProps) => (
   <div ref={ref} className="status-row flex flex-wrap items-center gap-3">
+    {heading}
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
@@ -161,6 +164,18 @@ export const Board = ({
       {status.label}
     </div>
   );
+  const heading = (
+    <h1
+      className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-sm:hidden" : ""}`}
+    >
+      <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
+      <span className={focus ? "truncate" : ""}>
+        {state.SessionInfo?.Meeting?.Name}
+      </span>
+      {" · "}
+      {state.SessionInfo?.Name}
+    </h1>
+  );
   return (
     <div
       className="board space-y-4"
@@ -173,12 +188,10 @@ export const Board = ({
           : undefined
       }
     >
-      <h1 className="font-f1 text-xl font-bold">
-        <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
-        {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
-      </h1>
+      {focus || heading}
       <Status
         ref={row}
+        heading={focus && heading}
         lap={state.LapCount}
         part={part}
         banner={banner}
