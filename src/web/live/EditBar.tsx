@@ -74,7 +74,7 @@ const Sheet = ({
     closedby="any"
     onClose={onClose}
     onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
-    className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 top-auto bottom-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border-t border-zinc-800 text-zinc-100 backdrop:bg-black/60 sm:bottom-auto sm:my-auto sm:rounded-3xl sm:border"
+    className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 bottom-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border-t border-zinc-800 text-zinc-100 backdrop:bg-black/60 max-sm:top-auto sm:top-0 sm:my-auto sm:rounded-3xl sm:border"
   >
     <div className="space-y-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center gap-2">
