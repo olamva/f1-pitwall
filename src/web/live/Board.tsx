@@ -52,6 +52,7 @@ interface BoardProps {
 
 interface StatusProps {
   ref: React.Ref<HTMLDivElement>;
+  heading: React.ReactNode;
   lap?: { CurrentLap: number; TotalLaps: number };
   part: string | null;
   banner: React.ReactNode;
@@ -62,6 +63,7 @@ interface StatusProps {
 
 const Status = ({
   ref,
+  heading,
   lap,
   part,
   banner,
@@ -70,6 +72,7 @@ const Status = ({
   children,
 }: StatusProps) => (
   <div ref={ref} className="status-row flex flex-wrap items-center gap-3">
+    {heading}
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
@@ -98,6 +101,53 @@ const Status = ({
     </div>
   </div>
 );
+
+interface HeadingProps {
+  info: Record<string, any> | undefined;
+  focus: boolean;
+}
+
+const FocusHeading = ({ info }: Pick<HeadingProps, "info">) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const name = ref.current!;
+    const h1 = name.parentElement!;
+    const row = h1.parentElement!;
+    const fit = () => {
+      name.hidden = false;
+      name.hidden = h1.scrollWidth > h1.clientWidth;
+    };
+    const sizes = new ResizeObserver(() => requestAnimationFrame(fit));
+    const watch = () => {
+      sizes.disconnect();
+      [...row.children].forEach((child) => sizes.observe(child));
+    };
+    const nodes = new MutationObserver(watch);
+    nodes.observe(row, { childList: true });
+    watch();
+    return () => {
+      sizes.disconnect();
+      nodes.disconnect();
+    };
+  }, []);
+  return (
+    <h1 className="font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre max-md:hidden">
+      <Flag country={info?.Meeting?.Country?.Name} />
+      <span ref={ref}>{info?.Meeting?.Name} · </span>
+      {info?.Name}
+    </h1>
+  );
+};
+
+const Heading = ({ info, focus }: HeadingProps) =>
+  focus ? (
+    <FocusHeading info={info} />
+  ) : (
+    <h1 className="font-f1 text-xl font-bold">
+      <Flag country={info?.Meeting?.Country?.Name} />
+      {info?.Meeting?.Name} · {info?.Name}
+    </h1>
+  );
 
 const SETTLE_MS = 5_000;
 
@@ -161,6 +211,7 @@ export const Board = ({
       {status.label}
     </div>
   );
+  const heading = <Heading info={state.SessionInfo} focus={focus} />;
   return (
     <div
       className="board space-y-4"
@@ -173,12 +224,10 @@ export const Board = ({
           : undefined
       }
     >
-      <h1 className="font-f1 text-xl font-bold">
-        <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
-        {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
-      </h1>
+      {focus || heading}
       <Status
         ref={row}
+        heading={focus && heading}
         lap={state.LapCount}
         part={part}
         banner={banner}

@@ -814,10 +814,6 @@ textarea {
       jiggle 0.14s ease-in-out infinite alternate,
       jiggle-bounce 0.18s ease-in-out infinite alternate;
   }
-
-  .grid:has([role="separator"]:is([data-hover], :active)) .jiggle {
-    animation: none;
-  }
 }
 
 .live-dot {
@@ -1218,7 +1214,6 @@ html:has(dialog[open]) {
   width: 100vw;
 }
 
-.board[data-focus] > h1,
 :has(> .board[data-focus]) > :not(.board),
 :root:has(main:not([inert]) .board[data-focus]) :is(header, .top-band) {
   display: none;
