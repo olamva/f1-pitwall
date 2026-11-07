@@ -1219,7 +1219,7 @@ html:has(dialog[open]) {
   display: none;
 }
 
-:root:has(main:not([inert]) .board[data-focus]) {
+:root:has(main:not([inert]) .board) {
   overscroll-behavior-y: none;
 }
 
