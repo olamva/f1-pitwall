@@ -32,19 +32,41 @@ test("tiles stack in their column and skip hidden tiles", () => {
   assert.deepEqual(ends, [50]);
 });
 
-test("a tile dropped above the middle of another tile goes before it", () => {
-  assert.deepEqual(ids(drop(board, height, "c", { col: 1, y: 5 })), [
-    ["tower"],
-    ["c", "a", "b"],
-  ]);
-  assert.deepEqual(ids(drop(board, height, "a", { col: 1, y: 34 })), [
-    ["tower"],
-    ["b", "a", "c"],
-  ]);
+test("a dragged tile passes a neighbour when its leading edge crosses the neighbour's middle", () => {
+  for (const [id, top, order] of [
+    ["b", 20, "abc"],
+    ["b", 11, "abc"],
+    ["b", 9, "bac"],
+    ["b", 25, "abc"],
+    ["b", 26, "acb"],
+    ["c", 0, "cab"],
+    ["a", 14, "abc"],
+    ["a", 16, "bac"],
+  ] as const)
+    assert.deepEqual(
+      ids(
+        drop(board, height, id, { col: 1, top, bottom: top + height(id) }),
+      )[1]!.join(""),
+      order,
+      `${id} at ${top}`,
+    );
+});
+
+test("a dragged tile that holds still keeps its place on the next frame", () => {
+  for (const id of ["tower", "b"])
+    for (let top = -10; top < 80; top++) {
+      const target = { col: 1, top, bottom: top + height(id) };
+      const once = drop(board, height, id, target);
+      assert.deepEqual(drop(once, height, id, target), once, `${id} at ${top}`);
+    }
 });
 
 test("a tile dropped in another column moves there and leaves its column for the drop", () => {
-  const moved = drop(board, height, "tower", { col: 1, y: 1000 });
+  const moved = drop(board, height, "tower", {
+    col: 1,
+    top: 1000,
+    bottom: 1100,
+  });
   assert.deepEqual(ids(moved), [[], ["a", "b", "c", "tower"]]);
   assert.deepEqual(ids(tidy(moved)), [["a", "b", "c", "tower"]]);
 });

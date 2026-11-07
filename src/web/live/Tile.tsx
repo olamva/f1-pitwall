@@ -36,6 +36,7 @@ interface TileProps {
   edge: boolean;
   editing: boolean;
   moving: boolean;
+  held: boolean;
   render: (() => ReactNode) | null;
   cell: Bind;
   card: Bind;
@@ -55,6 +56,7 @@ export const Tile = ({
   edge,
   editing,
   moving,
+  held,
   render,
   cell,
   card,
@@ -73,7 +75,7 @@ export const Tile = ({
     )}
     <div
       ref={card}
-      className={`relative ${spot && (fixed || editing) ? "h-full" : ""} ${moving ? "z-30 scale-[1.03] rounded-xl shadow-2xl transition-[scale]" : editing ? "jiggle" : ""}`}
+      className={`relative ${spot && (fixed || editing) ? "h-full" : ""} ${moving ? "z-30 scale-[1.03] rounded-xl shadow-2xl transition-[scale]" : editing && !held ? "jiggle" : ""}`}
       style={
         editing
           ? {

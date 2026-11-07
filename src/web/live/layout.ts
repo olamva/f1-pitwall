@@ -7,7 +7,8 @@ export type Size = "phone" | "tablet" | "desktop";
 export type Tile = { id: string; h: number | null };
 export type Column = { w: number; tiles: Tile[] };
 export type Spot = { col: number; top: number; height: number };
-export type Target = { col: number; y: number } | { edge: "left" | "right" };
+export type Target =
+  { col: number; top: number; bottom: number } | { edge: "left" | "right" };
 
 export const SIZES: Size[] = ["phone", "tablet", "desktop"];
 export const MAX_COLUMNS: Record<Size, number> = {
@@ -61,12 +62,19 @@ export const drop = (
     const column = { w: NEW_WIDTH, tiles: [tile] };
     return target.edge === "left" ? [column, ...rest] : [...rest, column];
   }
-  const { spots } = place(rest, height);
   const others = rest[target.col]!.tiles;
-  const at = others.filter((t) => {
-    const s = spots.get(t.id);
-    return s && s.top + s.height / 2 < target.y;
-  }).length;
+  const home = columns[target.col]!.tiles.findIndex((t) => t.id === id);
+  const { spots } = place(home < 0 ? rest : columns, height);
+  const middle = (i: number) => {
+    const s = spots.get(others[i]!.id);
+    return s ? s.top + s.height / 2 : NaN;
+  };
+  let at =
+    home < 0 ? others.filter((_, i) => middle(i) < target.top).length : home;
+  if (home >= 0) {
+    while (at > 0 && target.top < middle(at - 1)) at--;
+    while (at >= home && at < others.length && target.bottom > middle(at)) at++;
+  }
   return rest.map((c, i) =>
     i === target.col
       ? { ...c, tiles: [...others.slice(0, at), tile, ...others.slice(at)] }
