@@ -157,7 +157,7 @@ export const ReplayBar = ({
         onClick={onToggle}
         aria-label={playing ? "Pause" : "Play"}
         title={playing ? "Pause" : "Play"}
-        className="glass-control grid size-9 cursor-pointer place-items-center"
+        className="glass-control grid size-10 cursor-pointer place-items-center max-sm:order-first"
       >
         {playing ? (
           <Pause aria-hidden="true" className="size-4" />
@@ -165,7 +165,7 @@ export const ReplayBar = ({
           <Play aria-hidden="true" className="size-4" />
         )}
       </button>
-      <div className="order-first flex min-w-0 flex-1 basis-full items-center gap-3 sm:order-1 sm:basis-60">
+      <div className="order-first flex min-w-0 flex-1 basis-[calc(100%-4rem)] items-center gap-3 sm:order-1 sm:basis-60">
         <HoverCard
           card={card(hover.v)}
           at={hover.x}
@@ -253,7 +253,7 @@ export const ReplayBar = ({
         aria-pressed={flags}
         aria-label="Flag periods"
         title={flags ? "Hide flag periods" : "Show flag periods"}
-        className="glass-control grid size-9 cursor-pointer place-items-center"
+        className="glass-control grid size-10 cursor-pointer place-items-center"
       >
         <Flag
           aria-hidden="true"
@@ -265,7 +265,7 @@ export const ReplayBar = ({
           aria-label="Replay speed"
           value={speed}
           onChange={(e) => onSpeed(Number(e.target.value))}
-          className="glass-control px-2 py-1.5"
+          className="glass-control h-10 px-3"
         >
           {SPEEDS.map((s) => (
             <option key={s} value={s}>
@@ -274,7 +274,11 @@ export const ReplayBar = ({
           ))}
         </select>
       )}
-      {race && <Tabs items={UNITS} value={unit} onChange={setUnit} small />}
+      {race && (
+        <div className="last:ml-auto">
+          <Tabs items={UNITS} value={unit} onChange={setUnit} small />
+        </div>
+      )}
       {children && (
         <div className="ml-auto flex items-center gap-3 sm:order-2">
           {children}
