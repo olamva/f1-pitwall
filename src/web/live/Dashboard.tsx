@@ -12,10 +12,11 @@ import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
 import { Tile, TOP } from "./Tile.tsx";
 import { useDiscard, useLayout } from "./useLayout.ts";
-import { edge, floor, pin, settle, useSlide } from "./useSlide.ts";
+import { floor, pin, settle, useSlide } from "./useSlide.ts";
 import {
   add,
-  columnAt,
+  aim,
+  autoscroll,
   drop,
   GAP,
   MAX_COLUMNS,
@@ -25,7 +26,7 @@ import {
   ROW,
   same,
   SIZES,
-  tidy,
+  stick,
   widen,
   type Column,
   type Size,
@@ -50,7 +51,6 @@ const PREVIEW: Record<Size, string | undefined> = {
 };
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
-const ZONE = 40;
 
 const sizeNow = (): Size =>
   QUERIES[0]!.matches ? "desktop" : QUERIES[1]!.matches ? "tablet" : "phone";
@@ -135,16 +135,12 @@ export const Dashboard = ({
     return editing ? Math.max(EDIT_MIN, r) : r;
   };
   const { spots: placed, ends } = place(columns, rows);
-  const over = ends.map((end) => Math.max(0, end * ROW - GAP - avail - 1));
-  const sticky = new Set(columns.length < 2 ? [] : columns.keys());
-  const stretch = new Set(
-    [...sticky].flatMap((i) => {
-      if (over[i]) return [];
-      const last = columns[i]!.tiles.findLast((t) => placed.has(t.id));
-      return last && last.h === null && height(last.id) === "fill"
-        ? [last.id]
-        : [];
-    }),
+  const { over, sticky, stretch } = stick(
+    columns,
+    placed,
+    ends,
+    avail,
+    (id) => height(id) === "fill",
   );
   frozen.current = stretch;
   const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
@@ -195,34 +191,27 @@ export const Dashboard = ({
   useLayoutEffect(follow);
 
   const target = (d: Drag, box: DOMRect): Target => {
-    const room =
-      tidy(
-        d.start.map((c) => ({
-          ...c,
-          tiles: c.tiles.filter((t) => t.id !== d.id),
-        })),
-      ).length < MAX_COLUMNS[latest.current.size];
-    if (room && d.x < box.left + ZONE && d.x < d.sx - 24)
-      return { edge: "left" };
-    if (room && d.x > box.right - ZONE && d.x > d.sx + 24)
-      return { edge: "right" };
-    const { rows, placed } = latest.current;
-    const col = columnAt(d.start, box.width, d.x - box.left);
-    const lift =
-      d.start[col]?.tiles.flatMap((t) => {
-        const el = t.id !== d.id && cells.current.get(t.id);
-        const spot = placed.get(t.id);
-        return el && spot ? [el.offsetTop - spot.top * ROW] : [];
-      })[0] ?? 0;
-    const top = (d.y - d.dy - box.top - lift) / ROW;
-    return { col, top, bottom: top + rows(d.id) - GAP / ROW };
+    const { rows, placed, size } = latest.current;
+    return aim(
+      d,
+      box,
+      MAX_COLUMNS[size],
+      rows(d.id),
+      (col) =>
+        d.start[col]?.tiles.flatMap((t) => {
+          const el = t.id !== d.id && cells.current.get(t.id);
+          const spot = placed.get(t.id);
+          return el && spot ? [el.offsetTop - spot.top * ROW] : [];
+        })[0] ?? 0,
+    );
   };
 
   const frame = () => {
     const d = drag.current;
     if (!d?.live) return;
     const end = floor(cells.current, contents.current, d.id) + d.tail;
-    const scroll = d.kind === "move" ? edge(d.y, d.sy, end) : 0;
+    const scroll =
+      d.kind === "move" ? autoscroll(d.y, d.sy, end, innerHeight) : 0;
     if (scroll) scrollBy(0, scroll);
     const box = grid.current!.getBoundingClientRect();
     const { rows } = latest.current;
