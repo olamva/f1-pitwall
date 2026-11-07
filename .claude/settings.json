@@ -22,8 +22,13 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm dev:*)",
       "Bash(pnpm worktree:cleanup:*)",
+      "Bash(pnpm ship:*)",
+      "Bash(pnpm frames:*)",
+      "Bash(pnpm shot:*)",
       "Bash(git checkout --detach origin/main)",
       "mcp__t3-code__link_pull_request",
+      "mcp__t3-code__watch_pull_request",
+      "mcp__t3-code__unwatch_pull_request",
       "mcp__t3-code__list_thread_pull_requests"
     ],
     "deny": [

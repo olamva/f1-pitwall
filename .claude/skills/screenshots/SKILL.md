@@ -136,5 +136,7 @@ pnpm frames <video> --at 3.5
 - The first `/api/pace` request for a round can take more than 60 seconds, because the local servers share the Jolpica rate limit. Request each round once with `curl` before a motion test. The `DATA_DIR` store then keeps it for all worktrees.
 - Desktop WebKit has no `Touch` constructor. Use Chromium with the CDP command `Input.dispatchTouchEvent` for touch gestures.
 - Headless WebKit does not show iOS swipe, overscroll, and home-screen app artifacts. Use the iOS Simulator through the T3 device tools for these bugs.
+- When you finish with the simulator, call `device_close` with `shutdown: true`. `device_close` cannot shut down a simulator that is not open in your thread.
+- `pnpm shot` and `pnpm perf` wait for each other across all worktrees, so only one browser run uses the CPU at a time.
 - To open the home-screen app in the simulator, run `open com.apple.springboard`, then `press 'label="F1 Pitwall"'`. A tap on the icon by coordinates can open Safari instead.
 - In the simulator, `swipe` is a fling. Use `gesture pan <x> <y> <dx> <dy> <ms>` for a slow drag. Keep the first 150 ms under 8 px of movement, for example `gesture pan 200 300 0 350 8000`.

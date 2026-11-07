@@ -13,6 +13,7 @@ import {
 } from "playwright-core";
 import { checkout, git } from "./checkout.ts";
 import { drag, sheets } from "./gesture.ts";
+import { lock, LOCK } from "./lock.ts";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
@@ -452,6 +453,7 @@ const capture = async (
 const full = paths.some((path) => /^https?:/.test(path));
 if (full && (o.before || o.replay))
   throw new Error("--before and --replay need paths, not URLs");
+await lock(LOCK, "Waiting for another pnpm shot or pnpm perf run to finish.");
 const browser = await (engine === "chromium" ? chromium : webkit)
   .launch()
   .catch((error: Error) => {
