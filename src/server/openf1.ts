@@ -142,8 +142,21 @@ async function headshots(year: number): Promise<Map<string, Face>> {
   );
 }
 
+const entrants = async (year: number) =>
+  new Map(
+    Object.values<any>(
+      ((await import("./live.ts")).shared.session.state.DriverList ??
+        {}) as object,
+    )
+      .filter((e) => e?.HeadshotUrl)
+      .map((e) => [
+        e.Tla,
+        face(year, { headshot_url: e.HeadshotUrl, team_name: e.TeamName }),
+      ]),
+  );
+
 export const portraits = (year: number): Promise<Map<string, Face>> => {
-  const last = () => faces.get(year) ?? new Map<string, Face>();
+  const last = () => faces.get(year) ?? entrants(year);
   const fresh = headshots(year).then((found) => faces.set(year, found));
   const wait = new Promise((r) => setTimeout(r, faces.has(year) ? 0 : 2000));
   return Promise.race([fresh, wait]).then(last, last);
