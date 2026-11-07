@@ -109,7 +109,7 @@ interface HeadingProps {
 
 const Heading = ({ info, focus }: HeadingProps) => (
   <h1
-    className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-sm:hidden" : ""}`}
+    className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-md:hidden" : ""}`}
   >
     <Flag country={info?.Meeting?.Country?.Name} />
     <span className={focus ? "truncate" : ""}>{info?.Meeting?.Name}</span>
