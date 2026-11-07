@@ -13,6 +13,8 @@ export const Faces = createContext(new Map<string, DriverInfo>());
 export const useArt = (id: string) => useContext(Faces).get(id);
 export const artSrc = (art: string, pose: Pose, transform = BODY) =>
   `https://media.formula1.com/image/upload/${transform}/q_auto/${art}${pose}.webp`;
+export const numberSrc = (art?: string | null) =>
+  art && `https://media.formula1.com/image/upload/${art}numberwhitefrless.svg`;
 const TEMPLATE = "common/f1/2026/fallback/driver/2026fallbackdriver";
 export const FALLBACK = artSrc(
   TEMPLATE,
@@ -54,6 +56,7 @@ export const usePreload = (drivers?: DriverInfo[]) =>
     for (const d of drivers ?? [])
       for (const src of [
         d.headshot,
+        numberSrc(d.art),
         ...VARIANTS.map(([pose, t]) => d.art && artSrc(d.art, pose, t)),
       ])
         if (src) Object.assign(new Image(), { fetchPriority: "low", src });
