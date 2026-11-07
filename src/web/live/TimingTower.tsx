@@ -237,10 +237,59 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
   </td>
 );
 
-const Projected = ({ value, mark }: NonNullable<Row["projected"]>) => (
-  <span className={`italic ${MARK[mark]}`} title="Projected lap time">
-    {value}
-  </span>
+interface LapCellProps {
+  time: string;
+  tone: string;
+  projected?: Row["projected"];
+  pad: string;
+  hide: string;
+}
+
+const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
+  <td className={`${pad} py-1 text-right ${tone}`}>
+    <span className={hide}>
+      {projected ? (
+        <span
+          className={`italic ${MARK[projected.mark]}`}
+          title="Projected lap time"
+        >
+          {projected.value}
+        </span>
+      ) : (
+        time
+      )}
+    </span>
+  </td>
+);
+
+interface LapCellsProps {
+  row: Row;
+  fit: Fit;
+  pad: string;
+  hide: string;
+}
+
+const LapCells = ({ row, fit, pad, hide }: LapCellsProps) => (
+  <>
+    {fit.last && (
+      <LapCell
+        time={row.lastLap}
+        tone={MARK[row.lastMark]}
+        projected={row.projected}
+        pad={pad}
+        hide={hide}
+      />
+    )}
+    {fit.best && (
+      <LapCell
+        time={row.bestLap}
+        tone="text-zinc-300"
+        projected={fit.last ? undefined : row.projected}
+        pad={pad}
+        hide={hide}
+      />
+    )}
+  </>
 );
 
 interface TowerRowProps {
@@ -321,24 +370,7 @@ const TowerRow = ({
         )}
       </td>
       {fit.int && <Interval row={row} pad={pad} hide={hide} />}
-      {fit.last && (
-        <td className={`${pad} py-1 text-right ${MARK[row.lastMark]}`}>
-          <span className={hide}>
-            {row.projected ? <Projected {...row.projected} /> : row.lastLap}
-          </span>
-        </td>
-      )}
-      {fit.best && (
-        <td className={`${pad} py-1 text-right text-zinc-300`}>
-          <span className={hide}>
-            {row.projected && !fit.last ? (
-              <Projected {...row.projected} />
-            ) : (
-              row.bestLap
-            )}
-          </span>
-        </td>
-      )}
+      <LapCells row={row} fit={fit} pad={pad} hide={hide} />
       {fit.sectors && (
         <td className={`${pad} py-1`}>
           {hide && <Stints stints={row.stints} scale={scale} wide={fit.wide} />}
