@@ -242,11 +242,6 @@ if (apply) {
   }
   if (!branchOnly) git(main, "worktree", "remove", target);
 }
-const booted = spawnSync(
-  "xcrun",
-  ["simctl", "list", "devices", "booted", "--json"],
-  { encoding: "utf8" },
-);
 console.log(
   JSON.stringify({
     target,
@@ -254,15 +249,21 @@ console.log(
     pullRequest: pr.url,
     removed: apply && !branchOnly,
     branchRemoved: apply && !!local,
-    bootedSimulators: booted.status
-      ? []
-      : Object.values(
-          JSON.parse(booted.stdout).devices as Record<
-            string,
-            { name: string }[]
-          >,
-        )
-          .flat()
-          .map((device) => device.name),
   }),
 );
+const booted = spawnSync(
+  "xcrun",
+  ["simctl", "list", "devices", "booted", "--json"],
+  { encoding: "utf8" },
+);
+const simulators = booted.status
+  ? []
+  : Object.values(
+      JSON.parse(booted.stdout).devices as Record<string, { name: string }[]>,
+    )
+      .flat()
+      .map((device) => device.name);
+if (simulators.length)
+  console.error(
+    `Booted simulators: ${simulators.join(", ")}. Shut down the ones that you opened.`,
+  );
