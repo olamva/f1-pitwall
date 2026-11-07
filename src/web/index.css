@@ -791,6 +791,12 @@ textarea {
     inset: auto;
     margin: 0.5rem 1rem;
   }
+
+  @media (width < 40rem) {
+    .info-popover {
+      margin-bottom: calc(83px + 0.5rem);
+    }
+  }
 }
 
 [data-fill] > * {
