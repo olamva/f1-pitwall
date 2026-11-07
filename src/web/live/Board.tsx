@@ -18,6 +18,7 @@ import {
 import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
 import { setSearchParam } from "../path.ts";
+import { useProjectedLap } from "../projectedLap.ts";
 import { useTokenHidden } from "../tokenHidden.ts";
 import { cutGaps, projectLaps } from "./knockout.ts";
 import { Dashboard } from "./Dashboard.tsx";
@@ -175,6 +176,7 @@ export const Board = ({
     return () => observer.disconnect();
   }, [focus]);
   const hideMap = useTokenHidden() && !!positionsNote;
+  const projectedLap = useProjectedLap();
   const state = feed.state as Record<string, any>;
   const timed = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, timed), [state, timed]);
@@ -188,9 +190,10 @@ export const Board = ({
       return lap && r.bestLap ? [[r.number, lap] as const] : [];
     }),
   );
-  const rows = isQualifying(state.SessionInfo)
-    ? projectLaps(timed, pbs, bests)
-    : timed;
+  const rows =
+    projectedLap && isQualifying(state.SessionInfo)
+      ? projectLaps(timed, pbs, bests)
+      : timed;
   const race = isRace(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);

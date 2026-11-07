@@ -22,6 +22,7 @@ import {
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
+import { setProjectedLap, useProjectedLap } from "./projectedLap.ts";
 import { setScrubAhead, useScrubAhead } from "./scrubAhead.ts";
 import { setSpoilerMode } from "./spoilers.ts";
 import { Tabs } from "./Tabs.tsx";
@@ -106,6 +107,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
   const favourite = useFavourite();
   const team = useFavouriteTeam();
   const scrubAhead = useScrubAhead();
+  const projectedLap = useProjectedLap();
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [signedOut, setSignedOut] = useState(false);
   const [value, setValue] = useState("");
@@ -248,6 +250,12 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
           }}
         >
           Install new versions automatically
+        </GlassSwitch>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Qualifying</h2>
+        <GlassSwitch checked={projectedLap} onChange={setProjectedLap}>
+          Predict the lap time of each car on a push lap
         </GlassSwitch>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">

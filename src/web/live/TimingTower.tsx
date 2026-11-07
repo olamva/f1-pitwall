@@ -250,10 +250,10 @@ const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
     <span className={hide}>
       {projected ? (
         <span
-          className={`italic ${MARK[projected.mark]}`}
-          title="Projected lap time"
+          className={`-mr-1 rounded-sm border border-dashed border-current px-0.5 italic ${MARK[projected.mark]}`}
+          title="Predicted lap time, not a real time"
         >
-          {projected.value}
+          ~{projected.value}
         </span>
       ) : (
         time
