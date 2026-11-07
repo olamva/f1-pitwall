@@ -389,10 +389,13 @@ export const Dashboard = ({
               setAdded(id);
             }}
             onReset={() => setSaved(DEFAULT_LAYOUT[size])}
-            onDiscard={() => {
-              discard();
-              onDone();
-            }}
+            onDiscard={
+              discard &&
+              (() => {
+                discard();
+                onDone();
+              })
+            }
             onDone={onDone}
           />,
           slot,

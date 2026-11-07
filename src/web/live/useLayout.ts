@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { save, subscribe } from "../synced.ts";
 import { tidy, type Column, type Size } from "./layout.ts";
 import { DEFAULT_LAYOUT, isWidget } from "./widgets.ts";
@@ -29,17 +34,18 @@ export const useLayout = (size: Size) => {
 };
 
 export const useDiscard = (editing: boolean) => {
-  const before = useRef<[string, string | null][]>([]);
-  useEffect(() => {
+  const [before, setBefore] = useState<[string, string | null][]>([]);
+  useLayoutEffect(() => {
     if (editing)
-      before.current = Object.values(KEYS).map((k) => [
-        k,
-        localStorage.getItem(k),
-      ]);
+      setBefore(Object.values(KEYS).map((k) => [k, localStorage.getItem(k)]));
   }, [editing]);
-  return () =>
-    before.current.forEach(
-      ([k, v]) =>
-        v !== localStorage.getItem(k) && save(k, JSON.parse(v ?? "null")),
-    );
+  const changed = ([k, v]: [string, string | null]) =>
+    v !== localStorage.getItem(k);
+  const dirty = useSyncExternalStore(subscribe, () => before.some(changed));
+  return dirty
+    ? () =>
+        before
+          .filter(changed)
+          .forEach(([k, v]) => save(k, JSON.parse(v ?? "null")))
+    : undefined;
 };

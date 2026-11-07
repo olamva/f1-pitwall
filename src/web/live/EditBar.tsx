@@ -42,7 +42,7 @@ interface EditBarProps {
   onAdd: (id: WidgetId) => void;
   onReset: () => void;
   onEdit: () => void;
-  onDiscard: () => void;
+  onDiscard?: () => void;
   onDone: () => void;
 }
 
@@ -237,7 +237,8 @@ export const EditBar = ({
         aria-label="Discard changes"
         title="Discard changes"
         onClick={onDiscard}
-        className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center"
+        disabled={!onDiscard}
+        className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
       >
         <Undo2 aria-hidden="true" className="size-5" />
       </button>
