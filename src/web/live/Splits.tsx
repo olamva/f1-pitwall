@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -15,15 +16,15 @@ interface SplitsProps {
 
 export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
   const [first, setFirst] = useState<HTMLDivElement | null>(null);
-  const [box, setBox] = useState({ top: 0, bottom: 0 });
-  const [held, setHeld] = useState<{ col: number; y: number } | null>(null);
+  const [hover, setHover] = useState<number | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const grid = first?.parentElement;
     if (!grid) return;
     const read = () => {
       const { top, bottom } = grid.getBoundingClientRect();
-      setBox({ top, bottom });
+      grid.style.setProperty("--split-top", `${top}px`);
+      grid.style.setProperty("--split-bottom", `${bottom}px`);
     };
     read();
     const observer = new ResizeObserver(read);
@@ -39,8 +40,8 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
 
   useEffect(() => {
     const bar =
-      held &&
-      first?.parentElement?.querySelectorAll("[role=separator]")[held.col];
+      hover !== null &&
+      first?.parentElement?.querySelectorAll("[role=separator]")[hover];
     if (!bar) return;
     const moved = (e: PointerEvent) => {
       const r = bar.getBoundingClientRect();
@@ -51,11 +52,11 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
         e.clientY < r.top ||
         e.clientY >= r.bottom
       )
-        setHeld(null);
+        setHover(null);
     };
     addEventListener("pointermove", moved);
     return () => removeEventListener("pointermove", moved);
-  }, [held, first]);
+  }, [hover, first]);
 
   const begin = (col: number, event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
@@ -98,26 +99,18 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
       <div
         role="separator"
         aria-orientation="vertical"
-        data-hover={held?.col === i || undefined}
+        data-hover={hover === i || undefined}
         title="Drag to resize the columns"
         onPointerDown={(e) => begin(i, e)}
-        onPointerEnter={(e) => {
-          const { top } =
-            e.currentTarget.firstElementChild!.getBoundingClientRect();
-          if (e.pointerType === "mouse")
-            setHeld((h) => (h?.col === i ? h : { col: i, y: top }));
-        }}
+        onPointerEnter={(e) => e.pointerType === "mouse" && setHover(i)}
         className="group absolute inset-y-0 left-full cursor-col-resize touch-none"
         style={{ width: GAP }}
       >
         <span
-          className={`light:bg-zinc-500 fixed h-12 w-1.5 rounded-full bg-zinc-400 transition-opacity group-active:opacity-100 pointer-coarse:opacity-100 ${held?.col === i ? "" : "opacity-0"}`}
+          className={`light:bg-zinc-500 fixed h-12 w-1.5 rounded-full bg-zinc-400 transition-opacity group-active:opacity-100 pointer-coarse:opacity-100 ${hover === i ? "" : "opacity-0"}`}
           style={{
             marginLeft: GAP / 2 - 3,
-            top:
-              held?.col === i
-                ? held.y
-                : `calc((max(${box.top}px, ${TOP}) + min(${box.bottom}px, 100dvh)) / 2 - 1.5rem)`,
+            top: `calc((max(var(--split-top), ${TOP}) + min(var(--split-bottom), 100dvh)) / 2 - 1.5rem)`,
           }}
         />
       </div>
