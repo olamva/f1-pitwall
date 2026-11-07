@@ -30,6 +30,7 @@ export type Row = {
   investigation?: string;
   penalty?: string;
   overtake?: boolean;
+  projected?: { value: string; mark: Mark };
 };
 
 export type SessionBest = {

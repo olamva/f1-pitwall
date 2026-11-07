@@ -19,7 +19,7 @@ import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
 import { setSearchParam } from "../path.ts";
 import { useTokenHidden } from "../tokenHidden.ts";
-import { cutGaps } from "./knockout.ts";
+import { cutGaps, projectLaps } from "./knockout.ts";
 import { Dashboard } from "./Dashboard.tsx";
 import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
@@ -28,6 +28,7 @@ import { feedUtc, type Feed } from "./useFeed.ts";
 import { rejoin } from "./rejoin.ts";
 import {
   deletedLaps,
+  isQualifying,
   qualifyingPart,
   radios,
   remaining,
@@ -175,8 +176,21 @@ export const Board = ({
   }, [focus]);
   const hideMap = useTokenHidden() && !!positionsNote;
   const state = feed.state as Record<string, any>;
-  const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
-  const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
+  const timed = useMemo(() => cutGaps(towerRows(state), state), [state]);
+  const bests = useMemo(() => sessionBests(state, timed), [state, timed]);
+  const pbs = Object.fromEntries(
+    timed.flatMap((r) => {
+      const lap = fastestLap(
+        laps[r.number] ?? [],
+        deletedLaps(state, r.number),
+        feed.t - SETTLE_MS,
+      );
+      return lap && r.bestLap ? [[r.number, lap] as const] : [];
+    }),
+  );
+  const rows = isQualifying(state.SessionInfo)
+    ? projectLaps(timed, pbs, bests)
+    : timed;
   const race = isRace(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);
@@ -186,12 +200,8 @@ export const Board = ({
   const table = standings(state, rounds);
   const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
   const compare = rows.flatMap((r) => {
-    const lap = fastestLap(
-      laps[r.number] ?? [],
-      deletedLaps(state, r.number),
-      feed.t - SETTLE_MS,
-    );
-    return lap && r.bestLap
+    const lap = pbs[r.number];
+    return lap
       ? [{ ...r, time: lap.time, url: traceUrl(r.number, lap.lap) }]
       : [];
   });

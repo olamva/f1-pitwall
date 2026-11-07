@@ -237,6 +237,12 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
   </td>
 );
 
+const Projected = ({ value, mark }: NonNullable<Row["projected"]>) => (
+  <span className={`italic ${MARK[mark]}`} title="Projected lap time">
+    {value}
+  </span>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -317,12 +323,20 @@ const TowerRow = ({
       {fit.int && <Interval row={row} pad={pad} hide={hide} />}
       {fit.last && (
         <td className={`${pad} py-1 text-right ${MARK[row.lastMark]}`}>
-          <span className={hide}>{row.lastLap}</span>
+          <span className={hide}>
+            {row.projected ? <Projected {...row.projected} /> : row.lastLap}
+          </span>
         </td>
       )}
       {fit.best && (
         <td className={`${pad} py-1 text-right text-zinc-300`}>
-          <span className={hide}>{row.bestLap}</span>
+          <span className={hide}>
+            {row.projected && !fit.last ? (
+              <Projected {...row.projected} />
+            ) : (
+              row.bestLap
+            )}
+          </span>
         </td>
       )}
       {fit.sectors && (
