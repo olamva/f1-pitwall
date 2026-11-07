@@ -7,6 +7,7 @@ import {
   autoscroll,
   columnAt,
   drop,
+  gapAt,
   place,
   remove,
   stick,
@@ -74,16 +75,31 @@ test("a tile dropped in another column moves there and leaves its column for the
   assert.deepEqual(ids(tidy(moved)), [["a", "b", "c", "tower"]]);
 });
 
-test("a tile dropped at an edge gets a new column", () => {
-  assert.deepEqual(ids(drop(board, height, "a", { edge: "right" })), [
+test("a tile dropped at an edge or between columns gets a new column there", () => {
+  assert.deepEqual(ids(drop(board, height, "a", { at: 2 })), [
     ["tower"],
     ["b", "c"],
     ["a"],
   ]);
-  assert.deepEqual(ids(tidy(drop(board, height, "tower", { edge: "left" }))), [
+  assert.deepEqual(ids(tidy(drop(board, height, "tower", { at: 0 }))), [
     ["tower"],
     ["a", "b", "c"],
   ]);
+  assert.deepEqual(ids(drop(board, height, "b", { at: 1 })), [
+    ["tower"],
+    ["b"],
+    ["a", "c"],
+  ]);
+});
+
+test("the pointer finds the gap between two columns, but not the outer edges", () => {
+  const width = 1200 + 16;
+  assert.equal(gapAt(board, width, 708), 1);
+  assert.equal(gapAt(board, width, 689), 1);
+  assert.equal(gapAt(board, width, 727), 1);
+  assert.equal(gapAt(board, width, 680), -1);
+  assert.equal(gapAt(board, width, 0), -1);
+  assert.equal(gapAt(board, width, 1216), -1);
 });
 
 test("the pointer picks the column under it, by the column weights", () => {
@@ -106,24 +122,26 @@ test("a wider column takes its width from the column on its right", () => {
   assert.equal(widen(board, width, 1, 100), board);
 });
 
-test("a drag picks an edge column only when there is room and the pointer moved toward that edge", () => {
+test("a drag picks a new column only when there is room and the pointer moved toward an edge or waited in a gap", () => {
   const box = { left: 0, right: 1216, top: 0, width: 1216 };
-  const at = (x: number, sx: number, max = 3) =>
+  const at = (x: number, sx: number, max = 3, gap = -1) =>
     aim(
-      { id: "a", start: board, x, y: 200, sx, dy: 20 },
+      { id: "a", start: board, x, y: 200, sx, dy: 20, gap },
       box,
       max,
       12,
       () => 0,
     );
-  assert.deepEqual(at(10, 300), { edge: "left" });
-  assert.deepEqual(at(1210, 900), { edge: "right" });
-  assert.equal("edge" in at(10, 30), false);
-  assert.equal("edge" in at(10, 300, 2), false);
+  assert.deepEqual(at(10, 300), { at: 0 });
+  assert.deepEqual(at(1210, 900), { at: 2 });
+  assert.equal("at" in at(10, 30), false);
+  assert.equal("at" in at(10, 300, 2), false);
+  assert.deepEqual(at(708, 900, 3, 1), { at: 1 });
+  assert.equal("at" in at(708, 900, 2, 1), false);
   assert.deepEqual(at(10, 30), { col: 0, top: 22.5, bottom: 32.5 });
   assert.deepEqual(
     aim(
-      { id: "a", start: board, x: 900, y: 200, sx: 900, dy: 20 },
+      { id: "a", start: board, x: 900, y: 200, sx: 900, dy: 20, gap: -1 },
       box,
       3,
       12,
@@ -185,6 +203,7 @@ test("each screen size saves under its own key", () => {
     validSettings({
       layoutTablet: DEFAULT_LAYOUT.tablet,
       layoutDesktop: DEFAULT_LAYOUT.desktop,
+      layoutDisplay: DEFAULT_LAYOUT.display,
     }),
     true,
   );

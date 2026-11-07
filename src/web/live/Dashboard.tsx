@@ -20,6 +20,7 @@ import {
   autoscroll,
   drop,
   GAP,
+  gapAt,
   MAX_COLUMNS,
   place,
   remove,
@@ -42,19 +43,21 @@ import {
 } from "./widgets.ts";
 
 const QUERIES = [
-  "(width >= 80rem) and (pointer: fine)",
   "(width >= 48rem)",
+  "(width >= 80rem) and (pointer: fine)",
+  "(width >= 120rem) and (pointer: fine)",
 ].map(matchMedia);
 const PREVIEW: Record<Size, string | undefined> = {
   phone: "430px",
   tablet: "calc(1210px - 2rem)",
-  desktop: undefined,
+  desktop: "calc(1512px - 2rem)",
+  display: undefined,
 };
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
+const DWELL = 250;
 
-const sizeNow = (): Size =>
-  QUERIES[0]!.matches ? "desktop" : QUERIES[1]!.matches ? "tablet" : "phone";
+const sizeNow = () => SIZES[QUERIES.findLastIndex((q) => q.matches) + 1]!;
 
 const useSize = () =>
   useSyncExternalStore((change) => {
@@ -75,6 +78,9 @@ type Drag = {
   x: number;
   y: number;
   start: Column[];
+  near: number;
+  since: number;
+  gap: number;
   live: boolean;
   natural: number;
   tail: number;
@@ -218,10 +224,13 @@ export const Dashboard = ({
     const { rows } = latest.current;
     let next: Column[];
     if (d.kind === "move") {
+      const near = gapAt(d.start, box.width, d.x - box.left);
+      if (near !== d.near) [d.near, d.since] = [near, performance.now()];
+      d.gap = performance.now() - d.since > DWELL ? near : -1;
       const to = target(d, box);
       const base = draftRef.current ?? d.start;
       next = drop(
-        "edge" in to || base.length !== d.start.length ? d.start : base,
+        "at" in to || base.length !== d.start.length ? d.start : base,
         rows,
         d.id,
         to,
@@ -286,6 +295,9 @@ export const Dashboard = ({
       x: event.clientX,
       y: event.clientY,
       start: saved,
+      near: -1,
+      since: 0,
+      gap: -1,
       live: false,
       natural:
         fixed.get(id) == null
