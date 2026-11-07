@@ -25,6 +25,7 @@ import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 import { setProjectedLap, useProjectedLap } from "./projectedLap.ts";
 import { setScrubAhead, useScrubAhead } from "./scrubAhead.ts";
 import { setSpoilerMode } from "./spoilers.ts";
+import { InfoPopover } from "./InfoPopover.tsx";
 import { Tabs } from "./Tabs.tsx";
 import { setTokenHidden } from "./tokenHidden.ts";
 
@@ -183,9 +184,6 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Favourite driver</h2>
-        <p className="text-sm text-zinc-400">
-          Highlight this driver in the timing tower and in Results.
-        </p>
         <select
           aria-label="Favourite driver"
           value={favourite?.id ?? ""}
@@ -204,9 +202,6 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Favourite team</h2>
-        <p className="text-sm text-zinc-400">
-          Highlight the drivers of this team in blue.
-        </p>
         <select
           aria-label="Favourite team"
           value={team ?? ""}
@@ -223,9 +218,6 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">TV delay</h2>
-        <p className="text-sm text-zinc-400">
-          Hold live timing back by this many seconds to match your F1TV stream.
-        </p>
         <DelayInput />
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
@@ -257,10 +249,6 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
         <GlassSwitch checked={projectedLap} onChange={setProjectedLap}>
           Predict the lap time of each car on a push lap
         </GlassSwitch>
-        <p className="text-sm text-zinc-400">
-          The prediction updates after each sector. Select a driver to update it
-          continuously from the car position.
-        </p>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Replays</h2>
@@ -272,9 +260,8 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
         <section className="bg-surface space-y-3 rounded-xl p-4">
           <h2 className="font-f1 text-lg font-bold">Account</h2>
           <p className="text-sm text-zinc-400">
-            Sign in with Google to use your TV delay, favourite driver and
-            favourite team on all devices, transcribe new radio messages, get
-            session reminders, and add your own F1TV token.
+            Sync your settings, transcribe radio, get session reminders and add
+            an F1TV token.
           </p>
           <a
             href={SIGN_IN}
@@ -301,8 +288,14 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
             )}
           </section>
           <section className="bg-surface space-y-2 rounded-xl p-4 md:col-span-2">
-            <h2 className="font-f1 text-lg font-bold">F1TV token</h2>
-            <p className="text-sm">Show the cars on the track map</p>
+            <h2 className="font-f1 flex items-center gap-1 text-lg font-bold">
+              F1TV token
+              <InfoPopover label="What the F1TV token unlocks">
+                The token unlocks live car positions and car telemetry. The
+                track map shows the cars, and Lap compare shows live speed
+                traces.
+              </InfoPopover>
+            </h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -333,13 +326,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
             </form>
             {warning && <p className="text-sm text-yellow-300">{warning}</p>}
             {message && <p className="text-sm text-zinc-400">{message}</p>}
-            <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS}>
-              <p className="text-sm text-zinc-400">
-                You need an F1TV subscription. Only you see the cars from your
-                token. The app renews the token until the F1TV login expires,
-                which is after 30 days.
-              </p>
-            </GuideSheet>
+            <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS} />
           </section>
         </>
       ) : null}

@@ -162,11 +162,6 @@ export const Simulator = ({
           Reset
         </button>
       </div>
-      <p className="text-sm text-zinc-500">
-        Set finishes for the contenders. Use the All events row to set a result
-        for every event. A contender with no finish scores nothing in that
-        event.
-      </p>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-zinc-500">Quick fill</span>
         {contenders.map((id) => (
@@ -183,25 +178,25 @@ export const Simulator = ({
           </button>
         ))}
       </div>
-      <div
-        className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${decided ? "bg-emerald-950 text-emerald-300" : "bg-zinc-800/60 text-zinc-300"}`}
-      >
-        <Trophy aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-        <div>
-          <p>
-            {!picked
-              ? `Set a finish or use Quick fill to see who secures ${prize}.`
-              : early
+      {picked && (
+        <div
+          className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${decided ? "bg-emerald-950 text-emerald-300" : "bg-zinc-800/60 text-zinc-300"}`}
+        >
+          <Trophy aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+          <div>
+            <p>
+              {early
                 ? `${name(decided.id)} secures ${prize} after ${events[decided.index]!.name}.`
                 : decided
                   ? `${name(decided.id)} takes ${prize} at the final event.`
                   : `With these results, ${prize} is not decided before the final event.`}
-          </p>
-          {early && (
-            <p className="text-xs text-emerald-300/70">{why(decided)}</p>
-          )}
+            </p>
+            {early && (
+              <p className="text-xs text-emerald-300/70">{why(decided)}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       <Lineup
         champ={champ}
         table={result.final}

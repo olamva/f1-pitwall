@@ -408,15 +408,10 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   if (on)
     return spoiler.hidden ? (
       <div className="to-surface featured space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
-        <div>
-          <h1 className="font-f1 text-lg font-bold">
-            <Flag country={info.data.info?.Meeting?.Country?.Name} />
-            {info.data.info?.Meeting?.Name} · {info.data.info?.Name}
-          </h1>
-          <p className="mt-1 text-sm text-zinc-300">
-            Spoiler mode hides the live timing for this session.
-          </p>
-        </div>
+        <h1 className="font-f1 text-lg font-bold">
+          <Flag country={info.data.info?.Meeting?.Country?.Name} />
+          {info.data.info?.Meeting?.Name} · {info.data.info?.Name}
+        </h1>
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => go(0)}

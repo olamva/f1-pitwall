@@ -7,6 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { RotateCcw } from "lucide-react";
 import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
@@ -440,9 +441,17 @@ export const Dashboard = ({
             }}
           />
           {!columns.length && (
-            <p className="col-span-full row-span-12 py-8 text-center text-sm text-zinc-500">
-              Tap + to add a widget.
-            </p>
+            <div className="col-span-full row-span-12 flex flex-col items-center gap-3 py-8 text-sm text-zinc-500">
+              No widgets selected
+              <button
+                type="button"
+                onClick={() => setSaved(DEFAULT_LAYOUT[size])}
+                className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 font-semibold text-zinc-100"
+              >
+                <RotateCcw aria-hidden="true" className="size-4" />
+                Reset to Default
+              </button>
+            </div>
           )}
           {editing && (
             <Splits columns={saved} onDraft={setDraft} onSave={setSaved} />

@@ -783,6 +783,14 @@ textarea {
     inset: auto;
     margin: 0.5rem 0 0;
   }
+
+  .info-popover {
+    position-area: bottom span-all;
+    justify-self: anchor-center;
+    position-try-fallbacks: flip-block;
+    inset: auto;
+    margin: 0.5rem 1rem;
+  }
 }
 
 [data-fill] > * {

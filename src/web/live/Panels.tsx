@@ -8,6 +8,7 @@ import {
   Wind,
   type LucideIcon,
 } from "lucide-react";
+import { InfoPopover } from "../InfoPopover.tsx";
 import { ink } from "../ink.ts";
 import { TeamNumber } from "../stats/TeamNumber.tsx";
 import {
@@ -47,16 +48,23 @@ const FLAG: Record<string, string> = {
 
 interface PanelProps {
   title: string;
+  info?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }
 
-export const Panel = ({ title, className = "", children }: PanelProps) => (
+export const Panel = ({
+  title,
+  info,
+  className = "",
+  children,
+}: PanelProps) => (
   <section
     className={`bg-surface filled:flex filled:flex-col rounded-xl p-3 ${className}`}
   >
-    <h2 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
+    <h2 className="font-f1 mb-2 flex items-center gap-1 text-xs tracking-wider text-zinc-400 uppercase">
       {title}
+      {info && <InfoPopover label={`About ${title}`}>{info}</InfoPopover>}
     </h2>
     {children}
   </section>

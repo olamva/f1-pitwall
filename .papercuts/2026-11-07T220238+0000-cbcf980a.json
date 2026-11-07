@@ -1,0 +1,11 @@
+{
+  "id": "cbcf980a",
+  "ts": "2026-11-07T22:02:38+00:00",
+  "text": "screenshots skill says to set localStorage then reload, but shot.ts init script resets spoilers to 0 on every load",
+  "tags": [],
+  "who": "agent",
+  "model": "claude-opus-5-5",
+  "session": "aa030487",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1-pitwall/t3-7674db65",
+  "branch": ""
+}
