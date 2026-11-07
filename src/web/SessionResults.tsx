@@ -428,7 +428,6 @@ const Compare = ({ year, round, kind }: CompareProps) => {
     />
   ) : (
     <Loading
-      label="Loading the fastest laps. A race takes a few seconds…"
       error={laps.error && "Lap telemetry is not available for this session."}
     />
   );

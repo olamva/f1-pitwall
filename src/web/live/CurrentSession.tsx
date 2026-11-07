@@ -369,10 +369,7 @@ export const Replay = ({ session, rounds, onClose }: ReplayProps) => {
           )}
         />
         {!feed ? (
-          <Loading
-            label="Loading the replay. A race takes a few seconds…"
-            error={laps.error}
-          />
+          <Loading error={laps.error} />
         ) : (
           <Board
             feed={feed}
