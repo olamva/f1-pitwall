@@ -55,6 +55,7 @@ interface WeekendProps {
   sessions: Entry[];
   round: number | undefined;
   track: Track | undefined;
+  circuit?: string;
   onStart: (session: SessionRef) => void;
   onOpen?: () => void;
   preview?: Previewer;
@@ -193,6 +194,7 @@ const Weekend = ({
   sessions,
   round,
   track,
+  circuit,
   onStart,
   onOpen,
   preview,
@@ -223,6 +225,7 @@ const Weekend = ({
         }
         name={sessions[0].meeting}
         country={sessions[0].country}
+        track={circuit}
         featured={featured}
         sprint={sprint}
       />
@@ -327,6 +330,7 @@ export const CalendarList = ({
               sessions={[...w, ...remaining(season, w)]}
               round={number}
               track={number ? tracks[number] : undefined}
+              circuit={info?.circuit}
               onStart={onStart}
               onOpen={round ? () => onOpen(round) : undefined}
               preview={(s) => {

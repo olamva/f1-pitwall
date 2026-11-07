@@ -97,6 +97,7 @@ export type RaceArchive = {
     name: string;
     date: string;
     circuit: string;
+    track: string;
     country: string;
     results: {
       driver: string;

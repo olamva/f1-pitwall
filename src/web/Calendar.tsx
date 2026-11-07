@@ -61,6 +61,7 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
           })}
           name={race.name}
           country={race.country}
+          track={race.track}
           sprint={race.sprint.length > 0}
         />
         <div className="mt-auto">

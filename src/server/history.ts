@@ -93,6 +93,7 @@ export async function raceArchive(year: number): Promise<RaceArchive> {
         name: race.raceName,
         date: race.date,
         circuit: race.Circuit.circuitId,
+        track: race.Circuit.circuitName,
         country: race.Circuit.Location.country,
         results: [],
         sprint: [],
