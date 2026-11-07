@@ -45,9 +45,16 @@ interface TowerHeadProps {
   cut: number | null;
   fit: Fit;
   tyres: boolean;
+  children?: React.ReactNode;
 }
 
-export const TowerHead = ({ race, cut, fit, tyres }: TowerHeadProps) => {
+export const TowerHead = ({
+  race,
+  cut,
+  fit,
+  tyres,
+  children,
+}: TowerHeadProps) => {
   const pad = fit.wide ? "px-2" : "px-1";
   const hide = tyres ? "invisible" : "";
   const cover = race ? hide : "";
@@ -55,6 +62,7 @@ export const TowerHead = ({ race, cut, fit, tyres }: TowerHeadProps) => {
   const tyresCell = race || undefined;
   return (
     <thead className="text-left text-xs text-zinc-500">
+      {children}
       <tr className="relative">
         <th className={`${pad} py-2 text-right`}>P</th>
         <th className={`${pad} py-2`}>Driver</th>
