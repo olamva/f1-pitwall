@@ -107,16 +107,47 @@ interface HeadingProps {
   focus: boolean;
 }
 
-const Heading = ({ info, focus }: HeadingProps) => (
-  <h1
-    className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-md:hidden" : ""}`}
-  >
-    <Flag country={info?.Meeting?.Country?.Name} />
-    <span className={focus ? "truncate" : ""}>{info?.Meeting?.Name}</span>
-    {" · "}
-    {info?.Name}
-  </h1>
-);
+const FocusHeading = ({ info }: Pick<HeadingProps, "info">) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const name = ref.current!;
+    const h1 = name.parentElement!;
+    const row = h1.parentElement!;
+    const fit = () => {
+      name.hidden = false;
+      name.hidden = h1.scrollWidth > h1.clientWidth;
+    };
+    const sizes = new ResizeObserver(() => requestAnimationFrame(fit));
+    const watch = () => {
+      sizes.disconnect();
+      [...row.children].forEach((child) => sizes.observe(child));
+    };
+    const nodes = new MutationObserver(watch);
+    nodes.observe(row, { childList: true });
+    watch();
+    return () => {
+      sizes.disconnect();
+      nodes.disconnect();
+    };
+  }, []);
+  return (
+    <h1 className="font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre max-md:hidden">
+      <Flag country={info?.Meeting?.Country?.Name} />
+      <span ref={ref}>{info?.Meeting?.Name} · </span>
+      {info?.Name}
+    </h1>
+  );
+};
+
+const Heading = ({ info, focus }: HeadingProps) =>
+  focus ? (
+    <FocusHeading info={info} />
+  ) : (
+    <h1 className="font-f1 text-xl font-bold">
+      <Flag country={info?.Meeting?.Country?.Name} />
+      {info?.Meeting?.Name} · {info?.Name}
+    </h1>
+  );
 
 const SETTLE_MS = 5_000;
 
