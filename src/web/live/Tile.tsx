@@ -69,7 +69,8 @@ export const Tile = ({
   <div
     ref={cell}
     onPointerDown={(e) => !editing && onPress("move", e)}
-    className={`min-w-0 has-[.map-fullscreen]:z-50 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
+    data-held={held}
+    className={`min-w-0 has-[.map-fullscreen]:z-50 data-[held=true]:z-30 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
     style={place(col, spot, lift, fixed)}
   >
     {moving && (
