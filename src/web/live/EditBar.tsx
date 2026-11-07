@@ -1,5 +1,7 @@
 import {
   Check,
+  ClipboardPaste,
+  Copy,
   LayoutDashboard,
   Monitor,
   Plus,
@@ -23,6 +25,7 @@ import { createPortal, flushSync } from "react-dom";
 import { Tabs } from "../Tabs.tsx";
 import type { Size } from "./layout.ts";
 import { sampleTiles } from "./sample.tsx";
+import { copyLayouts, pasteLayouts } from "./useLayout.ts";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
 
 const Landscape = ((props: LucideProps) => (
@@ -96,71 +99,113 @@ const Sheet = ({
   onAdd,
   onReset,
   onClose,
-}: SheetProps) => (
-  <dialog
-    ref={sheet}
-    onClose={onClose}
-    onClick={(e) => e.target === e.currentTarget && dismiss(e.currentTarget)}
-    className="glass-sheet fixed inset-x-0 bottom-2 mx-auto max-h-[85dvh] w-[calc(100%-1rem)] max-w-3xl overflow-y-auto rounded-[2.5rem] text-zinc-100 max-sm:top-auto sm:top-0 sm:bottom-0 sm:my-auto sm:rounded-4xl"
-  >
-    <div className="space-y-4 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-      <div className="flex items-center gap-2">
-        <h2 className="font-f1 grow text-lg font-bold">Widgets</h2>
-        <button
-          type="button"
-          onClick={() => {
-            if (!confirm("Reset the layout for this screen size?")) return;
-            onReset();
-            dismiss(sheet.current!);
-          }}
-          className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
-        >
-          <RotateCcw aria-hidden="true" className="size-4" />
-          Reset to Default
-        </button>
-        <button
-          type="button"
-          aria-label="Close"
-          title="Close"
-          onClick={() => dismiss(sheet.current!)}
-          className="glass-gear grid size-11 shrink-0 cursor-pointer place-items-center"
-        >
-          <X aria-hidden="true" className="size-5" />
-        </button>
+}: SheetProps) => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <dialog
+      ref={sheet}
+      onClose={() => {
+        setCopied(false);
+        onClose();
+      }}
+      onClick={(e) => e.target === e.currentTarget && dismiss(e.currentTarget)}
+      className="glass-sheet fixed inset-x-0 bottom-2 mx-auto max-h-[85dvh] w-[calc(100%-1rem)] max-w-3xl overflow-y-auto rounded-[2.5rem] text-zinc-100 max-sm:top-auto sm:top-0 sm:bottom-0 sm:my-auto sm:rounded-4xl"
+    >
+      <div className="space-y-4 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-2">
+          <h2 className="font-f1 grow text-lg font-bold">Widgets</h2>
+          <button
+            type="button"
+            onClick={() => {
+              if (!confirm("Reset the layout for this screen size?")) return;
+              onReset();
+              dismiss(sheet.current!);
+            }}
+            className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
+          >
+            <RotateCcw aria-hidden="true" className="size-4" />
+            Reset to Default
+          </button>
+          <button
+            type="button"
+            aria-label="Close"
+            title="Close"
+            onClick={() => dismiss(sheet.current!)}
+            className="glass-gear grid size-11 shrink-0 cursor-pointer place-items-center"
+          >
+            <X aria-hidden="true" className="size-5" />
+          </button>
+        </div>
+        {missing.length ? (
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {missing.map((id) => (
+              <li key={id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAdd(id);
+                    dismiss(sheet.current!);
+                  }}
+                  className="group w-full cursor-pointer space-y-2 text-left"
+                >
+                  <span className="block transition-transform group-active:scale-95">
+                    <Preview>{open && sampleTiles()[id]()}</Preview>
+                  </span>
+                  <span className="block px-1">
+                    <span className="block font-semibold">
+                      {WIDGETS[id].title}
+                    </span>
+                    <span className="block text-xs text-zinc-400">
+                      {WIDGETS[id].about}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-400">
+            All widgets are on the screen.
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-2 pt-4">
+          <p className="grow text-sm text-zinc-400">
+            Share the layouts of all screen sizes as text.
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              navigator.clipboard
+                .writeText(copyLayouts())
+                .then(() => setCopied(true))
+            }
+            className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
+          >
+            {copied ? (
+              <Check aria-hidden="true" className="size-4" />
+            ) : (
+              <Copy aria-hidden="true" className="size-4" />
+            )}
+            {copied ? "Copied" : "Copy Layout"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const text = prompt("Paste a layout.");
+              if (text === null) return;
+              if (!pasteLayouts(text)) return alert("This is not a layout.");
+              dismiss(sheet.current!);
+            }}
+            className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
+          >
+            <ClipboardPaste aria-hidden="true" className="size-4" />
+            Paste Layout
+          </button>
+        </div>
       </div>
-      {missing.length ? (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {missing.map((id) => (
-            <li key={id}>
-              <button
-                type="button"
-                onClick={() => {
-                  onAdd(id);
-                  dismiss(sheet.current!);
-                }}
-                className="group w-full cursor-pointer space-y-2 text-left"
-              >
-                <span className="block transition-transform group-active:scale-95">
-                  <Preview>{open && sampleTiles()[id]()}</Preview>
-                </span>
-                <span className="block px-1">
-                  <span className="block font-semibold">
-                    {WIDGETS[id].title}
-                  </span>
-                  <span className="block text-xs text-zinc-400">
-                    {WIDGETS[id].about}
-                  </span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-zinc-400">All widgets are on the screen.</p>
-      )}
-    </div>
-  </dialog>
-);
+    </dialog>
+  );
+};
 
 export const EditBar = ({
   editing,
