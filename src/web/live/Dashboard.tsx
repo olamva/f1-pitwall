@@ -52,7 +52,7 @@ const KEYS: Record<Size, string> = {
 };
 const PREVIEW: Record<Size, string | undefined> = {
   phone: "430px",
-  tablet: "1024px",
+  tablet: "calc(1210px - 2rem)",
   desktop: undefined,
 };
 const ESTIMATE = 30;
