@@ -1,5 +1,12 @@
 import { Info } from "lucide-react";
-import { useId, useRef, type ReactNode } from "react";
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 
 interface InfoPopoverProps {
   label: string;
@@ -10,9 +17,7 @@ const GAP = 8;
 const EDGE = 16;
 
 const place = (anchor: Element, pop: HTMLElement) => {
-  pop.style.display = "block";
   const { offsetWidth: w, offsetHeight: h } = pop;
-  pop.style.display = "";
   const a = anchor.getBoundingClientRect();
   const ceiling = Math.max(
     0,
@@ -35,28 +40,48 @@ const place = (anchor: Element, pop: HTMLElement) => {
 export const InfoPopover = ({ label, children }: InfoPopoverProps) => {
   const id = useId();
   const button = useRef<HTMLButtonElement>(null);
+  const pop = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    if (!open) return;
+    place(button.current!, pop.current!);
+    const outside = (e: PointerEvent) =>
+      ![button.current, pop.current].some((n) =>
+        n?.contains(e.target as Node),
+      ) && setOpen(false);
+    const escape = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    addEventListener("pointerdown", outside);
+    addEventListener("keydown", escape);
+    return () => {
+      removeEventListener("pointerdown", outside);
+      removeEventListener("keydown", escape);
+    };
+  }, [open]);
   return (
     <>
       <button
         ref={button}
         type="button"
-        popoverTarget={id}
         aria-label={label}
+        aria-expanded={open}
+        aria-controls={id}
         title={label}
+        onClick={() => setOpen((o) => !o)}
         className="inline-grid size-6 shrink-0 cursor-pointer place-items-center rounded-full align-middle text-zinc-400 hover:text-zinc-100"
       >
         <Info aria-hidden="true" className="size-4" />
       </button>
-      <div
-        id={id}
-        popover="auto"
-        onBeforeToggle={(e) =>
-          e.newState === "open" && place(button.current!, e.currentTarget)
-        }
-        className="bg-surface absolute inset-auto m-0 w-72 max-w-[calc(100vw-2rem)] space-y-2 rounded-xl border border-zinc-800 p-3 text-left font-sans text-sm font-normal tracking-normal text-zinc-300 normal-case shadow-lg"
-      >
-        {children}
-      </div>
+      {open &&
+        createPortal(
+          <div
+            ref={pop}
+            id={id}
+            className="bg-surface absolute z-10 w-72 max-w-[calc(100vw-2rem)] space-y-2 rounded-xl border border-zinc-800 p-3 text-sm text-zinc-300 shadow-lg"
+          >
+            {children}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };
