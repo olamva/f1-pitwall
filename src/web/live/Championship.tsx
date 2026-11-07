@@ -114,7 +114,10 @@ export const Championship = ({ standings }: ChampionshipProps) => {
     </div>
   );
   return (
-    <Panel title="Live championship" className="@container col-span-full">
+    <Panel
+      title="Live championship"
+      className="@container col-span-full overflow-x-clip"
+    >
       {items.length > 1 && (
         <div className="mb-3 @2xl:hidden">
           <Tabs
