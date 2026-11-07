@@ -34,6 +34,7 @@ interface TileProps {
   spot: Spot | undefined;
   lift: number | null;
   tall: number | null;
+  push: number | undefined;
   fixed: boolean;
   editing: boolean;
   moving: boolean;
@@ -53,6 +54,7 @@ export const Tile = ({
   spot,
   lift,
   tall,
+  push,
   fixed,
   editing,
   moving,
@@ -69,7 +71,10 @@ export const Tile = ({
     onPointerDown={(e) => !editing && onPress("move", e)}
     data-held={held}
     className={`min-w-0 has-[.map-fullscreen]:z-50 data-[held=true]:z-30 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
-    style={place(col, spot, lift, fixed)}
+    style={{
+      ...place(col, spot, lift, fixed),
+      transform: push ? `translateY(${push}px)` : undefined,
+    }}
   >
     {moving && (
       <div className="absolute inset-x-0 top-0 bottom-4 rounded-xl border-2 border-dashed border-zinc-600 bg-zinc-500/10" />
