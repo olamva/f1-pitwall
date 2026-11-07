@@ -84,6 +84,8 @@ def circuit(bundle):
 
     line = centre(mesh("Track"), 4)
     pit = centre(mesh("Pit"), 2) if "Pit" in names.values() else []
+    gap = max(range(len(pit)), key=lambda k: math.dist(pit[k - 1], pit[k]), default=0)
+    pit = pit[gap:] + pit[:gap]
 
     def spot(*labels):
         for gid, name in names.items():
