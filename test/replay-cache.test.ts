@@ -13,3 +13,8 @@ test("the two most recently used replays load from the archive once", async (t) 
     await replay(`2026/meeting/${race}/`);
   assert.deepEqual(loads, ["a", "b", "c", "b", "c"]);
 });
+
+test("a replay loads a meeting path with non-ASCII letters", async (t) => {
+  t.mock.method(globalThis, "fetch", async () => new Response(""));
+  await replay("2026/2026-11-08_São_Paulo_Grand_Prix/2026-11-06_Practice_1/");
+});
