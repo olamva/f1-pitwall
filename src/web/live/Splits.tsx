@@ -16,7 +16,7 @@ interface SplitsProps {
 export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
   const [first, setFirst] = useState<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ top: 0, bottom: 0 });
-  const [held, setHeld] = useState<number | null>(null);
+  const [held, setHeld] = useState<{ col: number; y: number } | null>(null);
 
   useEffect(() => {
     const grid = first?.parentElement;
@@ -36,6 +36,26 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
       removeEventListener("resize", read);
     };
   }, [first]);
+
+  useEffect(() => {
+    const bar =
+      held &&
+      first?.parentElement?.querySelectorAll("[role=separator]")[held.col];
+    if (!bar) return;
+    const moved = (e: PointerEvent) => {
+      const r = bar.getBoundingClientRect();
+      if (e.buttons) return;
+      if (
+        e.clientX < r.left ||
+        e.clientX >= r.right ||
+        e.clientY < r.top ||
+        e.clientY >= r.bottom
+      )
+        setHeld(null);
+    };
+    addEventListener("pointermove", moved);
+    return () => removeEventListener("pointermove", moved);
+  }, [held, first]);
 
   const begin = (col: number, event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
@@ -78,27 +98,26 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
       <div
         role="separator"
         aria-orientation="vertical"
+        data-hover={held?.col === i || undefined}
         title="Drag to resize the columns"
         onPointerDown={(e) => begin(i, e)}
         onPointerEnter={(e) => {
           const { top } =
             e.currentTarget.firstElementChild!.getBoundingClientRect();
-          if (e.pointerType === "mouse") setHeld((y) => y ?? top);
-        }}
-        onPointerLeave={(e) => {
-          const { left, right } = e.currentTarget.getBoundingClientRect();
-          if (e.clientX < left || e.clientX >= right) setHeld(null);
+          if (e.pointerType === "mouse")
+            setHeld((h) => (h?.col === i ? h : { col: i, y: top }));
         }}
         className="group absolute inset-y-0 left-full cursor-col-resize touch-none"
         style={{ width: GAP }}
       >
         <span
-          className="light:bg-zinc-500 absolute inset-x-0 mx-auto h-12 w-1.5 rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100"
+          className={`light:bg-zinc-500 fixed h-12 w-1.5 rounded-full bg-zinc-400 transition-opacity group-active:opacity-100 pointer-coarse:opacity-100 ${held?.col === i ? "" : "opacity-0"}`}
           style={{
+            marginLeft: GAP / 2 - 3,
             top:
-              held !== null
-                ? held - box.top
-                : `calc((max(${box.top}px, ${TOP}) + min(${box.bottom}px, 100dvh)) / 2 - ${box.top}px - 1.5rem)`,
+              held?.col === i
+                ? held.y
+                : `calc((max(${box.top}px, ${TOP}) + min(${box.bottom}px, 100dvh)) / 2 - 1.5rem)`,
           }}
         />
       </div>

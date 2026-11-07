@@ -763,7 +763,7 @@ textarea {
       jiggle-bounce 0.18s ease-in-out infinite alternate;
   }
 
-  .grid:has([role="separator"]:hover, [role="separator"]:active) .jiggle {
+  .grid:has([role="separator"]:is([data-hover], :active)) .jiggle {
     animation: none;
   }
 }
