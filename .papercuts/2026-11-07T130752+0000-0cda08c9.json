@@ -1,0 +1,14 @@
+{
+  "id": "0cda08c9",
+  "ts": "2026-11-07T13:07:52+00:00",
+  "text": "device_close with shutdown:true returns {} and does nothing for a simulator not open in this thread's panel; simulators booted by other threads stay up for hours",
+  "tags": [
+    "simulator",
+    "t3"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bd049c40",
+  "where": "mcp__t3-code__device_close",
+  "branch": "t3/stop-idle-simulators"
+}
