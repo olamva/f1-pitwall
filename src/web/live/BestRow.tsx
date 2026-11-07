@@ -21,10 +21,11 @@ interface BestRowProps {
   bests: SessionBests;
   widths: number[];
   qualifying: boolean;
+  rest: number;
 }
 
-export const BestRow = ({ bests, widths, qualifying }: BestRowProps) => (
-  <tr className="hidden border-t border-zinc-800 text-xs sm:table-row">
+export const BestRow = ({ bests, widths, qualifying, rest }: BestRowProps) => (
+  <tr className="border-t border-zinc-800 text-xs">
     <td />
     <td className="font-f1 px-2 py-1 tracking-wider text-zinc-500 uppercase">
       Best
@@ -52,6 +53,6 @@ export const BestRow = ({ bests, widths, qualifying }: BestRowProps) => (
         ))}
       </span>
     </td>
-    <td colSpan={4} />
+    {rest > 0 && <td colSpan={rest} />}
   </tr>
 );
