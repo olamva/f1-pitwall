@@ -13,7 +13,7 @@ import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
 import { Tile, TOP } from "./Tile.tsx";
-import { pin, settle, useSlide } from "./useSlide.ts";
+import { edge, floor, pin, settle, useSlide } from "./useSlide.ts";
 import {
   add,
   columnAt,
@@ -57,7 +57,6 @@ const PREVIEW: Record<Size, string | undefined> = {
 };
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
-const EDGE = 64;
 const ZONE = 40;
 
 const sizeNow = (): Size =>
@@ -103,6 +102,7 @@ type Drag = {
   start: Column[];
   live: boolean;
   natural: number;
+  tail: number;
 };
 
 interface DashboardProps {
@@ -250,14 +250,8 @@ export const Dashboard = ({
   const frame = () => {
     const d = drag.current;
     if (!d?.live) return;
-    const scroll =
-      d.kind !== "move"
-        ? 0
-        : d.y < EDGE
-          ? -(EDGE - d.y) / 3
-          : d.y > innerHeight - EDGE
-            ? (d.y - innerHeight + EDGE) / 3
-            : 0;
+    const end = floor(cells.current, contents.current, d.id) + d.tail;
+    const scroll = d.kind === "move" ? edge(d.y, d.sy, end) : 0;
     if (scroll) scrollBy(0, scroll);
     const box = grid.current!.getBoundingClientRect();
     const { rows } = latest.current;
@@ -333,6 +327,10 @@ export const Dashboard = ({
         px[id] ??
         contents.current.get(id)?.firstElementChild?.scrollHeight ??
         0,
+      tail:
+        document.documentElement.scrollHeight -
+        scrollY -
+        floor(cells.current, contents.current, id),
     };
     drag.current = d;
     let held = false;
