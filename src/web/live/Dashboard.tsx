@@ -122,6 +122,8 @@ export const Dashboard = ({
   const draftRef = useRef<Column[] | null>(null);
   const frozen = useRef(new Map<string, number>());
   const discard = useDiscard(editing);
+  const [hideOff, setHideOff] = useState(false);
+  const hidden = (id: string) => !!off[id as WidgetId] && (!editing || hideOff);
   const columns = draft ?? saved;
   const fixed = new Map(
     columns.flatMap((c) =>
@@ -129,7 +131,7 @@ export const Dashboard = ({
     ),
   );
   const rows = (id: string) => {
-    if (!editing && off[id as WidgetId]) return 0;
+    if (hidden(id)) return 0;
     const h = fixed.get(id);
     const r =
       h != null
@@ -387,6 +389,12 @@ export const Dashboard = ({
             size={size}
             onSize={setView}
             missing={missing}
+            hideOff={
+              [...present].some((id) => off[id as WidgetId])
+                ? hideOff
+                : undefined
+            }
+            onHideOff={setHideOff}
             onAdd={(id) => {
               setSaved(add(saved, rows, id));
               setAdded(id);
@@ -444,7 +452,7 @@ export const Dashboard = ({
             const col = columns.findIndex((c) =>
               c.tiles.some((t) => t.id === id),
             );
-            if (col < 0 || (!editing && off[id])) return [];
+            if (col < 0 || hidden(id)) return [];
             return [
               <Tile
                 key={id}
