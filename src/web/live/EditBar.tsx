@@ -63,6 +63,32 @@ interface SheetProps {
   onClose: () => void;
 }
 
+const dismiss = (dialog: HTMLDialogElement) => {
+  const style = getComputedStyle(dialog);
+  const timing = {
+    duration: 400,
+    easing: "cubic-bezier(0.32, 0.72, 0, 1)",
+    fill: "forwards",
+  } as const;
+  const dim = dialog.animate(
+    { opacity: 0 },
+    { ...timing, pseudoElement: "::backdrop" },
+  );
+  const slide = dialog.animate(
+    {
+      translate: style.getPropertyValue("--away"),
+      scale: style.getPropertyValue("--shrink"),
+      opacity: style.getPropertyValue("--fade"),
+    },
+    timing,
+  );
+  slide.finished.then(() => {
+    dialog.close();
+    dim.cancel();
+    slide.cancel();
+  });
+};
+
 const Sheet = ({
   sheet,
   open,
@@ -73,12 +99,11 @@ const Sheet = ({
 }: SheetProps) => (
   <dialog
     ref={sheet}
-    closedby="any"
     onClose={onClose}
-    onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
-    className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 bottom-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border-t border-zinc-800 text-zinc-100 backdrop:bg-black/60 max-sm:top-auto sm:top-0 sm:my-auto sm:rounded-3xl sm:border"
+    onClick={(e) => e.target === e.currentTarget && dismiss(e.currentTarget)}
+    className="glass-sheet fixed inset-x-0 bottom-2 mx-auto max-h-[85dvh] w-[calc(100%-1rem)] max-w-3xl overflow-y-auto rounded-[2.5rem] text-zinc-100 max-sm:top-auto sm:top-0 sm:bottom-0 sm:my-auto sm:rounded-4xl"
   >
-    <div className="space-y-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+    <div className="space-y-4 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center gap-2">
         <h2 className="font-f1 grow text-lg font-bold">Widgets</h2>
         <button
@@ -86,20 +111,21 @@ const Sheet = ({
           onClick={() => {
             if (!confirm("Reset the layout for this screen size?")) return;
             onReset();
-            sheet.current?.close();
+            dismiss(sheet.current!);
           }}
-          className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-zinc-800 px-3.5 text-sm font-semibold hover:bg-zinc-700"
+          className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
         >
           <RotateCcw aria-hidden="true" className="size-4" />
-          Reset
+          Reset to Default
         </button>
         <button
           type="button"
           aria-label="Close"
-          onClick={() => sheet.current?.close()}
-          className="grid size-9 cursor-pointer place-items-center rounded-full bg-zinc-800 hover:bg-zinc-700"
+          title="Close"
+          onClick={() => dismiss(sheet.current!)}
+          className="glass-gear grid size-11 shrink-0 cursor-pointer place-items-center"
         >
-          <X className="size-4" />
+          <X aria-hidden="true" className="size-5" />
         </button>
       </div>
       {missing.length ? (
@@ -110,7 +136,7 @@ const Sheet = ({
                 type="button"
                 onClick={() => {
                   onAdd(id);
-                  sheet.current?.close();
+                  dismiss(sheet.current!);
                 }}
                 className="group w-full cursor-pointer space-y-2 text-left"
               >
