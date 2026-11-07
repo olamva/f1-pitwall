@@ -256,13 +256,14 @@ const booted = spawnSync(
   ["simctl", "list", "devices", "booted", "--json"],
   { encoding: "utf8" },
 );
-const simulators = booted.status
-  ? []
-  : Object.values(
-      JSON.parse(booted.stdout).devices as Record<string, { name: string }[]>,
-    )
-      .flat()
-      .map((device) => device.name);
+const simulators =
+  booted.status !== 0
+    ? []
+    : Object.values(
+        JSON.parse(booted.stdout).devices as Record<string, { name: string }[]>,
+      )
+        .flat()
+        .map((device) => device.name);
 if (simulators.length)
   console.error(
     `Booted simulators: ${simulators.join(", ")}. Shut down the ones that you opened.`,
