@@ -99,7 +99,6 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
       <div
         role="separator"
         aria-orientation="vertical"
-        data-hover={hover === i || undefined}
         title="Drag to resize the columns"
         onPointerDown={(e) => begin(i, e)}
         onPointerEnter={(e) => e.pointerType === "mouse" && setHover(i)}

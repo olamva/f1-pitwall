@@ -5,14 +5,25 @@ import {
   useSyncExternalStore,
 } from "react";
 import { save, subscribe } from "../synced.ts";
-import { tidy, type Column, type Size } from "./layout.ts";
+import { SIZES, tidy, type Column, type Size } from "./layout.ts";
+import { decode, encode, KEYS } from "./share.ts";
 import { DEFAULT_LAYOUT, isWidget } from "./widgets.ts";
 
-const KEYS: Record<Size, string> = {
-  phone: "layoutPhone",
-  tablet: "layoutTablet",
-  desktop: "layoutDesktop",
-  display: "layoutDisplay",
+export const copyLayouts = () =>
+  encode(
+    Object.fromEntries(
+      SIZES.map((s) => [
+        s,
+        JSON.parse(localStorage.getItem(KEYS[s]) ?? "null") ??
+          DEFAULT_LAYOUT[s],
+      ]),
+    ),
+  );
+
+export const pasteLayouts = (text: string) => {
+  const layouts = decode(text);
+  if (layouts) SIZES.forEach((s) => save(KEYS[s], layouts[s] ?? null));
+  return !!layouts;
 };
 
 export const useLayout = (size: Size) => {
