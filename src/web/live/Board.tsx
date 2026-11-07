@@ -1,5 +1,6 @@
 import { Focus, X } from "lucide-react";
 import {
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -16,6 +17,7 @@ import {
 } from "../../shared/timing.ts";
 import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
+import { setSearchParam } from "../path.ts";
 import { useTokenHidden } from "../tokenHidden.ts";
 import { cutGaps } from "./knockout.ts";
 import { Dashboard } from "./Dashboard.tsx";
@@ -115,7 +117,10 @@ export const Board = ({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
-  const [focus, setFocus] = useState(false);
+  const [focus, setFocus] = useState(() =>
+    new URLSearchParams(location.search).has("focus"),
+  );
+  useEffect(() => setSearchParam("focus", focus ? "1" : null), [focus]);
   const [bar, setBar] = useState(0);
   const row = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
