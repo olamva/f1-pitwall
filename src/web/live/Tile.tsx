@@ -11,6 +11,7 @@ const place = (
   col: number,
   spot: Spot | undefined,
   lift: number | null,
+  fixed: boolean,
 ): CSSProperties =>
   spot
     ? {
@@ -21,6 +22,7 @@ const place = (
           position: "sticky",
           top: `calc(${TOP} + ${spot.top * ROW - lift}px)`,
           alignSelf: "start",
+          height: fixed ? spot.height * ROW : undefined,
         }),
       }
     : { gridColumn: col + 1 };
@@ -68,7 +70,7 @@ export const Tile = ({
     ref={cell}
     onPointerDown={(e) => !editing && onPress("move", e)}
     className={`min-w-0 has-[.map-fullscreen]:z-50 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
-    style={place(col, spot, lift)}
+    style={place(col, spot, lift, fixed)}
   >
     {moving && (
       <div className="absolute inset-x-0 top-0 bottom-4 rounded-xl border-2 border-dashed border-zinc-600 bg-zinc-500/10" />
