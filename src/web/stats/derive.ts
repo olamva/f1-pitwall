@@ -153,9 +153,6 @@ export function honours(s: Season, champ: Championship, id: string) {
     podiums: s.races
       .flatMap((r) => r.results)
       .filter((r) => mine(r) && r.position !== null && r.position <= 3).length,
-    poles: s.qualifying.filter((q) =>
-      q.results.some((r) => r.position === 1 && mine(r)),
-    ).length,
     decider,
     left:
       decider === undefined

@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Crown } from "lucide-react";
+import { Crown, LoaderCircle } from "lucide-react";
 import { ink } from "../ink.ts";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline, Telemetry, Track } from "../../shared/timing.ts";
@@ -435,9 +435,10 @@ export const TrackMap = ({
             )}
           </div>
           {!outline && (
-            <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
-              The track outline shows after a few laps.
-            </p>
+            <LoaderCircle
+              aria-label="Loading the track outline"
+              className="absolute inset-0 m-auto size-8 animate-spin text-red-500"
+            />
           )}
         </>
       )}

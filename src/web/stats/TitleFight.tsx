@@ -21,6 +21,7 @@ import {
 import { pointsFor } from "../../shared/points.ts";
 import type { Season } from "../../shared/season.ts";
 import { DriverHover } from "../DriverCard.tsx";
+import { InfoPopover } from "../InfoPopover.tsx";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
 import { TeamHover } from "../TeamCard.tsx";
@@ -330,13 +331,15 @@ export const TitleFight = ({
       {fight && (
         <>
           <section className="bg-surface rounded-xl p-3">
-            <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
+            <h2 className="font-f1 mb-1 flex items-center gap-1 text-xs tracking-wider text-zinc-400 uppercase">
               {place ? `Who can still finish ${place}` : "Who can still win"}
+              <InfoPopover label="How the earliest decider works">
+                The earliest decider assumes that the driver wins every event
+                and that no rival scores.
+              </InfoPopover>
             </h2>
             <p className="mb-2 text-sm text-zinc-500">
-              {gain} points remain across {events.length} events. The earliest
-              decider assumes that the driver wins every event and that no rival
-              scores.
+              {gain} points remain across {events.length} events.
             </p>
             <Lineup
               champ={champ}
