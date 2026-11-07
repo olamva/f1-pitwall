@@ -36,7 +36,7 @@ test("a shared layout string keeps its format in both directions", () => {
 test("a shared layout string that the app cannot show is rejected", () => {
   for (const text of [
     "",
-    "x=12:tower",
+    "z=12:tower",
     "p=12:tower,tower",
     "p=0:tower",
     "p=12:tower.2",
