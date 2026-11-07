@@ -21,7 +21,8 @@ and turn on auto-merge. Run it again to push more commits to the same PR.
   --branch <name>   Rename the task branch first, such as t3/fix-map-labels
   --hold            Do not turn on auto-merge, for a change that waits for visual approval
 
-The first message is the PR title. Use the commit-style format.`);
+The first commit on the branch is the PR title. Use the commit-style format.
+Pass --body again if an earlier run stopped before it opened the PR.`);
   process.exit(o.help ? 0 : 1);
 }
 
@@ -93,7 +94,14 @@ if (pr?.state !== "OPEN") {
     "--base",
     "main",
     "--title",
-    message,
+    run(
+      "git",
+      "log",
+      "--no-merges",
+      "--reverse",
+      "--format=%s",
+      "origin/main..HEAD",
+    ).split("\n")[0]!,
     "--body",
     body,
   );
