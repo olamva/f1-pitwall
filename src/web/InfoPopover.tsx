@@ -1,29 +1,40 @@
 import { Info } from "lucide-react";
-import { useId, useRef, type CSSProperties, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 
 interface InfoPopoverProps {
   label: string;
   children: ReactNode;
 }
 
-const clearOfNavs = (anchor: Element, pop: HTMLElement) => {
+const GAP = 8;
+const EDGE = 16;
+
+const place = (anchor: Element, pop: HTMLElement) => {
+  pop.style.display = "block";
+  const { offsetWidth: w, offsetHeight: h } = pop;
+  pop.style.display = "";
   const a = anchor.getBoundingClientRect();
-  const navs = [...document.querySelectorAll("nav, .top-band")]
-    .map((n) => n.getBoundingClientRect())
-    .filter((r) => r.height && r.right > 0 && r.left < innerWidth);
-  const above = navs.filter((r) => r.bottom <= a.top).map((r) => r.bottom);
-  const below = navs.filter((r) => r.top >= a.bottom).map((r) => r.top);
-  pop.style.setProperty("--info-top", `${Math.max(0, ...above)}px`);
-  pop.style.setProperty(
-    "--info-bottom",
-    `${innerHeight - Math.min(innerHeight, ...below)}px`,
+  const ceiling = Math.max(
+    0,
+    ...[...document.querySelectorAll("nav, .top-band")]
+      .map((n) => n.getBoundingClientRect())
+      .filter((r) => r.height && r.right > 0 && r.left < innerWidth)
+      .filter((r) => r.bottom <= a.top)
+      .map((r) => r.bottom),
   );
+  const above = a.top - GAP - h;
+  const top = above >= ceiling + GAP ? above : a.bottom + GAP;
+  const left = Math.min(
+    Math.max(a.left + a.width / 2 - w / 2, EDGE),
+    innerWidth - w - EDGE,
+  );
+  pop.style.top = `${top + scrollY}px`;
+  pop.style.left = `${left + scrollX}px`;
 };
 
 export const InfoPopover = ({ label, children }: InfoPopoverProps) => {
   const id = useId();
   const button = useRef<HTMLButtonElement>(null);
-  const anchor = `--info${id.replace(/\W/g, "")}`;
   return (
     <>
       <button
@@ -32,7 +43,6 @@ export const InfoPopover = ({ label, children }: InfoPopoverProps) => {
         popoverTarget={id}
         aria-label={label}
         title={label}
-        style={{ anchorName: anchor } as CSSProperties}
         className="inline-grid size-6 shrink-0 cursor-pointer place-items-center rounded-full align-middle text-zinc-400 hover:text-zinc-100"
       >
         <Info aria-hidden="true" className="size-4" />
@@ -41,10 +51,9 @@ export const InfoPopover = ({ label, children }: InfoPopoverProps) => {
         id={id}
         popover="auto"
         onBeforeToggle={(e) =>
-          e.newState === "open" && clearOfNavs(button.current!, e.currentTarget)
+          e.newState === "open" && place(button.current!, e.currentTarget)
         }
-        style={{ positionAnchor: anchor } as CSSProperties}
-        className="info-popover bg-surface w-72 space-y-2 rounded-xl border border-zinc-800 p-3 text-left font-sans text-sm font-normal tracking-normal text-zinc-300 normal-case shadow-lg"
+        className="bg-surface absolute inset-auto m-0 w-72 max-w-[calc(100vw-2rem)] space-y-2 rounded-xl border border-zinc-800 p-3 text-left font-sans text-sm font-normal tracking-normal text-zinc-300 normal-case shadow-lg"
       >
         {children}
       </div>
