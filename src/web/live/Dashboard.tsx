@@ -13,7 +13,7 @@ import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
 import { Tile, TOP } from "./Tile.tsx";
-import { useSlide } from "./useSlide.ts";
+import { pin, settle, useSlide } from "./useSlide.ts";
 import {
   add,
   columnAt,
@@ -243,10 +243,8 @@ export const Dashboard = ({
         const spot = placed.get(t.id);
         return el && spot ? [el.offsetTop - spot.top * ROW] : [];
       })[0] ?? 0;
-    return {
-      col,
-      y: (d.y - d.dy - box.top - lift + (rows(d.id) * ROW) / 2) / ROW,
-    };
+    const top = (d.y - d.dy - box.top - lift) / ROW;
+    return { col, top, bottom: top + rows(d.id) - GAP / ROW };
   };
 
   const frame = () => {
@@ -262,8 +260,16 @@ export const Dashboard = ({
     const box = grid.current!.getBoundingClientRect();
     const { rows } = latest.current;
     let next: Column[];
-    if (d.kind === "move") next = drop(d.start, rows, d.id, target(d, box));
-    else {
+    if (d.kind === "move") {
+      const to = target(d, box);
+      const base = draftRef.current ?? d.start;
+      next = drop(
+        "edge" in to || base.length !== d.start.length ? d.start : base,
+        rows,
+        d.id,
+        to,
+      );
+    } else {
       const spot = place(d.start, rows).spots.get(d.id)!;
       const content = d.y + d.dy - box.top - cells.current.get(d.id)!.offsetTop;
       next = resize(
@@ -285,7 +291,8 @@ export const Dashboard = ({
     if (!d) return;
     drag.current = null;
     document.removeEventListener("touchmove", prevent);
-    cards.current.get(d.id)?.style.removeProperty("translate");
+    const card = cards.current.get(d.id);
+    if (card) settle(card);
     if (keep && d.live && draftRef.current) setSaved(draftRef.current);
     draftRef.current = null;
     setDraft(null);
@@ -330,10 +337,12 @@ export const Dashboard = ({
     const go = () => {
       if (d.live || drag.current !== d) return;
       d.live = true;
+      const el = cards.current.get(id)!;
       if (held) {
-        const box = cards.current.get(id)!.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
         [d.dx, d.dy] = [d.sx - box.left, d.sy - box.top];
       }
+      if (kind === "move") pin(el);
       document.addEventListener("touchmove", prevent, { passive: false });
       setActive({ ...d });
       requestAnimationFrame(frame);
@@ -465,6 +474,7 @@ export const Dashboard = ({
                 edge={col === columns.length - 1}
                 editing={editing}
                 moving={active?.id === id && active.kind === "move"}
+                held={active?.id === id}
                 render={off[id] ? null : tiles[id]}
                 cell={(el) => {
                   if (el) cells.current.set(id, el);
