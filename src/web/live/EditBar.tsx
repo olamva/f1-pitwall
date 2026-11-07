@@ -168,10 +168,7 @@ const Sheet = ({
             All widgets are on the screen.
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-2 pt-4">
-          <p className="grow text-sm text-zinc-400">
-            Share the layouts of all screen sizes as text.
-          </p>
+        <div className="grid grid-cols-2 gap-2 pt-4">
           <button
             type="button"
             onClick={() =>
@@ -179,7 +176,7 @@ const Sheet = ({
                 .writeText(copyLayouts())
                 .then(() => setCopied(true))
             }
-            className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
+            className="glass-gear flex h-11 cursor-pointer items-center justify-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
           >
             {copied ? (
               <Check aria-hidden="true" className="size-4" />
@@ -196,7 +193,7 @@ const Sheet = ({
               if (!pasteLayouts(text)) return alert("This is not a layout.");
               dismiss(sheet.current!);
             }}
-            className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
+            className="glass-gear flex h-11 cursor-pointer items-center justify-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
           >
             <ClipboardPaste aria-hidden="true" className="size-4" />
             Paste Layout
