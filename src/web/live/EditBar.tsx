@@ -104,17 +104,8 @@ const Sheet = ({
     className="glass-sheet fixed inset-x-0 bottom-2 mx-auto max-h-[85dvh] w-[calc(100%-1rem)] max-w-3xl overflow-y-auto rounded-[2.5rem] text-zinc-100 max-sm:top-auto sm:top-0 sm:bottom-0 sm:my-auto sm:rounded-4xl"
   >
     <div className="space-y-4 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <button
-          type="button"
-          aria-label="Close"
-          title="Close"
-          onClick={() => dismiss(sheet.current!)}
-          className="glass-gear grid size-11 cursor-pointer place-items-center"
-        >
-          <X aria-hidden="true" className="size-5" />
-        </button>
-        <h2 className="font-f1 text-lg font-bold">Widgets</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="font-f1 grow text-lg font-bold">Widgets</h2>
         <button
           type="button"
           onClick={() => {
@@ -122,10 +113,19 @@ const Sheet = ({
             onReset();
             dismiss(sheet.current!);
           }}
-          className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 justify-self-end px-4 text-sm font-semibold whitespace-nowrap"
+          className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
         >
-          <RotateCcw aria-hidden="true" className="size-4 max-sm:hidden" />
+          <RotateCcw aria-hidden="true" className="size-4" />
           Reset to Default
+        </button>
+        <button
+          type="button"
+          aria-label="Close"
+          title="Close"
+          onClick={() => dismiss(sheet.current!)}
+          className="glass-gear grid size-11 shrink-0 cursor-pointer place-items-center"
+        >
+          <X aria-hidden="true" className="size-5" />
         </button>
       </div>
       {missing.length ? (
