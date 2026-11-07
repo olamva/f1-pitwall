@@ -6,6 +6,7 @@ import {
   RotateCcw,
   Smartphone,
   Tablet,
+  Undo2,
   X,
   type LucideIcon,
   type LucideProps,
@@ -41,6 +42,7 @@ interface EditBarProps {
   onAdd: (id: WidgetId) => void;
   onReset: () => void;
   onEdit: () => void;
+  onDiscard?: () => void;
   onDone: () => void;
 }
 
@@ -169,6 +171,7 @@ export const EditBar = ({
   onAdd,
   onReset,
   onEdit,
+  onDiscard,
   onDone,
 }: EditBarProps) => {
   const sheet = useRef<HTMLDialogElement>(null);
@@ -255,6 +258,16 @@ export const EditBar = ({
           iconOnly
         />
       )}
+      <button
+        type="button"
+        aria-label="Discard changes"
+        title="Discard changes"
+        onClick={onDiscard}
+        disabled={!onDiscard}
+        className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
+      >
+        <Undo2 aria-hidden="true" className="size-5" />
+      </button>
       <button
         type="button"
         aria-label="Done"
