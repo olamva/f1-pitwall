@@ -113,10 +113,9 @@ const settings = {
   ...(o.team && { team: o.team }),
   ...(o.layout &&
     Object.fromEntries(
-      ["layoutPhone", "layoutTablet", "layoutDesktop"].map((key) => [
-        key,
-        JSON.parse(o.layout!),
-      ]),
+      ["layoutPhone", "layoutTablet", "layoutDesktop", "layoutDisplay"].map(
+        (key) => [key, JSON.parse(o.layout!)],
+      ),
     )),
 };
 const out = resolve(

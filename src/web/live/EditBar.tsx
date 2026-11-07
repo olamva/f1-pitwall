@@ -2,6 +2,7 @@ import {
   Check,
   ClipboardPaste,
   Copy,
+  Laptop,
   LayoutDashboard,
   Monitor,
   Plus,
@@ -295,8 +296,18 @@ export const EditBar = ({
           items={sizes}
           value={size}
           onChange={onSize}
-          labels={{ phone: "Phone", tablet: "Tablet", desktop: "Desktop" }}
-          icons={{ phone: Smartphone, tablet: Landscape, desktop: Monitor }}
+          labels={{
+            phone: "Phone",
+            tablet: "Tablet",
+            desktop: "Laptop",
+            display: "Large display",
+          }}
+          icons={{
+            phone: Smartphone,
+            tablet: Landscape,
+            desktop: Laptop,
+            display: Monitor,
+          }}
           iconOnly
         />
       )}

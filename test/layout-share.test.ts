@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { decode, encode } from "../src/web/live/share.ts";
 
-const shared = "p=12:tower,map.40;d=7:tower|5:battle,control.30,weather";
+const shared =
+  "p=12:tower,map.40;d=7:tower|5:battle,control.30,weather;x=12:runs";
 const layouts = {
   phone: [
     {
@@ -24,6 +25,7 @@ const layouts = {
       ],
     },
   ],
+  display: [{ w: 12, tiles: [{ id: "runs", h: null }] }],
 };
 
 test("a shared layout string keeps its format in both directions", () => {

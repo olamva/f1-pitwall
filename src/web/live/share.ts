@@ -7,9 +7,15 @@ export const KEYS: Record<Size, string> = {
   phone: "layoutPhone",
   tablet: "layoutTablet",
   desktop: "layoutDesktop",
+  display: "layoutDisplay",
 };
 
-const CODES: Record<Size, string> = { phone: "p", tablet: "t", desktop: "d" };
+const CODES: Record<Size, string> = {
+  phone: "p",
+  tablet: "t",
+  desktop: "d",
+  display: "x",
+};
 
 export const encode = (layouts: Layouts) =>
   SIZES.filter((s) => layouts[s])
