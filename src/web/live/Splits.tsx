@@ -16,6 +16,7 @@ interface SplitsProps {
 export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
   const [first, setFirst] = useState<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ top: 0, bottom: 0 });
+  const [held, setHeld] = useState<number | null>(null);
 
   useEffect(() => {
     const grid = first?.parentElement;
@@ -79,13 +80,25 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
         aria-orientation="vertical"
         title="Drag to resize the columns"
         onPointerDown={(e) => begin(i, e)}
+        onPointerEnter={(e) => {
+          const { top } =
+            e.currentTarget.firstElementChild!.getBoundingClientRect();
+          if (e.pointerType === "mouse") setHeld((y) => y ?? top);
+        }}
+        onPointerLeave={(e) => {
+          const { left, right } = e.currentTarget.getBoundingClientRect();
+          if (e.clientX < left || e.clientX >= right) setHeld(null);
+        }}
         className="group absolute inset-y-0 left-full cursor-col-resize touch-none"
         style={{ width: GAP }}
       >
         <span
           className="light:bg-zinc-500 absolute inset-x-0 mx-auto h-12 w-1.5 rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100"
           style={{
-            top: `calc((max(${box.top}px, ${TOP}) + min(${box.bottom}px, 100dvh)) / 2 - ${box.top}px - 1.5rem)`,
+            top:
+              held !== null
+                ? held - box.top
+                : `calc((max(${box.top}px, ${TOP}) + min(${box.bottom}px, 100dvh)) / 2 - ${box.top}px - 1.5rem)`,
           }}
         />
       </div>
