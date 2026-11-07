@@ -251,11 +251,13 @@ export const Dashboard = ({
     const d = drag.current;
     if (!d?.live) return;
     const scroll =
-      d.y < EDGE
-        ? -(EDGE - d.y) / 3
-        : d.y > innerHeight - EDGE
-          ? (d.y - innerHeight + EDGE) / 3
-          : 0;
+      d.kind !== "move"
+        ? 0
+        : d.y < EDGE
+          ? -(EDGE - d.y) / 3
+          : d.y > innerHeight - EDGE
+            ? (d.y - innerHeight + EDGE) / 3
+            : 0;
     if (scroll) scrollBy(0, scroll);
     const box = grid.current!.getBoundingClientRect();
     const { rows } = latest.current;

@@ -104,6 +104,12 @@ const blocked = (target: EventTarget) => {
   return false;
 };
 
+const scrolls = (el: Element | null): boolean =>
+  !!el &&
+  el !== document.body &&
+  (/auto|scroll/.test(getComputedStyle(el).overflowY) ||
+    scrolls(el.parentElement));
+
 export const Swipe = <T extends string>({
   items,
   value,
@@ -201,6 +207,7 @@ export const Swipe = <T extends string>({
 
   const reveal = () => {
     const el = root.current!;
+    const scroller = scrolls(el.parentElement);
     const tail =
       document.documentElement.scrollHeight -
       scrollY -
@@ -219,10 +226,12 @@ export const Swipe = <T extends string>({
           bounds.height / 2
         : Infinity;
       const room = scrollY + top + panel.offsetHeight + tail - innerHeight;
-      const land = Math.max(
-        0,
-        Math.min(room, scrollY - Math.min(centered, Math.max(0, -top))),
-      );
+      const land = scroller
+        ? scrollY
+        : Math.max(
+            0,
+            Math.min(room, scrollY - Math.min(centered, Math.max(0, -top))),
+          );
       lands.current[Number(panel.dataset.side)] = land;
       panel.style.top = `${scrollY - land}px`;
     }
