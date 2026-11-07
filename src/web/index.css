@@ -785,18 +785,17 @@ textarea {
   }
 
   .info-popover {
-    position-area: bottom span-all;
+    position-area: top span-all;
     justify-self: anchor-center;
-    position-try-fallbacks: flip-block;
+    position-try-fallbacks: --info-below;
     inset: auto;
-    margin: 0.5rem 1rem;
+    margin: calc(var(--info-top, 0px) + 0.5rem) 1rem 0.5rem;
   }
+}
 
-  @media (width < 40rem) {
-    .info-popover {
-      margin-bottom: calc(83px + 0.5rem);
-    }
-  }
+@position-try --info-below {
+  position-area: bottom span-all;
+  margin: 0.5rem 1rem calc(var(--info-bottom, 0px) + 0.5rem);
 }
 
 [data-fill] > * {
