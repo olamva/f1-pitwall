@@ -27,6 +27,7 @@ interface CardHeadProps {
   label: ReactNode;
   name: string;
   country: string;
+  track?: string;
   featured?: boolean;
   sprint?: boolean;
 }
@@ -117,6 +118,7 @@ export const CardHead = ({
   label,
   name,
   country,
+  track,
   featured,
   sprint,
 }: CardHeadProps) => (
@@ -133,6 +135,7 @@ export const CardHead = ({
       <Flag country={country} />
       {name}
     </h2>
+    {track && <p className="truncate text-xs text-zinc-400">{track}</p>}
   </header>
 );
 
@@ -257,6 +260,7 @@ export const ScheduleWeekend = ({
         }
         name={round.name}
         country={round.country}
+        track={round.circuit}
         featured={featured}
         sprint={!!round.sessions.sprint}
       />
