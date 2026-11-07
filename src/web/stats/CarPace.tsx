@@ -162,12 +162,8 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
                     <span
                       role="img"
                       aria-label={t.label}
-                      className="group-data-[pending=true]:animate-rumble flex h-8 w-32 items-center gap-1"
+                      className="group-data-[pending=true]:animate-rumble flex h-8 w-32 items-center justify-end"
                     >
-                      <span
-                        className="h-1 flex-1 rounded-full"
-                        style={{ background: t.color }}
-                      />
                       <TeamLogo team={t.id} className="block h-7 w-9" />
                     </span>
                   }
