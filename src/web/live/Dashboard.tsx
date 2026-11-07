@@ -161,11 +161,7 @@ export const Dashboard = ({
   };
   const { spots: placed, ends } = place(columns, rows);
   const over = ends.map((end) => Math.max(0, end * ROW - GAP - avail - 1));
-  const sticky = new Set(
-    columns.length < 2
-      ? []
-      : columns.flatMap((c, i) => (!editing || !over[i] ? [i] : [])),
-  );
+  const sticky = new Set(columns.length < 2 ? [] : columns.keys());
   const stretch = new Set(
     [...sticky].flatMap((i) => {
       if (over[i]) return [];
@@ -306,6 +302,7 @@ export const Dashboard = ({
     if (kind === "size") event.preventDefault();
     if (editing) event.stopPropagation();
     const card = cards.current.get(id)!.getBoundingClientRect();
+    const shown = contents.current.get(id)!;
     const d: Drag = {
       kind,
       id,
@@ -316,7 +313,9 @@ export const Dashboard = ({
       dy:
         kind === "move"
           ? event.clientY - card.top
-          : card.bottom - GAP - event.clientY,
+          : cells.current.get(id)!.getBoundingClientRect().top +
+            shown.offsetHeight -
+            event.clientY,
       sx: event.clientX,
       sy: event.clientY,
       x: event.clientX,
@@ -324,9 +323,9 @@ export const Dashboard = ({
       start: saved,
       live: false,
       natural:
-        px[id] ??
-        contents.current.get(id)?.firstElementChild?.scrollHeight ??
-        0,
+        fixed.get(id) == null
+          ? shown.offsetHeight
+          : (px[id] ?? shown.firstElementChild?.scrollHeight ?? 0),
       tail:
         document.documentElement.scrollHeight -
         scrollY -
