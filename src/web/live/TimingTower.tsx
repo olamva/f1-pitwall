@@ -1,11 +1,12 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite, useTeamRow } from "../favourite.ts";
-import { ink } from "../ink.ts";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
-import { Cover, Stints, TyreCells, useCover } from "./TowerTyres.tsx";
+import { SessionBest, TowerHead } from "./TowerHead.tsx";
+import { useFit, type Fit } from "./towerFit.ts";
+import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
@@ -35,8 +36,6 @@ interface TimingTowerProps {
 }
 
 const VIEWS = ["Timing", "Tyres"] as const;
-
-const hiddenIf = (hidden: boolean) => (hidden ? "hidden" : "");
 
 interface Swap {
   up: boolean;
@@ -157,26 +156,27 @@ const PitLine = ({ label, color, last }: PitLineProps) => (
 interface SectorsProps {
   sectors: Row["sectors"];
   qualifying: boolean;
+  wide: boolean;
 }
 
-const Sectors = ({ sectors, qualifying }: SectorsProps) => (
-  <span className="flex gap-1 sm:gap-1.5">
+const Sectors = ({ sectors, qualifying, wide }: SectorsProps) => (
+  <span className={`flex ${wide ? "gap-1.5" : "gap-1"}`}>
     {sectors.map((s, i) => (
       <span
         key={i}
         title={s.value}
-        className={`flex w-5 min-w-5 flex-col gap-0.5 sm:w-auto ${qualifying ? "sm:min-w-17" : ""}`}
+        className={`flex flex-col gap-0.5 ${wide ? (qualifying ? "min-w-17" : "min-w-5") : "w-5 min-w-5"}`}
       >
         <span
           className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
         >
-          {qualifying && <span className="hidden sm:inline">{s.value}</span>}
+          {qualifying && wide && s.value}
         </span>
-        <span className="flex sm:gap-px">
+        <span className={`flex ${wide ? "gap-px" : ""}`}>
           {s.segments.map((m, j) => (
             <span
               key={j}
-              className={`h-1 min-w-0 flex-1 sm:min-w-1.5 ${BAR[m]}`}
+              className={`h-1 flex-1 ${wide ? "min-w-1.5" : "min-w-0"} ${BAR[m]}`}
             />
           ))}
         </span>
@@ -185,20 +185,63 @@ const Sectors = ({ sectors, qualifying }: SectorsProps) => (
   </span>
 );
 
-const Gap = ({ status, gap }: { status: string; gap: string }) =>
-  status ? (
-    <>
-      <span className="text-zinc-400 sm:hidden">{status}</span>
-      <span className="hidden sm:inline">{gap}</span>
-    </>
-  ) : (
-    gap
-  );
+const Gained = ({ gained }: { gained: number | null }) => (
+  <td
+    className={`px-2 py-1 text-right ${gained ? (gained > 0 ? "text-emerald-400" : "text-red-500") : "text-zinc-500"}`}
+  >
+    {gained === null
+      ? ""
+      : gained
+        ? `${gained > 0 ? "▲" : "▼"}${Math.abs(gained)}`
+        : "–"}
+  </td>
+);
+
+interface IntervalProps {
+  row: Row;
+  pad: string;
+  hide: string;
+}
+
+const Interval = ({ row, pad, hide }: IntervalProps) => (
+  <td
+    className={`box-content w-[calc(7ch+2rem)] ${pad} py-1 text-right text-zinc-400`}
+  >
+    <span className={`flex items-center justify-between gap-1 ${hide}`}>
+      <span className="flex gap-1">
+        <span className="inline-block w-3">
+          {row.catching && (
+            <span
+              className="inline-flex text-emerald-400"
+              title="Catching the car ahead"
+              aria-label="Catching the car ahead"
+            >
+              <ChevronsUp size={12} strokeWidth={3} />
+            </span>
+          )}
+        </span>
+        <span className="inline-block w-3">
+          {row.overtake && (
+            <span
+              className="inline-flex text-yellow-300"
+              title="Overtake Mode"
+              aria-label="Overtake Mode"
+            >
+              <Zap size={12} strokeWidth={3} fill="currentColor" />
+            </span>
+          )}
+        </span>
+      </span>
+      {row.interval}
+    </span>
+  </td>
+);
 
 interface TowerRowProps {
   row: Row;
   race: boolean;
   qualifying: boolean;
+  fit: Fit;
   lapOwner: boolean;
   selected: boolean;
   tint: string;
@@ -215,6 +258,7 @@ const TowerRow = ({
   row,
   race,
   qualifying,
+  fit,
   lapOwner,
   selected,
   tint,
@@ -225,110 +269,83 @@ const TowerRow = ({
   bind,
   onToggle,
   children,
-}: TowerRowProps) => (
-  <tr
-    ref={bind}
-    onClick={onToggle}
-    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : tint} ${row.status === "OUT" ? "opacity-40" : ""}`}
-  >
-    <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
-      {children}
-      <span className="flex items-center justify-between gap-1">
-        <SwapArrow swap={swap} />
-        {row.position}
-      </span>
-    </td>
-    <td className="px-1 py-1 sm:px-2">
-      <span className="flex w-max items-center gap-1 sm:gap-2">
-        <TeamLogo team={row.team} className="hidden h-4 w-6 sm:block" />
-        <span className="font-semibold" title={row.name}>
-          {row.tla}
+}: TowerRowProps) => {
+  const pad = fit.wide ? "px-2" : "px-1";
+  const gap = row.position === 1 && race && !relative ? "Leader" : row.gap;
+  return (
+    <tr
+      ref={bind}
+      onClick={onToggle}
+      className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : tint} ${row.status === "OUT" ? "opacity-40" : ""}`}
+    >
+      <td className={`${pad} py-1 text-right text-zinc-400`}>
+        {children}
+        <span className="flex items-center justify-between gap-1">
+          <SwapArrow swap={swap} />
+          {row.position}
         </span>
-        {lapOwner && (
-          <span
-            className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
-            title="Fastest lap owner"
-            aria-label="Fastest lap owner"
-          >
-            <Timer className="size-3" strokeWidth={2.5} />
+      </td>
+      <td className={`${pad} py-1`}>
+        <span
+          className={`flex w-max items-center ${fit.wide ? "gap-2" : "gap-1"}`}
+        >
+          {fit.wide && <TeamLogo team={row.team} className="block h-4 w-6" />}
+          <span className="font-semibold" title={row.name}>
+            {row.tla}
           </span>
+          {lapOwner && (
+            <span
+              className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
+              title="Fastest lap owner"
+              aria-label="Fastest lap owner"
+            >
+              <Timer className="size-3" strokeWidth={2.5} />
+            </span>
+          )}
+          <Call title={row.investigation} tone="bg-yellow-400 text-black" />
+          <Call title={row.penalty} tone="bg-red-600 text-white" />
+        </span>
+      </td>
+      {race && fit.wide && <Gained gained={row.gained} />}
+      <td className={`box-content w-[8ch] ${pad} py-1 text-right`}>
+        {row.status && !fit.status ? (
+          <span className="text-zinc-400">{row.status}</span>
+        ) : (
+          gap
         )}
-        <Call title={row.investigation} tone="bg-yellow-400 text-black" />
-        <Call title={row.penalty} tone="bg-red-600 text-white" />
-      </span>
-    </td>
-    {race && (
-      <td
-        className={`hidden px-1 py-1 text-right sm:table-cell sm:px-2 ${row.gained ? (row.gained > 0 ? "text-emerald-400" : "text-red-500") : "text-zinc-500"}`}
-      >
-        {row.gained === null
-          ? ""
-          : row.gained
-            ? `${row.gained > 0 ? "▲" : "▼"}${Math.abs(row.gained)}`
-            : "–"}
       </td>
-    )}
-    <td className="box-content w-[8ch] px-1 py-1 text-right sm:px-2">
-      <Gap
-        status={row.status}
-        gap={row.position === 1 && race && !relative ? "Leader" : row.gap}
-      />
-    </td>
-    {race && (
-      <td className="box-content w-[calc(7ch+2rem)] px-1 py-1 text-right text-zinc-400 sm:px-2">
-        <span className={`flex items-center justify-between gap-1 ${hide}`}>
-          <span className="flex gap-1">
-            <span className="inline-block w-3">
-              {row.catching && (
-                <span
-                  className="inline-flex text-emerald-400"
-                  title="Catching the car ahead"
-                  aria-label="Catching the car ahead"
-                >
-                  <ChevronsUp size={12} strokeWidth={3} />
-                </span>
-              )}
-            </span>
-            <span className="inline-block w-3">
-              {row.overtake && (
-                <span
-                  className="inline-flex text-yellow-300"
-                  title="Overtake Mode"
-                  aria-label="Overtake Mode"
-                >
-                  <Zap size={12} strokeWidth={3} fill="currentColor" />
-                </span>
-              )}
-            </span>
-          </span>
-          {row.interval}
-        </span>
-      </td>
-    )}
-    <td
-      className={`px-1 py-1 text-right sm:table-cell sm:px-2 ${hiddenIf(qualifying)} ${MARK[row.lastMark]}`}
-    >
-      <span className={hide}>{row.lastLap}</span>
-    </td>
-    <td
-      className={`px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2 ${hiddenIf(!qualifying)}`}
-    >
-      <span className={hide}>{row.bestLap}</span>
-    </td>
-    {!race && (
-      <td className="px-1 py-1 sm:px-2">
-        {hide && <Stints stints={row.stints} scale={scale} />}
-        <div className={hide}>
-          <Sectors sectors={row.sectors} qualifying={qualifying} />
-        </div>
-      </td>
-    )}
-    <TyreCells row={row} race={race} hide={hide} scale={scale} />
-    <td className="hidden px-1 py-0 text-xs leading-none text-zinc-400 sm:table-cell sm:px-2">
-      {row.status}
-    </td>
-  </tr>
-);
+      {fit.int && <Interval row={row} pad={pad} hide={hide} />}
+      {fit.last && (
+        <td className={`${pad} py-1 text-right ${MARK[row.lastMark]}`}>
+          <span className={hide}>{row.lastLap}</span>
+        </td>
+      )}
+      {fit.best && (
+        <td className={`${pad} py-1 text-right text-zinc-300`}>
+          <span className={hide}>{row.bestLap}</span>
+        </td>
+      )}
+      {fit.sectors && (
+        <td className={`${pad} py-1`}>
+          {hide && <Stints stints={row.stints} scale={scale} wide={fit.wide} />}
+          <div className={hide}>
+            <Sectors
+              sectors={row.sectors}
+              qualifying={qualifying}
+              wide={fit.wide}
+            />
+          </div>
+        </td>
+      )}
+      <TyreCells row={row} race={race} fit={fit} hide={hide} scale={scale} />
+      {fit.status && (
+        <td className="px-2 py-0 text-xs leading-none text-zinc-400">
+          {row.status}
+        </td>
+      )}
+    </tr>
+  );
+};
 
 export const TimingTower = ({
   rows,
@@ -347,8 +364,8 @@ export const TimingTower = ({
   const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
   const tyres = view === "Tyres";
   const hide = tyres ? "invisible" : "";
-  const cover = race ? hide : "";
   const table = useCover(tyres);
+  const fit = useFit(table, race, qualifying);
   const scale = Math.max(
     1,
     ...rows.map((r) => r.stints.reduce((total, s) => total + s.laps, 0)),
@@ -356,111 +373,28 @@ export const TimingTower = ({
   const widths = [0, 1, 2].map((i) =>
     Math.max(0, ...rows.map((r) => r.sectors[i]?.segments.length ?? 0)),
   );
-  const bestRow = !race && !tyres;
-  const strip = bestRow ? "sm:hidden" : "sm:contents";
+  const bestRow = !race && !tyres && fit.last && fit.best;
   return (
-    <div className="bg-surface flex flex-col overflow-x-auto rounded-xl pb-1.5">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-2 py-2 text-xs sm:px-3">
+    <div className="bg-surface flex flex-col overflow-x-clip rounded-xl pb-1.5">
+      <div
+        className={`flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 py-2 text-xs ${fit.wide ? "px-3" : "px-2"}`}
+      >
         <Tabs items={VIEWS} value={view} onChange={setView} small />
-        <span
-          className={`font-f1 tracking-wider text-zinc-500 uppercase ${bestRow ? "sm:hidden" : ""}`}
-        >
-          Session best
-        </span>
-        <div
-          className={`flex w-full flex-wrap justify-between text-[10px] sm:w-auto sm:text-xs ${strip}`}
-        >
-          {[...bests.sectors, bests.lap].map((best, i) => (
-            <span
-              key={i}
-              className="flex items-center gap-0.5 font-mono sm:gap-1.5"
-            >
-              <span className="text-zinc-500">
-                {i === 3 ? "Lap" : `S${i + 1}`}
-              </span>
-              {best ? (
-                <span className="flex gap-1 font-semibold sm:gap-[1ch]">
-                  <span style={{ color: ink(best.color) }}>{best.tla}</span>
-                  <span className="text-purple">{best.value}</span>
-                </span>
-              ) : (
-                <span className="text-zinc-600">—</span>
-              )}
-            </span>
-          ))}
-        </div>
+        {!bestRow && <SessionBest bests={bests} wide={fit.wide} />}
       </div>
       <table
         ref={table}
-        className="tabular w-full grow font-mono text-xs sm:text-sm"
+        className={`tabular w-full grow font-mono ${fit.wide ? "text-sm" : "text-xs"}`}
       >
-        <thead className="text-left text-xs text-zinc-500">
-          <tr className="relative">
-            <th className="px-1 py-2 text-right sm:px-2">P</th>
-            <th className="px-1 py-2 sm:px-2">Driver</th>
-            {race && (
-              <th
-                className="hidden px-1 py-2 text-right sm:table-cell sm:px-2"
-                title="Places gained or lost since the start"
-              >
-                +/−
-              </th>
-            )}
-            <th
-              className="px-1 py-2 text-right sm:px-2"
-              title={cut ? `Gap to the time of P${cut}` : undefined}
-            >
-              {race ? "Gap" : cut ? "Cut" : "Diff"}
-            </th>
-            {race && (
-              <th data-tyres className={`px-1 py-2 text-right sm:px-2 ${hide}`}>
-                Int
-              </th>
-            )}
-            <th
-              data-tyres
-              className={`px-1 py-2 text-right sm:table-cell sm:px-2 ${hiddenIf(qualifying)} ${hide}`}
-            >
-              Last
-            </th>
-            <th
-              data-tyres
-              className={`px-1 py-2 text-right sm:table-cell sm:px-2 ${hiddenIf(!qualifying)} ${hide}`}
-            >
-              Best
-            </th>
-            {!race && (
-              <th data-tyres className={`px-1 py-2 sm:px-2 ${hide}`}>
-                {tyres && <Cover>Stints</Cover>}
-                Sectors
-              </th>
-            )}
-            <th
-              data-tyres={race || undefined}
-              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${cover}`}
-            >
-              {cover && <Cover>Stints</Cover>}
-              Tyre
-            </th>
-            <th
-              data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
-            >
-              Pits
-            </th>
-            <th
-              data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
-              title="Stationary time of the last pit stop"
-            >
-              Stop
-            </th>
-            <th className="hidden px-1 py-2 sm:table-cell sm:px-2" />
-          </tr>
-        </thead>
+        <TowerHead race={race} cut={cut} fit={fit} tyres={tyres} />
         <tbody>
           {bestRow && (
-            <BestRow bests={bests} widths={widths} qualifying={qualifying} />
+            <BestRow
+              bests={bests}
+              widths={widths}
+              qualifying={qualifying}
+              rest={+fit.tyre + 2 * +fit.pits + +fit.status}
+            />
           )}
           {relative.map((r, i) => (
             <TowerRow
@@ -468,6 +402,7 @@ export const TimingTower = ({
               row={r}
               race={race}
               qualifying={qualifying}
+              fit={fit}
               lapOwner={bests.lap?.number === r.number}
               selected={selected.has(r.number)}
               tint={r.tla === favourite?.code ? FAVOURITE_ROW : teamRow(r.team)}
