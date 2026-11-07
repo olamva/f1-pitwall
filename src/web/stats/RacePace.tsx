@@ -99,7 +99,18 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
         onChange={setView}
         drive={blob}
         render={(v) => (
-          <Panel title="Race and sprint pace: lap times">
+          <Panel
+            title="Race and sprint pace: lap times"
+            info={
+              <>
+                <p>
+                  Lap 1, in-laps, out-laps and laps slower than 107% of the best
+                  median are left out.
+                </p>
+                <p>{NOTES[v]}</p>
+              </>
+            }
+          >
             <div className="mb-3">
               <p className="flex justify-between gap-2 overflow-hidden text-sm">
                 {event && (
@@ -125,10 +136,6 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
                 onCommit={settle}
               />
             </div>
-            <p className="mb-2 text-xs text-zinc-500">
-              Lap 1, in-laps, out-laps and laps slower than 107% of the best
-              median are left out. {NOTES[v]}
-            </p>
             {laps.length ? (
               <div
                 data-pending={!pace.data}

@@ -132,7 +132,7 @@ const WidgetSheet = ({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-400">All widgets are on the screen.</p>
+        <p className="text-sm text-zinc-400">All widgets are added.</p>
       )}
       <div className="grid grid-cols-2 gap-2 pt-4 sm:flex sm:justify-end">
         <button

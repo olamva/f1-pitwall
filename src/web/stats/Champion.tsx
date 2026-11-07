@@ -22,7 +22,6 @@ interface ChampionProps {
 }
 
 interface RoadProps {
-  champ: Championship;
   season: Season;
   h: ReturnType<typeof honours>;
 }
@@ -167,7 +166,7 @@ export const Champion = ({
           </div>
         ))}
       </dl>
-      <Road champ={champ} season={season} h={h} />
+      <Road season={season} h={h} />
       {next && (
         <button
           type="button"
@@ -216,17 +215,11 @@ const Team = ({ id, name }: TeamProps) => {
   );
 };
 
-const Road = ({ champ, season, h }: RoadProps) => (
+const Road = ({ season, h }: RoadProps) => (
   <div className="mt-5 max-w-2xl xl:mt-8 xl:max-w-3xl">
-    <h3 className="font-f1 text-xs tracking-wider text-zinc-300 uppercase xl:text-sm">
+    <h3 className="font-f1 mb-3 text-xs tracking-wider text-zinc-300 uppercase xl:text-sm">
       Road to the title
     </h3>
-    <p className="mb-3 text-sm text-zinc-400 xl:text-base">
-      {champ === "drivers"
-        ? "The finish in each Grand Prix."
-        : "The best finish in each Grand Prix."}{" "}
-      {h.poles > 0 && `${h.poles} ${h.poles === 1 ? "pole" : "poles"}.`}
-    </p>
     <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5 xl:grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] xl:gap-2">
       {h.best.map((b, i) => {
         const r = season.rounds.find((x) => x.round === b.round);

@@ -66,18 +66,11 @@ export const Spoiler = ({
   return (
     <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-sm">
       <EyeOff aria-hidden="true" className="size-8 text-red-500" />
-      <div>
-        <h2 className="font-f1 font-bold">
-          <Flag country={shown[0].round.country} />
-          {shown[0].round.name} ·{" "}
-          {new Intl.ListFormat("en").format(shown.map((s) => LABEL[s.kind]))}
-        </h2>
-        <p className="mt-1 text-zinc-400">
-          {unasked.length
-            ? "New results are available. Do you want to see them?"
-            : "Spoiler mode hides these results."}
-        </p>
-      </div>
+      <h2 className="font-f1 font-bold">
+        <Flag country={shown[0].round.country} />
+        {shown[0].round.name} ·{" "}
+        {new Intl.ListFormat("en").format(shown.map((s) => LABEL[s.kind]))}
+      </h2>
       <div className="flex flex-wrap justify-center gap-3">
         <button
           onClick={() => setSeen(shown, "shown")}

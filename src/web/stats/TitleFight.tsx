@@ -21,6 +21,7 @@ import {
 import { pointsFor } from "../../shared/points.ts";
 import type { Season } from "../../shared/season.ts";
 import { DriverHover } from "../DriverCard.tsx";
+import { InfoPopover } from "../InfoPopover.tsx";
 import { ink } from "../ink.ts";
 import { Pick } from "../Pick.tsx";
 import { TeamHover } from "../TeamCard.tsx";
@@ -85,7 +86,6 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const code = (id: string) => who.get(id)?.code ?? id;
   const [a, b] = [code(focus), code(rival)];
   const states = new Set(m.cells.flat());
-  const blocker = limits.find((l) => l.from === null);
   const gap =
     table.find((s) => s.id === focus)!.points -
     table.find((s) => s.id === rival)!.points;
@@ -98,9 +98,6 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   };
   return (
     <div className="space-y-3">
-      <p className="text-sm text-zinc-400">
-        {`Each cell shows ${a}'s lead over ${b} after ${events[0]!.name}.${margin(null, 1) < 0 ? ` Negative numbers mean ${b} leads.` : ""}`}
-      </p>
       <div className="grid max-w-lg grid-cols-[auto_auto_repeat(11,minmax(0,1fr))] gap-0.5 text-[11px] tracking-tight">
         <span className="col-span-2" />
         <span className="col-span-11 pb-1 text-center text-[10px] tracking-wider text-zinc-500 uppercase">
@@ -152,14 +149,13 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
             </span>
           ))}
       </div>
-      <p className="text-sm text-zinc-400">
-        {blocker
-          ? `${a} cannot secure ${prize} at this event. Even if ${a} wins and ${code(blocker.id)} scores no points, ${code(blocker.id)} can still pass ${a} at later events.`
-          : states.has("rival-out") && limits.length > 0
-            ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
-            : !states.has("clinched") &&
-              `${a} cannot secure ${prize} at this event.`}
-      </p>
+      {!limits.some((l) => l.from === null) &&
+        states.has("rival-out") &&
+        limits.length > 0 && (
+          <p className="text-sm text-zinc-400">
+            {`If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`}
+          </p>
+        )}
     </div>
   );
 };
@@ -335,13 +331,15 @@ export const TitleFight = ({
       {fight && (
         <>
           <section className="bg-surface rounded-xl p-3">
-            <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
+            <h2 className="font-f1 mb-1 flex items-center gap-1 text-xs tracking-wider text-zinc-400 uppercase">
               {place ? `Who can still finish ${place}` : "Who can still win"}
+              <InfoPopover label="How the earliest decider works">
+                The earliest decider assumes that the driver wins every event
+                and that no rival scores.
+              </InfoPopover>
             </h2>
             <p className="mb-2 text-sm text-zinc-500">
-              {gain} points remain across {events.length} events. The earliest
-              decider assumes that the driver wins every event and that no rival
-              scores.
+              {gain} points remain across {events.length} events.
             </p>
             <Lineup
               champ={champ}
