@@ -15,6 +15,8 @@
     "shot": "node scripts/shot.ts",
     "shot:publish": "node scripts/shot-publish.ts",
     "perf": "node scripts/perf.ts",
+    "frames": "node scripts/frames.ts",
+    "ship": "node scripts/ship.ts",
     "worktree:cleanup": "node scripts/worktree-cleanup.ts"
   },
   "dependencies": {
