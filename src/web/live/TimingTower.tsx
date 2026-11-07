@@ -373,29 +373,36 @@ export const TimingTower = ({
   const widths = [0, 1, 2].map((i) =>
     Math.max(0, ...rows.map((r) => r.sectors[i]?.segments.length ?? 0)),
   );
-  const bestRow = !race && !tyres && fit.last && fit.best;
+  const bestRow = !race && fit.last && fit.best;
+  const tabs = <Tabs items={VIEWS} value={view} onChange={setView} small />;
   return (
     <div className="bg-surface flex flex-col overflow-x-clip rounded-xl pb-1.5">
-      <div
-        className={`flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 py-2 text-xs ${fit.wide ? "px-3" : "px-2"}`}
-      >
-        <Tabs items={VIEWS} value={view} onChange={setView} small />
-        {!bestRow && <SessionBest bests={bests} wide={fit.wide} />}
-      </div>
+      {!bestRow && (
+        <div
+          className={`flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 py-2 text-xs ${fit.wide ? "px-3" : "px-2"}`}
+        >
+          {tabs}
+          <SessionBest bests={bests} wide={fit.wide} />
+        </div>
+      )}
       <table
         ref={table}
         className={`tabular w-full grow font-mono ${fit.wide ? "text-sm" : "text-xs"}`}
       >
-        <TowerHead race={race} cut={cut} fit={fit} tyres={tyres} />
-        <tbody>
+        <TowerHead race={race} cut={cut} fit={fit} tyres={tyres}>
           {bestRow && (
             <BestRow
               bests={bests}
               widths={widths}
               qualifying={qualifying}
               rest={+fit.tyre + 2 * +fit.pits + +fit.status}
-            />
+              hide={hide}
+            >
+              {tabs}
+            </BestRow>
           )}
+        </TowerHead>
+        <tbody>
           {relative.map((r, i) => (
             <TowerRow
               key={r.number}

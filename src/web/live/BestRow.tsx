@@ -22,20 +22,36 @@ interface BestRowProps {
   widths: number[];
   qualifying: boolean;
   rest: number;
+  hide: string;
+  children: React.ReactNode;
 }
 
-export const BestRow = ({ bests, widths, qualifying, rest }: BestRowProps) => (
-  <tr className="border-t border-zinc-800 text-xs">
-    <td />
-    <td className="font-f1 px-2 py-1 tracking-wider text-zinc-500 uppercase">
-      Best
+export const BestRow = ({
+  bests,
+  widths,
+  qualifying,
+  rest,
+  hide,
+  children,
+}: BestRowProps) => (
+  <tr className="border-b border-zinc-800 text-xs">
+    <td colSpan={4} className="px-2 py-1.5 font-sans">
+      <span className="flex items-center justify-between gap-2">
+        {children}
+        <span
+          className={`font-f1 tracking-wider text-zinc-500 uppercase ${hide}`}
+        >
+          Best
+        </span>
+      </span>
     </td>
-    <td colSpan={2} />
     <td className="px-2 py-1">
-      <BestValue best={bests.lap} align="items-end" />
+      <span className={hide}>
+        <BestValue best={bests.lap} align="items-end" />
+      </span>
     </td>
     <td className="px-2 py-1">
-      <span className="flex gap-1.5">
+      <span className={`flex gap-1.5 ${hide}`}>
         {bests.sectors.map((best, i) => (
           <span
             key={i}
