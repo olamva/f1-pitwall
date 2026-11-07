@@ -408,6 +408,7 @@ export const Dashboard = ({
               .map((c) => `minmax(0, ${c.w}fr)`)
               .join(" "),
             gridTemplateRows: `repeat(${total}, ${ROW}px)`,
+            marginBottom: sticky.size ? -GAP : undefined,
           }}
         >
           <div
