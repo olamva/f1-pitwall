@@ -2,7 +2,9 @@ import {
   createContext,
   useContext,
   useEffect,
+  useState,
   type ComponentProps,
+  type ReactNode,
 } from "react";
 import type { DriverInfo } from "../shared/season.ts";
 
@@ -85,7 +87,17 @@ export const Figure = ({ id, pose, transform, ...props }: FigureProps) => (
   />
 );
 
-export const Car = ({ id, pose, transform, ...props }: FigureProps) => {
+interface CarProps extends FigureProps {
+  fallback?: ReactNode;
+}
+
+export const Car = ({ id, pose, transform, fallback, ...props }: CarProps) => {
   const art = lineup(useContext(Faces), id)[0]?.art;
-  return art && <Headshot src={carSrc(art, pose, transform)} {...props} />;
+  const src = art && carSrc(art, pose, transform);
+  const [failed, setFailed] = useState<string>();
+  return src && src !== failed ? (
+    <img alt="" {...props} src={src} onError={() => setFailed(src)} />
+  ) : (
+    fallback
+  );
 };

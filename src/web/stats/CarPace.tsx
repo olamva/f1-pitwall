@@ -158,6 +158,19 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
                   pose="right"
                   alt={t.label}
                   className="group-data-[pending=true]:animate-rumble w-32 max-w-none drop-shadow-[0_4px_6px_rgb(0_0_0_/_0.35)]"
+                  fallback={
+                    <span
+                      role="img"
+                      aria-label={t.label}
+                      className="group-data-[pending=true]:animate-rumble flex h-8 w-32 items-center gap-1"
+                    >
+                      <span
+                        className="h-1 flex-1 rounded-full"
+                        style={{ background: t.color }}
+                      />
+                      <TeamLogo team={t.id} className="block h-7 w-9" />
+                    </span>
+                  }
                 />
               </TeamHover>
             </div>
