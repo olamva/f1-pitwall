@@ -251,3 +251,20 @@ console.log(
     branchRemoved: apply && !!local,
   }),
 );
+const booted = spawnSync(
+  "xcrun",
+  ["simctl", "list", "devices", "booted", "--json"],
+  { encoding: "utf8" },
+);
+const simulators =
+  booted.status !== 0
+    ? []
+    : Object.values(
+        JSON.parse(booted.stdout).devices as Record<string, { name: string }[]>,
+      )
+        .flat()
+        .map((device) => device.name);
+if (simulators.length)
+  console.error(
+    `Booted simulators: ${simulators.join(", ")}. Shut down the ones that you opened.`,
+  );

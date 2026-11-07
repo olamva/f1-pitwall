@@ -5,6 +5,7 @@ import { parseArgs } from "node:util";
 import { chromium, webkit, type Browser } from "playwright-core";
 import { checkout, git } from "./checkout.ts";
 import { guard } from "./dev.ts";
+import { lock, LOCK } from "./lock.ts";
 
 process.on("uncaughtException", (error) => {
   console.error(error.message);
@@ -43,6 +44,7 @@ Each browser gets new servers, so both states replay the same minutes.`);
   process.exit(0);
 }
 
+await lock(LOCK, "Waiting for another pnpm shot or pnpm perf run to finish.");
 const path = positionals[0] ?? "/";
 const seconds = Number(o.seconds);
 const env = `--env-file-if-exists=${git("rev-parse", "--path-format=absolute", "--git-common-dir")}/../.env`;

@@ -46,6 +46,8 @@ Report cleanup only when it failed or is blocked.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
 Create each temporary checkout with `git worktree add --detach` under `/tmp`. Remove it with `git worktree remove` after you check it for local files.
 Stop every dev server and preview process that you started before the final response.
+Shut down each simulator that you opened with `device_close` and `shutdown: true` before the final response. A booted simulator uses about 700 MB of memory.
+The cleanup output lists the booted simulators. Shut down the ones that you opened.
 
 ## Findings
 
