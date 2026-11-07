@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
+import { Splits } from "./Splits.tsx";
 import { Tile, TOP } from "./Tile.tsx";
 import { useDiscard, useLayout } from "./useLayout.ts";
 import { floor, pin, settle, useSlide } from "./useSlide.ts";
@@ -421,6 +422,9 @@ export const Dashboard = ({
               Tap + to add a widget.
             </p>
           )}
+          {editing && (
+            <Splits columns={saved} onDraft={setDraft} onSave={setSaved} />
+          )}
           {(Object.keys(WIDGETS) as WidgetId[]).flatMap((id, n) => {
             const spot = placed.get(id);
             const col = columns.findIndex((c) =>
@@ -441,7 +445,6 @@ export const Dashboard = ({
                     : null
                 }
                 fixed={fixed.get(id) != null}
-                edge={col === columns.length - 1}
                 editing={editing}
                 moving={active?.id === id && active.kind === "move"}
                 held={active?.id === id}
