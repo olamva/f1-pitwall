@@ -305,7 +305,8 @@ export const Swipe = <T extends string>({
           event.pointerType !== "touch" ||
           !event.isPrimary ||
           edged(event) ||
-          blocked(event.target)
+          blocked(event.target) ||
+          root.current!.querySelector(":scope > :not([inert]) [data-focus]")
         )
           return;
         drag.current = {
