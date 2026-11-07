@@ -114,7 +114,7 @@ export const Dashboard = ({
   const contents = useRef(new Map<string, HTMLDivElement>());
   const drag = useRef<Drag | null>(null);
   const draftRef = useRef<Column[] | null>(null);
-  const frozen = useRef(new Set<string>());
+  const frozen = useRef(new Map<string, number>());
   const discard = useDiscard(editing);
   const columns = draft ?? saved;
   const fixed = new Map(
@@ -136,12 +136,13 @@ export const Dashboard = ({
     return editing ? Math.max(EDIT_MIN, r) : r;
   };
   const { spots: placed, ends } = place(columns, rows);
-  const { over, sticky, stretch } = stick(
+  const { over, sticky, stretch, push } = stick(
     columns,
     placed,
     ends,
     avail,
-    (id) => height(id) === "fill",
+    height,
+    (id) => px[id] ?? 0,
   );
   frozen.current = stretch;
   const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
@@ -185,8 +186,8 @@ export const Dashboard = ({
     const card = d && cards.current.get(d.id);
     const cell = d && cells.current.get(d.id);
     if (!d || !card || !cell || d.kind !== "move" || !d.live) return;
-    const box = grid.current!.getBoundingClientRect();
-    card.style.translate = `${d.x - d.dx - box.left - cell.offsetLeft}px ${d.y - d.dy - box.top - cell.offsetTop}px`;
+    const at = cell.getBoundingClientRect();
+    card.style.translate = `${d.x - d.dx - at.left}px ${d.y - d.dy - at.top}px`;
   };
 
   useLayoutEffect(follow);
@@ -440,11 +441,8 @@ export const Dashboard = ({
                 col={col}
                 spot={spot}
                 lift={spot && sticky.has(spot.col) ? over[spot.col]! : null}
-                tall={
-                  spot && stretch.has(id)
-                    ? Math.max(0, avail - spot.top * ROW)
-                    : null
-                }
+                tall={stretch.get(id) ?? null}
+                push={push.get(id)}
                 fixed={fixed.get(id) != null}
                 editing={editing}
                 moving={active?.id === id && active.kind === "move"}

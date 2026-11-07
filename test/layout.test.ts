@@ -134,26 +134,44 @@ test("a drag picks an edge column only when there is room and the pointer moved 
 });
 
 test("columns of a multi-column board stick, and a column taller than the screen lifts by its overflow", () => {
-  const fill = (id: string) => id === "c" || id === "tower";
+  const kind = (id: string) =>
+    id === "c" || id === "tower"
+      ? "fill"
+      : id.startsWith("w")
+        ? "content"
+        : "shrink";
   const screen = 600;
   const sticky = (columns: Column[]) => {
-    const { spots, ends } = place(columns, height);
-    return stick(columns, spots, ends, screen, fill);
+    const { spots, ends } = place(columns, (id) => height(id) || 6);
+    return stick(columns, spots, ends, screen, kind, () => 40);
   };
   const lone = sticky([col(12, "tower", "a")]);
   assert.deepEqual([...lone.sticky], []);
   assert.deepEqual([...lone.stretch], []);
   const short = sticky([col(7, "a"), col(5, "b", "c")]);
   assert.deepEqual(short.over, [0, 0]);
-  assert.deepEqual([...short.stretch], ["c"]);
+  assert.deepEqual([...short.stretch], [["c", screen - 30 * 8]]);
   const tall = sticky(board);
   assert.deepEqual([...tall.sticky], [0, 1]);
   assert.deepEqual(tall.over, [100 * 8 - 16 - screen - 1, 0]);
-  assert.deepEqual([...tall.stretch], ["c"]);
+  assert.deepEqual([...tall.stretch.keys()], ["c"]);
   const under = sticky([col(7, "tower", "a"), col(5, "b", "c")]);
   assert.equal(under.over[0], tall.over[0]! + 20 * 8);
   const fixed = [col(7, "a"), { w: 5, tiles: [{ id: "c", h: 10 }] }];
   assert.deepEqual([...sticky(fixed).stretch], []);
+  const weather = sticky([col(7, "a"), col(5, "c", "w", "w2")]);
+  assert.deepEqual([...weather.stretch], [["c", screen - 2 * (40 + 16)]]);
+  assert.deepEqual(
+    [...weather.push],
+    [
+      ["w2", screen - 40 - 16 * 8],
+      ["w", screen - 40 - 16 - 40 - 10 * 8],
+    ],
+  );
+  assert.deepEqual(
+    [...sticky([col(7, "a"), col(5, "c", "b", "w")]).stretch],
+    [],
+  );
 });
 
 test("a drag scrolls only near the screen edges, and never past the end of the board", () => {
