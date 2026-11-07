@@ -2,6 +2,8 @@ import {
   Check,
   ClipboardPaste,
   Copy,
+  Eye,
+  EyeOff,
   Laptop,
   LayoutDashboard,
   Monitor,
@@ -43,6 +45,8 @@ interface EditBarProps {
   size: Size;
   onSize: (size: Size) => void;
   missing: WidgetId[];
+  hideOff?: boolean;
+  onHideOff: (hide: boolean) => void;
   onAdd: (id: WidgetId) => void;
   onReset: () => void;
   onEdit: () => void;
@@ -171,6 +175,8 @@ export const EditBar = ({
   size,
   onSize,
   missing,
+  hideOff,
+  onHideOff,
   onAdd,
   onReset,
   onEdit,
@@ -244,6 +250,22 @@ export const EditBar = ({
       >
         <Plus aria-hidden="true" className="size-5" />
       </button>
+      {hideOff !== undefined && (
+        <button
+          type="button"
+          aria-label="Hide widgets that do not show in this session"
+          title="Hide widgets that do not show in this session"
+          aria-pressed={hideOff}
+          onClick={() => onHideOff(!hideOff)}
+          className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center"
+        >
+          {hideOff ? (
+            <EyeOff aria-hidden="true" className="size-5" />
+          ) : (
+            <Eye aria-hidden="true" className="size-5" />
+          )}
+        </button>
+      )}
       {sizes.length > 1 && (
         <Tabs
           small
