@@ -32,20 +32,20 @@ export const pin = (card: HTMLElement) =>
 export const settle = (card: HTMLElement) => {
   const { translate, width, height } = card.style;
   ["translate", "width", "height"].forEach((p) => card.style.removeProperty(p));
-  if (translate)
-    card.animate(
-      [
-        { translate, width, height, scale: 1.03, zIndex: 30 },
-        {
-          translate: "0 0",
-          width: `${card.offsetWidth}px`,
-          height: `${card.offsetHeight}px`,
-          scale: 1,
-          zIndex: 30,
-        },
-      ],
-      { duration: 250, easing: EASE },
-    );
+  if (!translate) return;
+  card.parentElement?.animate([{ zIndex: 30 }, { zIndex: 30 }], 250);
+  card.animate(
+    [
+      { translate, width, height, scale: 1.03 },
+      {
+        translate: "0 0",
+        width: `${card.offsetWidth}px`,
+        height: `${card.offsetHeight}px`,
+        scale: 1,
+      },
+    ],
+    { duration: 250, easing: EASE },
+  );
 };
 
 export const useSlide = (
