@@ -107,7 +107,7 @@ interface HeadingProps {
   focus: boolean;
 }
 
-const FocusHeading = ({ info }: Pick<HeadingProps, "info">) => {
+const Heading = ({ info, focus }: HeadingProps) => {
   const ref = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     const name = ref.current!;
@@ -131,23 +131,15 @@ const FocusHeading = ({ info }: Pick<HeadingProps, "info">) => {
     };
   }, []);
   return (
-    <h1 className="font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre max-md:hidden">
+    <h1
+      className={`font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre ${focus ? "max-md:hidden" : "max-md:max-w-none max-md:basis-full max-md:whitespace-normal"}`}
+    >
       <Flag country={info?.Meeting?.Country?.Name} />
       <span ref={ref}>{info?.Meeting?.Name} · </span>
       {info?.Name}
     </h1>
   );
 };
-
-const Heading = ({ info, focus }: HeadingProps) =>
-  focus ? (
-    <FocusHeading info={info} />
-  ) : (
-    <h1 className="font-f1 text-xl font-bold">
-      <Flag country={info?.Meeting?.Country?.Name} />
-      {info?.Meeting?.Name} · {info?.Name}
-    </h1>
-  );
 
 const SETTLE_MS = 5_000;
 
@@ -211,7 +203,6 @@ export const Board = ({
       {status.label}
     </div>
   );
-  const heading = <Heading info={state.SessionInfo} focus={focus} />;
   return (
     <div
       className="board space-y-4"
@@ -224,10 +215,9 @@ export const Board = ({
           : undefined
       }
     >
-      {focus || heading}
       <Status
         ref={row}
-        heading={focus && heading}
+        heading={<Heading info={state.SessionInfo} focus={focus} />}
         lap={state.LapCount}
         part={part}
         banner={banner}
