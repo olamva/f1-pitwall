@@ -38,18 +38,30 @@ export const stick = (
   spots: Map<string, Spot>,
   ends: number[],
   avail: number,
-  fill: (id: string) => boolean,
+  kind: (id: string) => string,
+  px: (id: string) => number,
 ) => {
   const over = ends.map((end) => Math.max(0, end * ROW - GAP - avail - 1));
   const sticky = new Set(columns.length < 2 ? [] : columns.keys());
-  const stretch = new Set(
-    [...sticky].flatMap((i) => {
-      if (over[i]) return [];
-      const last = columns[i]!.tiles.findLast((t) => spots.has(t.id));
-      return last && last.h === null && fill(last.id) ? [last.id] : [];
-    }),
-  );
-  return { over, sticky, stretch };
+  const stretch = new Map<string, number>();
+  const push = new Map<string, number>();
+  sticky.forEach((i) => {
+    const tiles = columns[i]!.tiles.filter((t) => spots.has(t.id));
+    const at = tiles.findLastIndex((t) => kind(t.id) !== "content");
+    const last = tiles[at];
+    if (over[i] || last?.h !== null || kind(last.id) !== "fill") return;
+    let bottom = avail;
+    tiles
+      .slice(at + 1)
+      .reverse()
+      .forEach((t) => {
+        bottom -= px(t.id);
+        push.set(t.id, bottom - spots.get(t.id)!.top * ROW);
+        bottom -= GAP;
+      });
+    stretch.set(last.id, Math.max(0, bottom - spots.get(last.id)!.top * ROW));
+  });
+  return { over, sticky, stretch, push };
 };
 
 export const autoscroll = (
