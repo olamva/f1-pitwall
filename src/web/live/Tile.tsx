@@ -10,16 +10,16 @@ type Bind = (el: HTMLDivElement | null) => void;
 const place = (
   col: number,
   spot: Spot | undefined,
-  stuck: boolean,
+  lift: number | null,
 ): CSSProperties =>
   spot
     ? {
         gridColumn: spot.col + 1,
-        gridRow: `${spot.top + 1} / ${stuck ? -1 : `span ${spot.height}`}`,
+        gridRow: `${spot.top + 1} / ${lift === null ? `span ${spot.height}` : -1}`,
         paddingBottom: GAP,
-        ...(stuck && {
+        ...(lift !== null && {
           position: "sticky",
-          top: `calc(${TOP} + ${spot.top * ROW}px)`,
+          top: `calc(${TOP} + ${spot.top * ROW - lift}px)`,
           alignSelf: "start",
         }),
       }
@@ -30,7 +30,7 @@ interface TileProps {
   index: number;
   col: number;
   spot: Spot | undefined;
-  stuck: boolean;
+  lift: number | null;
   tall: number | null;
   fixed: boolean;
   edge: boolean;
@@ -49,7 +49,7 @@ export const Tile = ({
   index,
   col,
   spot,
-  stuck,
+  lift,
   tall,
   fixed,
   edge,
@@ -66,7 +66,7 @@ export const Tile = ({
     ref={cell}
     onPointerDown={(e) => !editing && onPress("move", e)}
     className={`min-w-0 has-[.map-fullscreen]:z-50 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
-    style={place(col, spot, stuck)}
+    style={place(col, spot, lift)}
   >
     {moving && (
       <div className="absolute inset-x-0 top-0 bottom-4 rounded-xl border-2 border-dashed border-zinc-600 bg-zinc-500/10" />

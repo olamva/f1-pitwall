@@ -160,15 +160,15 @@ export const Dashboard = ({
     return editing ? Math.max(EDIT_MIN, r) : r;
   };
   const { spots: placed, ends } = place(columns, rows);
+  const over = ends.map((end) => Math.max(0, end * ROW - GAP - avail - 1));
   const sticky = new Set(
     columns.length < 2
       ? []
-      : columns.flatMap((c, i) =>
-          ends[i]! * ROW - GAP <= avail + 1 ? [i] : [],
-        ),
+      : columns.flatMap((c, i) => (!editing || !over[i] ? [i] : [])),
   );
   const stretch = new Set(
     [...sticky].flatMap((i) => {
+      if (over[i]) return [];
       const last = columns[i]!.tiles.findLast((t) => placed.has(t.id));
       return last && last.h === null && height(last.id) === "fill"
         ? [last.id]
@@ -455,7 +455,7 @@ export const Dashboard = ({
                 index={n}
                 col={col}
                 spot={spot}
-                stuck={!!spot && sticky.has(spot.col)}
+                lift={spot && sticky.has(spot.col) ? over[spot.col]! : null}
                 tall={
                   spot && stretch.has(id)
                     ? Math.max(0, avail - spot.top * ROW)
