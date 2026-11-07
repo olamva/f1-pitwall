@@ -102,6 +102,22 @@ const Status = ({
   </div>
 );
 
+interface HeadingProps {
+  info: Record<string, any> | undefined;
+  focus: boolean;
+}
+
+const Heading = ({ info, focus }: HeadingProps) => (
+  <h1
+    className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-sm:hidden" : ""}`}
+  >
+    <Flag country={info?.Meeting?.Country?.Name} />
+    <span className={focus ? "truncate" : ""}>{info?.Meeting?.Name}</span>
+    {" · "}
+    {info?.Name}
+  </h1>
+);
+
 const SETTLE_MS = 5_000;
 
 export const Board = ({
@@ -164,18 +180,7 @@ export const Board = ({
       {status.label}
     </div>
   );
-  const heading = (
-    <h1
-      className={`font-f1 text-xl font-bold ${focus ? "flex max-w-max min-w-0 grow-[1000] basis-0 whitespace-pre max-sm:hidden" : ""}`}
-    >
-      <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
-      <span className={focus ? "truncate" : ""}>
-        {state.SessionInfo?.Meeting?.Name}
-      </span>
-      {" · "}
-      {state.SessionInfo?.Name}
-    </h1>
-  );
+  const heading = <Heading info={state.SessionInfo} focus={focus} />;
   return (
     <div
       className="board space-y-4"
