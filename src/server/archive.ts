@@ -420,7 +420,8 @@ const CACHED = 2;
 const cache = new Map<string, Promise<Replay>>();
 
 export function replay(path: string): Promise<Replay> {
-  if (!/^\d{4}\/[\w\-.]+\/[\w\-.]+\/$/.test(path)) throw new Error("bad path");
+  if (!/^\d{4}\/[\p{L}\p{N}_\-.]+\/[\p{L}\p{N}_\-.]+\/$/u.test(path))
+    throw new Error("bad path");
   const r = cache.get(path) ?? load(path);
   cache.delete(path);
   cache.set(path, r);

@@ -1,7 +1,6 @@
 import {
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -10,10 +9,10 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
-import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
 import { Splits } from "./Splits.tsx";
 import { Tile, TOP } from "./Tile.tsx";
+import { useDiscard, useLayout } from "./useLayout.ts";
 import { edge, floor, pin, settle, useSlide } from "./useSlide.ts";
 import {
   add,
@@ -36,7 +35,6 @@ import {
 import {
   DEFAULT_LAYOUT,
   height,
-  isWidget,
   rowsFor,
   WIDGETS,
   type WidgetId,
@@ -46,11 +44,6 @@ const QUERIES = [
   "(width >= 80rem) and (pointer: fine)",
   "(width >= 48rem)",
 ].map(matchMedia);
-const KEYS: Record<Size, string> = {
-  phone: "layoutPhone",
-  tablet: "layoutTablet",
-  desktop: "layoutDesktop",
-};
 const PREVIEW: Record<Size, string | undefined> = {
   phone: "430px",
   tablet: "calc(1210px - 2rem)",
@@ -69,25 +62,6 @@ const useSize = () =>
     return () =>
       QUERIES.forEach((q) => q.removeEventListener("change", change));
   }, sizeNow);
-
-const useLayout = (size: Size) => {
-  const raw = useSyncExternalStore(subscribe, () =>
-    localStorage.getItem(KEYS[size]),
-  );
-  const columns = useMemo<Column[]>(
-    () =>
-      tidy(
-        (JSON.parse(raw ?? "null") ?? DEFAULT_LAYOUT[size]).map(
-          (c: Column) => ({
-            ...c,
-            tiles: c.tiles.filter((t) => isWidget(t.id)),
-          }),
-        ),
-      ),
-    [raw, size],
-  );
-  return [columns, (next: Column[]) => save(KEYS[size], tidy(next))] as const;
-};
 
 const prevent = (e: TouchEvent) => e.preventDefault();
 
@@ -141,6 +115,7 @@ export const Dashboard = ({
   const drag = useRef<Drag | null>(null);
   const draftRef = useRef<Column[] | null>(null);
   const frozen = useRef(new Set<string>());
+  const discard = useDiscard(editing);
   const columns = draft ?? saved;
   const fixed = new Map(
     columns.flatMap((c) =>
@@ -415,6 +390,13 @@ export const Dashboard = ({
               setAdded(id);
             }}
             onReset={() => setSaved(DEFAULT_LAYOUT[size])}
+            onDiscard={
+              discard &&
+              (() => {
+                discard();
+                onDone();
+              })
+            }
             onDone={onDone}
           />,
           slot,
