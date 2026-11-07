@@ -324,7 +324,7 @@ const TowerRow = ({
       </td>
     )}
     <TyreCells row={row} race={race} hide={hide} scale={scale} />
-    <td className="hidden px-1 py-1 text-xs text-zinc-400 sm:table-cell sm:px-2">
+    <td className="hidden px-1 py-0 text-xs leading-none text-zinc-400 sm:table-cell sm:px-2">
       {row.status}
     </td>
   </tr>

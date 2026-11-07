@@ -373,7 +373,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
       />
       {!current && <p className="text-sm text-zinc-500">No radio yet.</p>}
       {current && (
-        <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
+        <div className="mb-3 flex flex-col overflow-hidden rounded-md bg-zinc-950">
           <div className="relative flex items-stretch hover:bg-zinc-800">
             <span
               className="grid w-16 shrink-0 place-items-center"
@@ -409,7 +409,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               )}
             </button>
           </div>
-          <div className="h-0.5 bg-zinc-800">
+          <div className="h-0.5 shrink-0 bg-zinc-800">
             <div
               className="h-full"
               style={{
@@ -418,7 +418,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               }}
             />
           </div>
-          <div className="flex min-h-28 flex-col justify-between gap-2 px-3 py-3">
+          <div className="filled:min-h-0 flex min-h-28 flex-col justify-between gap-2 overflow-y-auto px-3 py-3">
             <Transcript key={current.url} clip={current} color={color} />
             <p className="tabular font-mono text-xs text-zinc-500">
               {time(current.utc)} · {clip(at.t)} / {at.d ? clip(at.d) : "–:––"}
@@ -426,7 +426,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
           </div>
         </div>
       )}
-      <ul className="filled:max-h-none filled:min-h-0 filled:flex-1 max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
+      <ul className="filled:max-h-none filled:min-h-24 filled:flex-1 max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
         {shown.map((r) => {
           const active = r.url === current?.url;
           const d = by.get(r.number);
