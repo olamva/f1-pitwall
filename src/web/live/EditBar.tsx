@@ -169,7 +169,7 @@ const Sheet = ({
             All widgets are on the screen.
           </p>
         )}
-        <div className="grid grid-cols-2 gap-2 pt-4">
+        <div className="grid grid-cols-2 gap-2 pt-4 sm:flex sm:justify-end">
           <button
             type="button"
             onClick={() =>
