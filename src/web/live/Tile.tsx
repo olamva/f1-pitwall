@@ -35,7 +35,6 @@ interface TileProps {
   lift: number | null;
   tall: number | null;
   fixed: boolean;
-  edge: boolean;
   editing: boolean;
   moving: boolean;
   held: boolean;
@@ -55,7 +54,6 @@ export const Tile = ({
   lift,
   tall,
   fixed,
-  edge,
   editing,
   moving,
   held,
@@ -119,12 +117,12 @@ export const Tile = ({
           >
             <Minus aria-hidden="true" className="size-4" strokeWidth={3} />
           </button>
-          {(WIDGETS[id].height !== "content" || !edge) && (
+          {WIDGETS[id].height !== "content" && (
             <span
               role="presentation"
               title="Drag to resize"
               onPointerDown={(e) => onPress("size", e)}
-              className={`absolute right-0 bottom-0 size-12 touch-none ${WIDGETS[id].height === "content" ? "cursor-ew-resize" : "cursor-nwse-resize"}`}
+              className="absolute right-0 bottom-0 size-12 cursor-nwse-resize touch-none"
             >
               <span className="light:border-zinc-400 absolute right-1 bottom-1 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
             </span>
