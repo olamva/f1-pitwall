@@ -40,7 +40,7 @@ export type Feed = Snapshot & {
 export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
   const state = { ...f.state } as Record<string, Json>;
   let { t, beat } = f;
-  const positionTrail: PositionTrail = [];
+  const positionTrail: PositionTrail = [...(f.positionTrail ?? [])];
   for (const [topic, data, at] of batch) {
     t = at;
     if (topic === "Clock") continue;
@@ -62,6 +62,7 @@ export const buffer = () => {
       void queue.splice(queue.findLastIndex(([t]) => t <= at) + 1, 0, [at, u]),
     flush: (cut: number) => {
       if (!(queue.length && queue[0][0] <= cut)) return undefined;
+      feed = feed && { ...feed, positionTrail: [] };
       while (queue.length && queue[0][0] <= cut) feed = queue.shift()![1](feed);
       return feed;
     },

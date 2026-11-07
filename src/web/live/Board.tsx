@@ -18,9 +18,9 @@ import {
 import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
 import { setSearchParam } from "../path.ts";
-import { useProjectedLap } from "../projectedLap.ts";
 import { useTokenHidden } from "../tokenHidden.ts";
-import { cutGaps, projectLaps } from "./knockout.ts";
+import { cutGaps } from "./knockout.ts";
+import { useProjected } from "./liveLap.ts";
 import { Dashboard } from "./Dashboard.tsx";
 import { contested, standings } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
@@ -176,7 +176,6 @@ export const Board = ({
     return () => observer.disconnect();
   }, [focus]);
   const hideMap = useTokenHidden() && !!positionsNote;
-  const projectedLap = useProjectedLap();
   const state = feed.state as Record<string, any>;
   const timed = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, timed), [state, timed]);
@@ -190,16 +189,23 @@ export const Board = ({
       return lap && r.bestLap ? [[r.number, lap] as const] : [];
     }),
   );
-  const rows =
-    projectedLap && isQualifying(state.SessionInfo)
-      ? projectLaps(timed, pbs, bests)
-      : timed;
+  const [driver] = selected;
+  const rows = useProjected({
+    rows: timed,
+    pbs,
+    bests,
+    driver,
+    qualifying: isQualifying(state.SessionInfo),
+    laps,
+    outline,
+    trail: feed.positionTrail,
+    traceUrl,
+  });
   const race = isRace(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
-  const [driver] = selected;
   const table = standings(state, rounds);
   const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
   const compare = rows.flatMap((r) => {

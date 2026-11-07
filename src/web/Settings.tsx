@@ -257,6 +257,10 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
         <GlassSwitch checked={projectedLap} onChange={setProjectedLap}>
           Predict the lap time of each car on a push lap
         </GlassSwitch>
+        <p className="text-sm text-zinc-400">
+          The prediction updates after each sector. Select a driver to update it
+          continuously from the car position.
+        </p>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Replays</h2>

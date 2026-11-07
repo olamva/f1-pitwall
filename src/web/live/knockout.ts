@@ -34,27 +34,48 @@ const sum = (xs: (number | null)[]) =>
     0,
   );
 
+export const reference = (
+  number: string,
+  pbs: Record<string, LapRow>,
+  bests: SessionBests,
+) => {
+  const lap = lapSeconds(bests.lap?.value ?? "") ?? Infinity;
+  return [number, bests.lap?.number ?? ""]
+    .map((n) => ({ number: n, lap: pbs[n] }))
+    .find((r) => r.lap && lapSeconds(r.lap.time)! <= lap * PUSH);
+};
+
+const fromSectors = (r: Row, ref: (number | null)[]) => {
+  const done = r.sectors.map((s) => lapSeconds(s.value));
+  const at = done.indexOf(null);
+  const sofar = sum(done.slice(0, at));
+  const pace = sum(ref.slice(0, at));
+  const rest = sum(ref.slice(at));
+  return at > 0 &&
+    ref.length > 2 &&
+    sofar &&
+    pace &&
+    rest &&
+    sofar <= pace * PUSH
+    ? sofar + rest
+    : null;
+};
+
 export const projectLaps = (
   rows: Row[],
   pbs: Record<string, LapRow>,
   bests: SessionBests,
+  live?: { number: string | undefined; seconds: number | null },
 ): Row[] => {
   const lap = lapSeconds(bests.lap?.value ?? "") ?? Infinity;
-  const fallback = pbs[bests.lap?.number ?? ""];
   return rows.map((r) => {
-    const done = r.sectors.map((s) => lapSeconds(s.value));
-    const at = done.indexOf(null);
-    const ref =
-      [pbs[r.number], fallback]
-        .find((l) => l && lapSeconds(l.time)! <= lap * PUSH)
-        ?.sectors.map(lapSeconds) ?? [];
-    const sofar = sum(done.slice(0, at));
-    const pace = sum(ref.slice(0, at));
-    const rest = sum(ref.slice(at));
-    if (r.status || at < 1 || ref.length < 3 || !sofar || !pace || !rest)
-      return r;
-    if (sofar > pace * PUSH) return r;
-    const seconds = sofar + rest;
+    const ref = reference(r.number, pbs, bests)?.lap;
+    const pace = lapSeconds(ref?.time ?? "") ?? 0;
+    const pushed = (lapSeconds(r.lastLap) ?? Infinity) <= pace * PUSH;
+    const seconds =
+      (r.number === live?.number && !pushed && live.seconds) ||
+      fromSectors(r, (ref?.sectors ?? []).map(lapSeconds));
+    if (r.status || !seconds) return r;
     const mark =
       seconds < lap
         ? "overall"
