@@ -431,7 +431,7 @@ export const Dashboard = ({
         <div
           ref={grid}
           onClick={(e) => editing && e.target === e.currentTarget && onDone()}
-          className="relative grid [-webkit-touch-callout:none] pointer-coarse:select-none"
+          className={`relative grid [-webkit-touch-callout:none] pointer-coarse:select-none ${editing ? "[overflow-anchor:none]" : ""}`}
           style={{
             columnGap: GAP,
             gridTemplateColumns: columns
