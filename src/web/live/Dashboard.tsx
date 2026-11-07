@@ -13,6 +13,7 @@ import { claim } from "../Swipe.tsx";
 import { save, subscribe } from "../synced.ts";
 import { EditBar } from "./EditBar.tsx";
 import { Tile, TOP } from "./Tile.tsx";
+import { useSlide } from "./useSlide.ts";
 import {
   add,
   columnAt,
@@ -138,7 +139,6 @@ export const Dashboard = ({
   const contents = useRef(new Map<string, HTMLDivElement>());
   const drag = useRef<Drag | null>(null);
   const draftRef = useRef<Column[] | null>(null);
-  const spots = useRef(new Map<string, [number, number]>());
   const frozen = useRef(new Set<string>());
   const columns = draft ?? saved;
   const fixed = new Map(
@@ -202,21 +202,7 @@ export const Dashboard = ({
     return () => observer.disconnect();
   }, [ids, editing, size]);
 
-  useLayoutEffect(() => {
-    if (!editing) return spots.current.clear();
-    cells.current.forEach((el, id) => {
-      const spot: [number, number] = [el.offsetLeft, el.offsetTop];
-      const was = spots.current.get(id);
-      spots.current.set(id, spot);
-      if (!was || id === drag.current?.id) return;
-      const [dx, dy] = [was[0] - spot[0], was[1] - spot[1]];
-      if (dx || dy)
-        el.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], {
-          duration: 220,
-          easing: "cubic-bezier(0.2, 0, 0, 1)",
-        });
-    });
-  });
+  useSlide(editing, columns, cells, () => drag.current?.id);
 
   useEffect(() => {
     if (!added) return;
@@ -426,6 +412,7 @@ export const Dashboard = ({
         )}
       <div
         className="mx-auto"
+        data-preview={editing && size !== real ? size : undefined}
         style={{
           maxWidth: editing && size !== real ? PREVIEW[size] : undefined,
         }}
