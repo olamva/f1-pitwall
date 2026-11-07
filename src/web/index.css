@@ -1119,6 +1119,10 @@ html:has(dialog[open]) {
   display: none;
 }
 
+:root:has(main:not([inert]) .board[data-focus]) {
+  overscroll-behavior-y: none;
+}
+
 .board[data-focus] > .status-row {
   position: sticky;
   top: 0;
