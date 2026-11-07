@@ -24,6 +24,55 @@
 
 @custom-variant filled (&:where([data-fill] *));
 
+@custom-variant sm {
+  @media (width >= 40rem) {
+    &:not(:where([data-preview="phone"] *)) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant md {
+  @media (width >= 48rem) {
+    &:not(:where([data-preview="phone"] *)) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant lg {
+  @media (width >= 64rem) {
+    &:not(:where([data-preview="phone"] *)) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant xl {
+  @media (width >= 80rem) {
+    &:not(:where([data-preview] *)) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant 2xl {
+  @media (width >= 96rem) {
+    &:not(:where([data-preview] *)) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant max-sm {
+  @media (width < 40rem) {
+    @slot;
+  }
+  &:where([data-preview="phone"] *) {
+    @slot;
+  }
+}
+
 *:focus {
   outline: none;
 }
