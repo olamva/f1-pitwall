@@ -27,23 +27,27 @@ pnpm shot /calendar/2026/19 --favourite piastri:PIA --team williams --before ori
 
 Options:
 
-| Option                             | Effect                                                                     |
-| ---------------------------------- | -------------------------------------------------------------------------- |
-| `--theme dark\|light\|both`        | Color scheme. The default is `both`.                                       |
-| `--size phone\|ipad\|desktop\|WxH` | Viewport. `phone` is 430×932, `ipad` is 1024×1366, `desktop` is 1440×900.  |
-| `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.        |
-| `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                          |
-| `--replay <file>`, `--from <min>`  | Replay a recording from a minute. See the live-replay skill.               |
-| `--play <seconds>`                 | Capture this many seconds after the replay start.                          |
-| `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps. |
-| `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.               |
-| `--wait <selector>`                | Wait for a visible element.                                                |
-| `--eval <js>`                      | Run JavaScript in the page before the capture.                             |
-| `--element <selector>`             | Capture one element. The tab bar is hidden.                                |
-| `--full`                           | Capture the full page.                                                     |
-| `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.     |
-| `--animate`                        | Keep animations running, such as the live-dot pulse.                       |
-| `--name`, `--out`                  | File name prefix and output directory.                                     |
+| Option                             | Effect                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| `--theme dark\|light\|both`        | Color scheme. The default is `both`.                                        |
+| `--size phone\|ipad\|desktop\|WxH` | Viewport. `phone` is 430×932, `ipad` is 1024×1366, `desktop` is 1440×900.   |
+| `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.         |
+| `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                           |
+| `--layout <json>`                  | Mocked live board columns for all sizes. See the gestures section.          |
+| `--replay <file>`, `--from <min>`  | Replay a recording from a minute. See the live-replay skill.                |
+| `--play <seconds>`                 | Capture this many seconds after the replay start.                           |
+| `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps.  |
+| `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.                |
+| `--wait <selector>`                | Wait for a visible element.                                                 |
+| `--eval <js>`                      | Run JavaScript in the page before the capture.                              |
+| `--drag <point>`, `--to <point>`   | Press, hold, drag and release before the capture. See the gestures section. |
+| `--hold <ms>`                      | Hold time before the drag moves. The default is 600.                        |
+| `--video`                          | Record a video and save contact sheets of its frames.                       |
+| `--element <selector>`             | Capture one element. The tab bar is hidden.                                 |
+| `--full`                           | Capture the full page.                                                      |
+| `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.      |
+| `--animate`                        | Keep animations running, such as the live-dot pulse.                        |
+| `--name`, `--out`                  | File name prefix and output directory.                                      |
 
 A full `http://` URL uses a server that already runs. Then `--before` and `--replay` are not available.
 
@@ -89,13 +93,48 @@ pnpm shot:publish <pr-number> ~/.t3/userdata/attachments/<branch>/*.png
 - Add the Markdown to the PR body with `gh pr edit <pr-number> --body-file <file>`.
 - The URLs use the commit SHA, so a new upload never shows a cached old image.
 
+## Visual review
+
+- Capture the changed UI with `--before origin/main`. Show the before and after images to the user.
+- Embed images only from `~/.t3/userdata/attachments`. T3 does not show images from `/tmp`.
+- To match a reference image, crop it at 6 to 8 times zoom. Put your result next to it at the same zoom before you claim a match.
+
+## Gestures and screen recordings
+
+Replay the gesture that the user reported before you report a gesture fix as done.
+
+```sh
+pnpm shot / --size ipad --replay recordings/2026-united-states-race.jsonl.gz --from 109 \
+  --layout '[{"w":7,"tiles":[{"id":"tower","h":null},{"id":"weather","h":null}]},{"w":5,"tiles":[{"id":"battle","h":null}]}]' \
+  --click 'text=Customize' --drag 'text=Weather' --to=+500,-200 --video
+```
+
+- A point is a selector, `x,y` in CSS pixels, or `+dx,+dy` from the start point. Write `--to=-500,+150` with `=` when the value starts with `-`.
+- The command scrolls a selector into view before the press.
+- On `phone` and `ipad`, the drag uses touch in Chromium. On `desktop`, it uses the mouse.
+- A long press on a widget opens customize mode. In customize mode, the hold is 150 ms. A touch that moves more than 8 px before the hold ends cancels the drag.
+- The command saves `-held.png` before the release and the normal image after it.
+- `--video` also saves a `.webm` file and contact sheets of the drag at 10 frames each second. The drag runs slower than real time while the video records.
+- `--layout` sets the board for the reported bug. The widget ids are in `src/web/live/widgets.ts`.
+
+For a screen recording from the user, read the frames before you write code:
+
+```sh
+pnpm frames <video> --from 2 --to 6 --fps 4
+pnpm frames <video> --at 3.5
+```
+
+- Each sheet shows 8 frames with their times. Read it left to right, then top to bottom.
+- `--at` saves one frame at full size for details.
+
 ## Motion, touch, and iOS
 
-- A screenshot does not show a transition. To check motion, record a video with Playwright `recordVideo` or with the iOS Simulator. Then check the frames one by one before you report the motion as correct. Check the frames around each release and state change.
+- A screenshot does not show a transition. To check motion, use `--video` or the iOS Simulator. Then check the frames one by one before you report the motion as correct. Check the frames around each release and state change.
+- For your own WebKit scripts, delete `window.PushManager` in an init script. WebKit kills its content process silently on `pushManager.getSubscription()`.
 - Paused animation frames (`getAnimations()` with a set `currentTime`) miss CSS transitions that start in the same frame. Check the real recording at full size, cropped to the moving edge. Also check the case where the layout moves.
 - Headless WebKit does not move an `opacity: 0` range input on a mouse drag. Use Chromium for a drag on a range input, or set its value and dispatch `input`.
 - The first `/api/pace` request for a round can take more than 60 seconds, because the local servers share the Jolpica rate limit. Request each round once with `curl` before a motion test. The `DATA_DIR` store then keeps it for all worktrees.
 - Desktop WebKit has no `Touch` constructor. Use Chromium with the CDP command `Input.dispatchTouchEvent` for touch gestures.
 - Headless WebKit does not show iOS swipe, overscroll, and home-screen app artifacts. Use the iOS Simulator through the T3 device tools for these bugs.
 - To open the home-screen app in the simulator, run `open com.apple.springboard`, then `press 'label="F1 Pitwall"'`. A tap on the icon by coordinates can open Safari instead.
-- In the simulator, `swipe` is a fling. Use `gesture pan` for a slow drag.
+- In the simulator, `swipe` is a fling. Use `gesture pan <x> <y> <dx> <dy> <ms>` for a slow drag. Keep the first 150 ms under 8 px of movement, for example `gesture pan 200 300 0 350 8000`.

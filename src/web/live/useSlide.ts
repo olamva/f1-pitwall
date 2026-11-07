@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 
 const EASE = "cubic-bezier(0.2, 0, 0, 1)";
-const EDGE = 64;
 
 export const floor = (
   cells: Map<string, HTMLElement>,
@@ -14,14 +13,6 @@ export const floor = (
       k === id ? [] : [el.getBoundingClientRect().bottom],
     ),
   );
-
-export const edge = (y: number, start: number, end: number) => {
-  const top = Math.min(EDGE, start);
-  const bottom = Math.max(innerHeight - EDGE, start);
-  if (y < top) return -(top - y) / 3;
-  if (y <= bottom) return 0;
-  return Math.min((y - bottom) / 3, Math.max(0, end - innerHeight));
-};
 
 export const pin = (card: HTMLElement) =>
   Object.assign(card.style, {

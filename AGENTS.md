@@ -1,18 +1,13 @@
 # Parallel work
 
 Treat a task as done only when its changes are in a pull request and merged into `main`.
-Do not wait for deployment after the merge. Settle the thread and clean up immediately.
 If a required step is blocked, report the current status and the blocker. Do not report the task as done.
 
-Use one branch and one worktree for each task.
-Start each task in a new T3 thread and its worktree.
-Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
-Let T3 run the action for new worktrees. It updates the new branch to `origin/main` and installs dependencies.
-The action also removes the worktrees and branches of merged tasks with `pnpm worktree:cleanup --merged --apply`.
-If T3 skips setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `CI=true pnpm install --frozen-lockfile` before edits.
-Use the branch that T3 creates for the worktree. Rename it with `git branch -m` when needed. Do not create a second branch.
-Create a new branch from the current `origin/main` only in a detached checkout.
+Use one branch and one worktree for each task. Use the branch that T3 creates. Do not create a second branch.
+If T3 skipped setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `CI=true pnpm install --frozen-lockfile` before edits.
+Create a new branch from `origin/main` only in a detached checkout.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
+Before you edit, run `gh pr list --state open --json number,files`. If an open PR changes a file that you must change, keep the overlap small and tell the user.
 Coordinate changes to shared state with concurrent agents. Worktrees do not isolate this state:
 
 - the main checkout at `~/Developer/f1-pitwall` and its `.git` directory, including the stash
@@ -20,28 +15,37 @@ Coordinate changes to shared state with concurrent agents. Worktrees do not isol
 - the Jolpica rate limit, which all local servers share
 - the Azure transcript accounts, and GitHub settings and variables
 
-Run `PORT=0 VITE_PORT=0 pnpm dev` in each worktree. The command then selects unused ports.
-Point preview and Playwright checks at the Vite URL that the command prints.
+Run `PORT=0 VITE_PORT=0 pnpm dev` in each worktree. Point preview and Playwright checks at the Vite URL that it prints.
+
+## Bug reports
+
+Run `pnpm frames` on each screen recording that the user sends. Read the frames before you write code.
+Before you write code, list each behavior that the user expects as a checklist, such as "Weather moves under the tower, and the left column stays sticky".
+Check each item before you report the task as done. Report the result for each item.
+Replay a reported gesture with `pnpm shot --drag`, or in the iOS Simulator for an iOS-only bug. Code reading and static screenshots do not prove a gesture or motion fix.
 
 ## Pull requests
 
-Create a pull request into `main` for each completed task. Do not merge a stack of pull requests.
-Explain the change and report validation in the pull request description.
-Run `pnpm format` before each commit. `pnpm test` fails on unformatted files.
-Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and `pnpm build` when applicable.
-Review the final diff. Resolve review feedback within the task scope.
-Resolve each review thread. Unresolved threads block auto-merge.
-Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
-Do not push when this merge fast-forwards the task branch. The PR is then already merged. Start cleanup instead.
-Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
-Run each `gh pr` command as a separate shell call. Do not chain it with `cd`, `&&` or other commands. Then the allow rules apply, and auto mode does not block it.
-The user explicitly approves agents to merge minor visual changes and non-visual changes.
-Do not ask for additional user review before you merge these changes.
-Let GitHub merge the PR when the required checks pass.
-Run `gh pr checks --watch --fail-fast` to wait. Then run `gh pr view --json state,mergeStateStatus`.
-If a check fails, fix the failure and push the correction. Auto-merge stays enabled for the new head commit.
-If the state is `BEHIND`, merge `origin/main` into the task branch, resolve conflicts, and push.
-Do not force-push, bypass branch protection, or merge with blocked checks. Do not use `gh pr merge --admin`.
+Ship with `pnpm ship "<commit message>" --body "<what changed and why>"`. Use the commit-style format.
+The command formats, commits, merges `origin/main`, runs the typecheck, test and build, pushes, opens the PR and turns on auto-merge.
+Run it again for each later commit. Follow its output for conflicts and for a PR that is already merged.
+Then call `link_pull_request` and `watch_pull_request`, and end the turn. T3 wakes the thread when the checks finish or a comment arrives.
+If a check fails, fix it and run `pnpm ship` again.
+Review the final diff. Resolve review feedback within the task scope. Resolve each review thread, because an open thread blocks auto-merge.
+Run each `gh` command as a separate shell call, so the allow rules apply.
+The user approves agents to merge minor visual changes and non-visual changes without more review.
+Do not merge a stack of pull requests. Do not force-push, bypass branch protection, or use `gh pr merge --admin`.
+
+## After the merge
+
+When T3 reports that the checks passed, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply`, then call `unwatch_pull_request`.
+The cleanup waits for auto-merge, verifies the merged PR, detaches the checkout, and deletes the local branches.
+Do not wait for deployment.
+Do not file a papercut after the merge, because the merged branch cannot bring it to `main`. Report that friction in the final response.
+Report cleanup only when it failed or is blocked.
+Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
+Create each temporary checkout with `git worktree add --detach` under `/tmp`. Remove it with `git worktree remove` after you check it for local files.
+Stop every dev server and preview process that you started before the final response.
 
 ## Findings
 
@@ -52,7 +56,6 @@ Ask only about decisions that change the design or need visual approval.
 
 Test live timing changes with a recorded session. Follow `.claude/skills/live-replay/SKILL.md`.
 Measure live screen performance with `pnpm perf`. The user watches live timing on an iPhone, as an installed PWA.
-Delete `window.PushManager` in an init script for your own WebKit scripts. WebKit kills its content process silently on `pushManager.getSubscription()`.
 
 ## UI code
 
@@ -62,39 +65,9 @@ Use a solid red surface (`#e10600` to `#7f1d1d`) with white content in light mod
 
 ## Visual review
 
-Require explicit visual approval for changes beyond a minor correction.
-Require approval for noticeable layout, navigation, typography, color, component styling, or responsive changes.
-Treat an isolated correction that preserves the existing design as minor.
-Require approval when the classification is unclear.
-Capture web UI screenshots with `pnpm shot`. Follow `.claude/skills/screenshots/SKILL.md`.
-Do not use the T3 preview tools for screenshots. `preview_snapshot` times out on every call.
-Embed images only from `~/.t3/userdata/attachments`. T3 does not show images from `/tmp`.
-For required review, capture the changed UI with `pnpm shot --before origin/main`. Include the before and after states.
-Publish the review images with `pnpm shot:publish`.
-Show the screenshots to the user and ask for approval after the change is complete.
-Do not enable auto-merge before the user approves the reviewed change.
-Treat a missing required approval as a blocker.
-Request renewed approval if later changes materially alter the reviewed appearance.
-Crop a reference image at 6 to 8 times zoom. Put your result next to it at the same zoom before you claim a match.
-
-## Deployment and cleanup
-
-Keep deployment on `main` through the existing workflow.
-Do not watch the deployment run. Start cleanup as soon as the PR state is `MERGED`.
-Let GitHub delete the merged remote branch. Preserve thread history.
-Push visual review images only to a `screenshots/pr-<pr-number>` branch. Cleanup does not delete other branch names.
-Stop every dev server and preview process that you started before the final response.
-Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
-Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
-After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in the task worktree.
-This verifies the merged PR, detaches the checkout, and deletes the local task branch.
-It also deletes the local `screenshots/pr-<pr-number>` branch.
-The `Screenshots cleanup` workflow deletes the remote `screenshots/pr-<pr-number>` branch when the PR closes.
-Do not file a papercut after the merge. The merged branch cannot bring it to `main`, and it blocks worktree removal.
-Report that friction in the final response.
-A PR watch does not wake the thread on merge. The next `Setup Worktree` run cleans up a task that merges after the turn ends.
-The `--merged` sweep removes each merged worktree unless a process uses it as its working directory.
-The sweep also deletes merged `t3/*` branches without a worktree and local `screenshots/pr-*` branches of merged PRs.
-Run `pnpm worktree:cleanup --merged --apply` from any checkout to remove all merged worktrees. T3 can keep running.
-Report cleanup in the final response only when you ran it, or when it failed or is blocked.
-Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
+Get explicit visual approval for a noticeable change to layout, navigation, typography, color, component styling, or responsive behavior.
+An isolated correction that keeps the existing design is minor and needs no approval. Ask when the classification is unclear.
+Capture screenshots with `pnpm shot`, and follow `.claude/skills/screenshots/SKILL.md`. Do not use the T3 preview tools for screenshots.
+Show the before and after screenshots and ask for approval after the change is complete.
+Ship with `--hold` until the user approves. Then run `gh pr merge <pr-number> --auto --merge`.
+Treat a missing approval as a blocker. Ask again if a later change alters the approved appearance.

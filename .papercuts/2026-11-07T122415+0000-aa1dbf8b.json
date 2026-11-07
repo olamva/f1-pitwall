@@ -1,0 +1,14 @@
+{
+  "id": "aa1dbf8b",
+  "ts": "2026-11-07T12:24:15+00:00",
+  "text": "gh pr list --limit 600 with the commits JSON field fails with a GraphQL node-limit error; drop commits or page by 100",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bd049c40",
+  "where": "gh pr list --json commits",
+  "branch": "t3/agentic-workflow-audit"
+}

@@ -125,6 +125,35 @@ const current = realpathSync(cwd);
 if (!branchOnly && (current === target || current.startsWith(target + sep)))
   throw new Error("Run worktree removal from another checkout.");
 
+const view = () =>
+  JSON.parse(
+    execFileSync(
+      "gh",
+      [
+        "pr",
+        "view",
+        number!,
+        "--json",
+        "state,baseRefName,headRefName,headRefOid,mergeCommit,url,autoMergeRequest",
+      ],
+      { cwd, encoding: "utf8" },
+    ),
+  ) as {
+    state: string;
+    baseRefName: string;
+    headRefName: string;
+    headRefOid: string;
+    mergeCommit: { oid: string } | null;
+    url: string;
+    autoMergeRequest: unknown;
+  };
+let pr = view();
+for (
+  const end = Date.now() + 120_000;
+  pr.state === "OPEN" && pr.autoMergeRequest && Date.now() < end;
+  pr = view()
+)
+  await new Promise((done) => setTimeout(done, 5000));
 git(
   cwd,
   "-c",
@@ -133,26 +162,6 @@ git(
   "--prune",
   "origin",
 );
-const pr = JSON.parse(
-  execFileSync(
-    "gh",
-    [
-      "pr",
-      "view",
-      number!,
-      "--json",
-      "state,baseRefName,headRefName,headRefOid,mergeCommit,url",
-    ],
-    { cwd, encoding: "utf8" },
-  ),
-) as {
-  state: string;
-  baseRefName: string;
-  headRefName: string;
-  headRefOid: string;
-  mergeCommit: { oid: string } | null;
-  url: string;
-};
 const entry = git(cwd, "worktree", "list", "--porcelain", "-z")
   .split("\0\0")
   .find((value) => value.split("\0")[0] === `worktree ${target}`);

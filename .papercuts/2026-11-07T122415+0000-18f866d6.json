@@ -1,0 +1,14 @@
+{
+  "id": "18f866d6",
+  "ts": "2026-11-07T12:24:15+00:00",
+  "text": "t3_thread_list returned 'The user doesn't want to take this action' on first call although the user approved nothing and denied nothing; the identical retry worked",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bd049c40",
+  "where": "mcp__t3-code__t3_thread_list",
+  "branch": "t3/agentic-workflow-audit"
+}

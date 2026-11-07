@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
 import { mkdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
@@ -12,6 +12,7 @@ import {
   type Request,
 } from "playwright-core";
 import { checkout, git } from "./checkout.ts";
+import { drag, sheets } from "./gesture.ts";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
@@ -34,6 +35,7 @@ const { values: o, positionals: paths } = parseArgs({
     browser: { type: "string", default: "webkit" },
     favourite: { type: "string" },
     team: { type: "string" },
+    layout: { type: "string" },
     replay: { type: "string", default: process.env.LIVE_REPLAY },
     from: { type: "string", default: process.env.LIVE_REPLAY_FROM ?? "0" },
     play: { type: "string", default: "0" },
@@ -41,6 +43,10 @@ const { values: o, positionals: paths } = parseArgs({
     hover: { type: "string" },
     wait: { type: "string" },
     eval: { type: "string" },
+    drag: { type: "string" },
+    to: { type: "string" },
+    hold: { type: "string", default: "600" },
+    video: { type: "boolean", default: false },
     element: { type: "string" },
     full: { type: "boolean", default: false },
     confetti: { type: "boolean", default: false },
@@ -62,6 +68,7 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --browser <b>       webkit or chromium (default webkit)
   --favourite <id:CODE>  Favourite driver, such as piastri:PIA
   --team <id>         Favourite team, such as mclaren
+  --layout <json>     Live board columns for all sizes, such as '[{"w":7,"tiles":[{"id":"tower","h":null}]}]'
   --replay <file>     Replay a recording, such as recordings/2026-bahrain-fp3.jsonl.gz
   --from <minutes>    Start the replay at this minute (default 0)
   --play <seconds>    Capture this many seconds after the replay start (default 0)
@@ -69,6 +76,10 @@ Start a dev server, open each path in headless WebKit and save PNG files.
   --hover <selector>  Keep the mouse on this element for the capture
   --wait <selector>   Wait for this element before the capture
   --eval <js>         Run this in the page before the capture
+  --drag <point>      Press here, hold, move to --to and release before the capture
+  --to <point>        End of the drag. A point is a selector, x,y or +dx,+dy from the start
+  --hold <ms>         Hold time before the drag moves (default 600)
+  --video             Record a video and save contact sheets of its frames
   --element <selector>  Capture only this element, without the tab bar
   --full              Capture the full page
   --confetti          Show the confetti (off by default, as it slows WebKit)
@@ -78,7 +89,8 @@ Start a dev server, open each path in headless WebKit and save PNG files.
 
 Selectors are Playwright selectors: CSS, text=Reveal or role=button[name="Reveal"].
 A full http URL uses that server. Then --before and --replay are not available.
-With --replay, each capture gets a new server, so all images show the same moment.`);
+With --replay, each capture gets a new server, so all images show the same moment.
+A drag on phone or ipad uses touch in Chromium. It also saves a -held image before the release.`);
   process.exit(paths.length || o.help ? 0 : 1);
 }
 
@@ -91,11 +103,20 @@ const size =
     isMobile: false,
   });
 if (!size) throw new Error(`Unknown size ${o.size}`);
+if (!o.drag !== !o.to) throw new Error("--drag and --to go together");
+const engine = o.drag && size.isMobile ? "chromium" : o.browser;
 const themes = o.theme === "both" ? ["dark", "light"] : [o.theme!];
 const [id, code] = o.favourite?.split(":") ?? [];
 const settings = {
   ...(o.favourite && { favourite: { id, code } }),
   ...(o.team && { team: o.team }),
+  ...(o.layout &&
+    Object.fromEntries(
+      ["layoutPhone", "layoutTablet", "layoutDesktop"].map((key) => [
+        key,
+        JSON.parse(o.layout!),
+      ]),
+    )),
 };
 const out = resolve(
   o.out ??
@@ -217,6 +238,8 @@ const hint = async (page: Page, selector: string) => {
 
 const errors: string[] = [];
 
+let dragged: readonly [number, number] | undefined;
+
 const shoot = async (
   page: Page,
   file: string,
@@ -270,6 +293,17 @@ const shoot = async (
   if (o.wait)
     await step(`--wait ${o.wait}`, o.wait, () => visible(o.wait!).waitFor());
   if (o.eval) await step("--eval", undefined, () => page.evaluate(o.eval!));
+  if (o.drag)
+    await step(`--drag ${o.drag} --to ${o.to}`, o.drag, async () => {
+      dragged = await drag(
+        page,
+        size.isMobile,
+        o.drag!,
+        o.to!,
+        Number(o.hold),
+        file.replace(/\.png$/, "-held.png"),
+      );
+    });
   if (o.element)
     await step(`--element ${o.element}`, o.element, () =>
       visible(o.element!).scrollIntoViewIfNeeded(),
@@ -329,9 +363,15 @@ const capture = async (
       const context = await browser.newContext({
         viewport: { width: size.width, height: size.height },
         deviceScaleFactor: size.deviceScaleFactor,
-        isMobile: o.browser === "chromium" && size.isMobile,
+        isMobile: engine === "chromium" && size.isMobile,
         hasTouch: size.isMobile,
         colorScheme: theme as "dark" | "light",
+        ...(o.video && {
+          recordVideo: {
+            dir: join(tmpdir(), `shot-${process.pid}`),
+            size: { width: size.width, height: size.height },
+          },
+        }),
       });
       context.setDefaultTimeout(10_000);
       await context.addInitScript(
@@ -360,6 +400,7 @@ const capture = async (
           : route.fulfill({ status: 204 }),
       );
       const page = await context.newPage();
+      let closed = 0;
       const open = new Set<Request>();
       const api = (r: Request) =>
         r.url().includes("/api/") && !/\/stream\b/.test(r.url());
@@ -375,7 +416,10 @@ const capture = async (
       try {
         await page.goto(url, { waitUntil: "domcontentloaded" });
         await shoot(page, file, warn, () => open.size, host?.started ?? 0);
-        files.push(file);
+        files.push(
+          file,
+          ...(o.drag ? [file.replace(/\.png$/, "-held.png")] : []),
+        );
       } catch (error) {
         const failed = file.replace(/\.png$/, "-error.png");
         const state = await page
@@ -386,9 +430,20 @@ const capture = async (
           );
         throw new Error(`${(error as Error).message}\nState: ${state}`);
       } finally {
+        closed = Date.now();
         await context.close();
         await (o.replay && host && stop(host.child));
       }
+      if (o.video)
+        files.push(
+          ...(await sheets(
+            page,
+            file.replace(/\.png$/, ".webm"),
+            out,
+            closed,
+            dragged,
+          )),
+        );
     }
   }
   return files;
@@ -397,12 +452,13 @@ const capture = async (
 const full = paths.some((path) => /^https?:/.test(path));
 if (full && (o.before || o.replay))
   throw new Error("--before and --replay need paths, not URLs");
-const engine = o.browser === "chromium" ? chromium : webkit;
-const browser = await engine.launch().catch((error: Error) => {
-  throw new Error(
-    `${error.message.split("\n")[0]}\nRun pnpm exec playwright-core install ${o.browser === "chromium" ? "--only-shell chromium" : "webkit"}`,
-  );
-});
+const browser = await (engine === "chromium" ? chromium : webkit)
+  .launch()
+  .catch((error: Error) => {
+    throw new Error(
+      `${error.message.split("\n")[0]}\nRun pnpm exec playwright-core install ${engine === "chromium" ? "--only-shell chromium" : "webkit"}`,
+    );
+  });
 const before = o.before ? checkout(o.before, "shot") : null;
 const shared =
   full || o.replay

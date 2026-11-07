@@ -2,6 +2,9 @@ export const ROW = 8;
 export const GAP = 16;
 export const NEW_WIDTH = 4;
 const MIN_WIDTH = 2;
+const EDGE = 64;
+const ZONE = 40;
+const TURN = 24;
 
 export type Size = "phone" | "tablet" | "desktop";
 export type Tile = { id: string; h: number | null };
@@ -28,6 +31,38 @@ export const place = (columns: Column[], height: (id: string) => number) => {
     }, 0),
   );
   return { spots, ends };
+};
+
+export const stick = (
+  columns: Column[],
+  spots: Map<string, Spot>,
+  ends: number[],
+  avail: number,
+  fill: (id: string) => boolean,
+) => {
+  const over = ends.map((end) => Math.max(0, end * ROW - GAP - avail - 1));
+  const sticky = new Set(columns.length < 2 ? [] : columns.keys());
+  const stretch = new Set(
+    [...sticky].flatMap((i) => {
+      if (over[i]) return [];
+      const last = columns[i]!.tiles.findLast((t) => spots.has(t.id));
+      return last && last.h === null && fill(last.id) ? [last.id] : [];
+    }),
+  );
+  return { over, sticky, stretch };
+};
+
+export const autoscroll = (
+  y: number,
+  start: number,
+  end: number,
+  view: number,
+) => {
+  const top = Math.min(EDGE, start);
+  const bottom = Math.max(view - EDGE, start);
+  if (y < top) return -(top - y) / 3;
+  if (y <= bottom) return 0;
+  return Math.min((y - bottom) / 3, Math.max(0, end - view));
 };
 
 export const bounds = (columns: Column[], width: number) => {
@@ -87,6 +122,30 @@ export const tidy = (columns: Column[]) =>
 
 export const remove = (columns: Column[], id: string) =>
   tidy(without(columns, id));
+
+export const aim = (
+  d: {
+    id: string;
+    start: Column[];
+    x: number;
+    y: number;
+    sx: number;
+    dy: number;
+  },
+  box: { left: number; right: number; top: number; width: number },
+  max: number,
+  rows: number,
+  lift: (col: number) => number,
+): Target => {
+  const room = remove(d.start, d.id).length < max;
+  if (room && d.x < box.left + ZONE && d.x < d.sx - TURN)
+    return { edge: "left" };
+  if (room && d.x > box.right - ZONE && d.x > d.sx + TURN)
+    return { edge: "right" };
+  const col = columnAt(d.start, box.width, d.x - box.left);
+  const top = (d.y - d.dy - box.top - lift(col)) / ROW;
+  return { col, top, bottom: top + rows - GAP / ROW };
+};
 
 export const add = (
   columns: Column[],

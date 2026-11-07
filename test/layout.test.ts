@@ -3,10 +3,13 @@ import { test } from "node:test";
 import { validSettings } from "../src/shared/settings.ts";
 import {
   add,
+  aim,
+  autoscroll,
   columnAt,
   drop,
   place,
   remove,
+  stick,
   tidy,
   widen,
   type Column,
@@ -101,6 +104,67 @@ test("a wider column takes its width from the column on its right", () => {
     [10, 2],
   );
   assert.equal(widen(board, width, 1, 100), board);
+});
+
+test("a drag picks an edge column only when there is room and the pointer moved toward that edge", () => {
+  const box = { left: 0, right: 1216, top: 0, width: 1216 };
+  const at = (x: number, sx: number, max = 3) =>
+    aim(
+      { id: "a", start: board, x, y: 200, sx, dy: 20 },
+      box,
+      max,
+      12,
+      () => 0,
+    );
+  assert.deepEqual(at(10, 300), { edge: "left" });
+  assert.deepEqual(at(1210, 900), { edge: "right" });
+  assert.equal("edge" in at(10, 30), false);
+  assert.equal("edge" in at(10, 300, 2), false);
+  assert.deepEqual(at(10, 30), { col: 0, top: 22.5, bottom: 32.5 });
+  assert.deepEqual(
+    aim(
+      { id: "a", start: board, x: 900, y: 200, sx: 900, dy: 20 },
+      box,
+      3,
+      12,
+      (c) => (c === 1 ? 16 : 0),
+    ),
+    { col: 1, top: 20.5, bottom: 30.5 },
+  );
+});
+
+test("columns of a multi-column board stick, and a column taller than the screen lifts by its overflow", () => {
+  const fill = (id: string) => id === "c" || id === "tower";
+  const screen = 600;
+  const sticky = (columns: Column[]) => {
+    const { spots, ends } = place(columns, height);
+    return stick(columns, spots, ends, screen, fill);
+  };
+  const lone = sticky([col(12, "tower", "a")]);
+  assert.deepEqual([...lone.sticky], []);
+  assert.deepEqual([...lone.stretch], []);
+  const short = sticky([col(7, "a"), col(5, "b", "c")]);
+  assert.deepEqual(short.over, [0, 0]);
+  assert.deepEqual([...short.stretch], ["c"]);
+  const tall = sticky(board);
+  assert.deepEqual([...tall.sticky], [0, 1]);
+  assert.deepEqual(tall.over, [100 * 8 - 16 - screen - 1, 0]);
+  assert.deepEqual([...tall.stretch], ["c"]);
+  const under = sticky([col(7, "tower", "a"), col(5, "b", "c")]);
+  assert.equal(under.over[0], tall.over[0]! + 20 * 8);
+  const fixed = [col(7, "a"), { w: 5, tiles: [{ id: "c", h: 10 }] }];
+  assert.deepEqual([...sticky(fixed).stretch], []);
+});
+
+test("a drag scrolls only near the screen edges, and never past the end of the board", () => {
+  const view = 800;
+  assert.equal(autoscroll(400, 400, 5000, view), 0);
+  assert.equal(autoscroll(10, 400, 5000, view), -18);
+  assert.equal(autoscroll(790, 400, 5000, view), 18);
+  assert.equal(autoscroll(790, 400, 805, view), 5);
+  assert.equal(autoscroll(790, 400, 700, view), 0);
+  assert.equal(autoscroll(779, 780, 5000, view), 0);
+  assert.equal(autoscroll(30, 20, 5000, view), 0);
 });
 
 test("a new widget goes to the end of the shortest column", () => {
