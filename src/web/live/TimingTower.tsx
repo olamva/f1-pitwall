@@ -237,6 +237,61 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
   </td>
 );
 
+interface LapCellProps {
+  time: string;
+  tone: string;
+  projected?: Row["projected"];
+  pad: string;
+  hide: string;
+}
+
+const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
+  <td className={`${pad} py-1 text-right ${tone}`}>
+    <span className={hide}>
+      {projected ? (
+        <span
+          className={`-mr-1 rounded-sm border border-dashed border-current px-0.5 italic ${MARK[projected.mark]}`}
+          title="Predicted lap time, not a real time"
+        >
+          ~{projected.value}
+        </span>
+      ) : (
+        time
+      )}
+    </span>
+  </td>
+);
+
+interface LapCellsProps {
+  row: Row;
+  fit: Fit;
+  pad: string;
+  hide: string;
+}
+
+const LapCells = ({ row, fit, pad, hide }: LapCellsProps) => (
+  <>
+    {fit.last && (
+      <LapCell
+        time={row.lastLap}
+        tone={MARK[row.lastMark]}
+        projected={row.projected}
+        pad={pad}
+        hide={hide}
+      />
+    )}
+    {fit.best && (
+      <LapCell
+        time={row.bestLap}
+        tone="text-zinc-300"
+        projected={fit.last ? undefined : row.projected}
+        pad={pad}
+        hide={hide}
+      />
+    )}
+  </>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -315,16 +370,7 @@ const TowerRow = ({
         )}
       </td>
       {fit.int && <Interval row={row} pad={pad} hide={hide} />}
-      {fit.last && (
-        <td className={`${pad} py-1 text-right ${MARK[row.lastMark]}`}>
-          <span className={hide}>{row.lastLap}</span>
-        </td>
-      )}
-      {fit.best && (
-        <td className={`${pad} py-1 text-right text-zinc-300`}>
-          <span className={hide}>{row.bestLap}</span>
-        </td>
-      )}
+      <LapCells row={row} fit={fit} pad={pad} hide={hide} />
       {fit.sectors && (
         <td className={`${pad} py-1`}>
           {hide && <Stints stints={row.stints} scale={scale} wide={fit.wide} />}

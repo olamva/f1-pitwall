@@ -38,6 +38,7 @@ const checks: Record<string, (v: any) => boolean> = {
       /^[A-Z]{3}$/.test(v?.code) &&
       Object.keys(v).length === 2),
   scrubAhead: (v) => typeof v === "boolean",
+  projectedLap: (v) => typeof v === "boolean",
   team: (v) => v === null || (typeof v === "string" && /^[a-z0-9_]+$/.test(v)),
 };
 

@@ -20,7 +20,11 @@ export type Course = {
 
 export type Trace = { speed: number[]; time: number[] };
 
-const locate = ({ x, y, at }: Course, px: number, py: number): number => {
+export const locate = (
+  { x, y, at }: Course,
+  px: number,
+  py: number,
+): number => {
   let best = Infinity;
   let distance = 0;
   for (let i = 0; i < x.length; i++) {
