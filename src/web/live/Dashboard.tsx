@@ -436,7 +436,7 @@ export const Dashboard = ({
             aria-hidden="true"
             className="pointer-events-none invisible absolute w-0"
             style={{
-              height: `calc(100dvh - ${TOP} - env(safe-area-inset-bottom) - 1rem)`,
+              height: `calc(100dvh - ${TOP} - 1rem)`,
             }}
           />
           {!columns.length && (
