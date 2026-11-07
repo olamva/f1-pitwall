@@ -6,18 +6,19 @@ const EDGE = 64;
 const ZONE = 40;
 const TURN = 24;
 
-export type Size = "phone" | "tablet" | "desktop";
+export type Size = "phone" | "tablet" | "desktop" | "display";
 export type Tile = { id: string; h: number | null };
 export type Column = { w: number; tiles: Tile[] };
 export type Spot = { col: number; top: number; height: number };
 export type Target =
-  { col: number; top: number; bottom: number } | { edge: "left" | "right" };
+  { col: number; top: number; bottom: number } | { at: number };
 
-export const SIZES: Size[] = ["phone", "tablet", "desktop"];
+export const SIZES: Size[] = ["phone", "tablet", "desktop", "display"];
 export const MAX_COLUMNS: Record<Size, number> = {
   phone: 2,
   tablet: 3,
   desktop: 4,
+  display: 6,
 };
 
 export const place = (columns: Column[], height: (id: string) => number) => {
@@ -94,6 +95,11 @@ export const columnAt = (columns: Column[], width: number, x: number) => {
   return i < 0 ? columns.length - 1 : i;
 };
 
+export const gapAt = (columns: Column[], width: number, x: number) =>
+  bounds(columns, width).findIndex(
+    (s, i) => i > 0 && Math.abs(x - s.left + GAP / 2) < ZONE / 2,
+  );
+
 const without = (columns: Column[], id: string) =>
   columns.map((c) => ({ ...c, tiles: c.tiles.filter((t) => t.id !== id) }));
 
@@ -105,10 +111,8 @@ export const drop = (
 ) => {
   const tile = columns.flatMap((c) => c.tiles).find((t) => t.id === id)!;
   const rest = without(columns, id);
-  if ("edge" in target) {
-    const column = { w: NEW_WIDTH, tiles: [tile] };
-    return target.edge === "left" ? [column, ...rest] : [...rest, column];
-  }
+  if ("at" in target)
+    return rest.toSpliced(target.at, 0, { w: NEW_WIDTH, tiles: [tile] });
   const others = rest[target.col]!.tiles;
   const home = columns[target.col]!.tiles.findIndex((t) => t.id === id);
   const { spots } = place(home < 0 ? rest : columns, height);
@@ -143,6 +147,7 @@ export const aim = (
     y: number;
     sx: number;
     dy: number;
+    gap: number;
   },
   box: { left: number; right: number; top: number; width: number },
   max: number,
@@ -150,10 +155,10 @@ export const aim = (
   lift: (col: number) => number,
 ): Target => {
   const room = remove(d.start, d.id).length < max;
-  if (room && d.x < box.left + ZONE && d.x < d.sx - TURN)
-    return { edge: "left" };
+  if (room && d.x < box.left + ZONE && d.x < d.sx - TURN) return { at: 0 };
   if (room && d.x > box.right - ZONE && d.x > d.sx + TURN)
-    return { edge: "right" };
+    return { at: d.start.length };
+  if (room && d.gap > 0) return { at: d.gap };
   const col = columnAt(d.start, box.width, d.x - box.left);
   const top = (d.y - d.dy - box.top - lift(col)) / ROW;
   return { col, top, bottom: top + rows - GAP / ROW };

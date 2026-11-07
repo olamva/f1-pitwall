@@ -135,4 +135,5 @@ export const DEFAULT_LAYOUT: Record<Size, Column[]> = {
   phone: [column(12, ["tower", ...PANELS])],
   tablet: [column(7, ["tower"]), column(5, PANELS)],
   desktop: [column(7, ["tower"]), column(5, PANELS)],
+  display: [column(7, ["tower"]), column(5, PANELS)],
 };

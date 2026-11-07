@@ -12,6 +12,7 @@ const KEYS: Record<Size, string> = {
   phone: "layoutPhone",
   tablet: "layoutTablet",
   desktop: "layoutDesktop",
+  display: "layoutDisplay",
 };
 
 export const useLayout = (size: Size) => {

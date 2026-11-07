@@ -31,6 +31,7 @@ const checks: Record<string, (v: any) => boolean> = {
   layoutPhone: layout,
   layoutTablet: layout,
   layoutDesktop: layout,
+  layoutDisplay: layout,
   favourite: (v) =>
     v === null ||
     (/^[a-z0-9_]+$/.test(v?.id) &&
