@@ -396,7 +396,6 @@ export const TimingTower = ({
               widths={widths}
               qualifying={qualifying}
               rest={+fit.tyre + 2 * +fit.pits + +fit.status}
-              hide={hide}
             >
               {tabs}
             </BestRow>
