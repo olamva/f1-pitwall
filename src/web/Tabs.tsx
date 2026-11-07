@@ -120,6 +120,7 @@ export const Tabs = <T extends string>({
     const button = buttons.current[items.findIndex((item) => item === value)];
     if (!track || !button) return;
     const measure = () => {
+      if (!button.offsetWidth) return;
       rest.current = button.offsetLeft;
       setHighlight({ left: rest.current, width: button.offsetWidth });
     };
