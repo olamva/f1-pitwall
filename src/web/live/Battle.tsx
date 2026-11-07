@@ -107,18 +107,14 @@ export const Battle = ({
   const nextChip = next && `Next ${lapsText(next.laps)}`;
   const key = [...groups.map(label), nextChip].filter(Boolean).join("\n");
   const chips = useMemo(() => (key ? key.split("\n") : []), [key]);
-  const lead =
-    view?.group?.[0]!.ahead ?? view?.pair.ahead ?? last.current?.ahead;
   return (
     <section className="bg-surface space-y-2 rounded-xl p-3">
       <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
-        {!lead
-          ? "Battle"
-          : `${view && !view.group ? "Next battle" : "Battle"} for P${lead.position}`}
+        Battles
       </h2>
       <div className="-mx-3 h-[50px] [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3 py-1">
         <div className="w-max">
-          {chips.length > 0 && (
+          {chips.length > 1 && (
             <Tabs
               small
               items={chips}

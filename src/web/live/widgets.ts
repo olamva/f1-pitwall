@@ -16,7 +16,7 @@ const LIST = {
     height: "fill",
   },
   battle: {
-    title: "Battle",
+    title: "Battles",
     about: "The closest fight on track.",
     only: "Shows in races.",
     height: "content",
