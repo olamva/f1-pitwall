@@ -54,7 +54,7 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
         className="group absolute inset-y-0 left-full flex cursor-col-resize touch-none justify-center"
         style={{ width: GAP }}
       >
-        <span className="light:bg-zinc-400 light:group-hover:bg-zinc-600 w-1.5 rounded-full bg-zinc-500 group-hover:bg-zinc-300" />
+        <span className="light:bg-zinc-500 sticky top-[calc(50dvh-1.5rem)] h-12 w-1.5 self-start rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100" />
       </div>
     </div>
   ));
