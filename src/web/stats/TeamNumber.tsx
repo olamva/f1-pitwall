@@ -1,16 +1,4 @@
-const IMAGES = import.meta.glob<string>("../numbers/*.webp", {
-  eager: true,
-  query: "?no-inline",
-  import: "default",
-});
-
-export const slug = (last = "") =>
-  last.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-
-export const numberSrc = (id: string) =>
-  Object.entries(IMAGES).find(([k]) =>
-    new RegExp(`[/_]${id}\\.webp$`).test(k),
-  )?.[1];
+import { numberSrc, useArt } from "../Headshot.tsx";
 
 interface TeamNumberProps {
   id: string;
@@ -25,7 +13,7 @@ export const TeamNumber = ({
   color,
   className,
 }: TeamNumberProps) => {
-  const src = numberSrc(id);
+  const src = numberSrc(useArt(id)?.art);
   return src ? (
     <span
       aria-hidden

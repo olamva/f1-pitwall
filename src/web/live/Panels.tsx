@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ink } from "../ink.ts";
-import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
+import { TeamNumber } from "../stats/TeamNumber.tsx";
 import {
   compass,
   elapsed,
@@ -380,7 +380,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               style={{ background: color }}
             >
               <TeamNumber
-                id={slug(driver?.last)}
+                id={driver?.tla ?? ""}
                 number={current.number}
                 color="white"
                 className="flex h-9 items-center text-3xl"
@@ -439,7 +439,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               >
                 <span className="flex w-7 justify-center">
                   <TeamNumber
-                    id={slug(d?.last)}
+                    id={d?.tla ?? ""}
                     number={r.number}
                     color={ink(d?.color) ?? "var(--color-zinc-50)"}
                     className="flex h-4 items-center"

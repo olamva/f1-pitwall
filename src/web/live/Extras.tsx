@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { LapRow, Telemetry } from "../../shared/timing.ts";
 import { LineChart } from "../charts/LineChart.tsx";
 import { ink } from "../ink.ts";
-import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
+import { TeamNumber } from "../stats/TeamNumber.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { Compound } from "../Tyre.tsx";
 import { movers, pitStops, trapSpeeds, TRAPS, type Trap } from "./extras.ts";
@@ -289,7 +289,7 @@ export const DriverFocus = ({
           style={{ background: row.color }}
         >
           <TeamNumber
-            id={slug(row.last)}
+            id={row.tla}
             number={row.number}
             color="white"
             className="flex h-8 items-center text-2xl"

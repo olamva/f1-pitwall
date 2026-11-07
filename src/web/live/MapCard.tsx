@@ -1,7 +1,7 @@
 import type { Telemetry } from "../../shared/timing.ts";
 import { ink } from "../ink.ts";
 import { logoSrc, logoTone } from "../TeamLogo.tsx";
-import { numberSrc, slug } from "../stats/TeamNumber.tsx";
+import { numberSrc, useArt } from "../Headshot.tsx";
 import type { Row } from "./view.ts";
 
 interface MapCardProps {
@@ -45,7 +45,7 @@ const Pedal = ({ x, y, label, value, className }: PedalProps) => (
 );
 
 export const MapCard = ({ x, y, box, row, telemetry }: MapCardProps) => {
-  const src = numberSrc(slug(row.last));
+  const src = numberSrc(useArt(row.tla)?.art);
   const height = telemetry ? 200 : 130;
   const top = Math.min(
     Math.max(y - height / 2, box[1]),
