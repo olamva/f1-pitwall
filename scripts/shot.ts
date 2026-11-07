@@ -1,4 +1,4 @@
-import { execFileSync, spawn, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
 import { mkdirSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -12,6 +12,7 @@ import {
   type Request,
 } from "playwright-core";
 import { checkout, git } from "./checkout.ts";
+import { drag, sheets } from "./gesture.ts";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
@@ -237,63 +238,7 @@ const hint = async (page: Page, selector: string) => {
 
 const errors: string[] = [];
 
-type Point = { x: number; y: number };
-
-const point = async (page: Page, spec: string, from?: Point) => {
-  const rel = /^([+-][\d.]+),([+-]?[\d.]+)$/.exec(spec);
-  if (rel && from)
-    return { x: from.x + Number(rel[1]), y: from.y + Number(rel[2]) };
-  const abs = /^([\d.]+),([\d.]+)$/.exec(spec);
-  if (abs) return { x: Number(abs[1]), y: Number(abs[2]) };
-  const target = page.locator(spec).filter({ visible: true }).first();
-  await target.scrollIntoViewIfNeeded();
-  const box = await target.boundingBox();
-  if (!box) throw new Error(`${spec} has no box`);
-  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-};
-
-let dragged = [0, 0];
-
-const drag = async (page: Page, held: string) => {
-  const a = await point(page, o.drag!);
-  const b = await point(page, o.to!, a);
-  dragged = [Date.now(), 0];
-  const at = (t: number) => ({
-    x: a.x + (b.x - a.x) * t,
-    y: a.y + (b.y - a.y) * t,
-  });
-  const steps = 30;
-  if (size.isMobile) {
-    const cdp = await page.context().newCDPSession(page);
-    const touch = (type: string, p?: Point) =>
-      cdp.send("Input.dispatchTouchEvent", {
-        type,
-        touchPoints: p ? [{ x: p.x, y: p.y, id: 1 }] : [],
-      });
-    await touch("touchStart", a);
-    await page.waitForTimeout(Number(o.hold));
-    for (let i = 1; i <= steps; i++) {
-      await touch("touchMove", at(i / steps));
-      await page.waitForTimeout(25);
-    }
-    await page.waitForTimeout(300);
-    await page.screenshot({ path: held, timeout: SNAPSHOT });
-    await touch("touchEnd");
-  } else {
-    await page.mouse.move(a.x, a.y);
-    await page.mouse.down();
-    await page.waitForTimeout(Number(o.hold));
-    for (let i = 1; i <= steps; i++) {
-      await page.mouse.move(at(i / steps).x, at(i / steps).y);
-      await page.waitForTimeout(25);
-    }
-    await page.waitForTimeout(300);
-    await page.screenshot({ path: held, timeout: SNAPSHOT });
-    await page.mouse.up();
-  }
-  await page.waitForTimeout(400);
-  dragged[1] = Date.now();
-};
+let dragged: readonly [number, number] | undefined;
 
 const shoot = async (
   page: Page,
@@ -349,9 +294,16 @@ const shoot = async (
     await step(`--wait ${o.wait}`, o.wait, () => visible(o.wait!).waitFor());
   if (o.eval) await step("--eval", undefined, () => page.evaluate(o.eval!));
   if (o.drag)
-    await step(`--drag ${o.drag} --to ${o.to}`, o.drag, () =>
-      drag(page, file.replace(/\.png$/, "-held.png")),
-    );
+    await step(`--drag ${o.drag} --to ${o.to}`, o.drag, async () => {
+      dragged = await drag(
+        page,
+        size.isMobile,
+        o.drag!,
+        o.to!,
+        Number(o.hold),
+        file.replace(/\.png$/, "-held.png"),
+      );
+    });
   if (o.element)
     await step(`--element ${o.element}`, o.element, () =>
       visible(o.element!).scrollIntoViewIfNeeded(),
@@ -464,8 +416,10 @@ const capture = async (
       try {
         await page.goto(url, { waitUntil: "domcontentloaded" });
         await shoot(page, file, warn, () => open.size, host?.started ?? 0);
-        files.push(file);
-        if (o.drag) files.push(file.replace(/\.png$/, "-held.png"));
+        files.push(
+          file,
+          ...(o.drag ? [file.replace(/\.png$/, "-held.png")] : []),
+        );
       } catch (error) {
         const failed = file.replace(/\.png$/, "-error.png");
         const state = await page
@@ -480,50 +434,16 @@ const capture = async (
         await context.close();
         await (o.replay && host && stop(host.child));
       }
-      if (o.video) {
-        const video = file.replace(/\.png$/, ".webm");
-        await page.video()!.saveAs(video);
-        const length = execFileSync(
-          "ffprobe",
-          [
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "csv=p=0",
-            video,
-          ],
-          { encoding: "utf8" },
-        );
-        const start = closed - 1000 * Number(length);
+      if (o.video)
         files.push(
-          video,
-          ...execFileSync(
-            process.execPath,
-            [
-              "scripts/frames.ts",
-              video,
-              "--fps",
-              "10",
-              "--out",
-              out,
-              ...(o.drag
-                ? [
-                    "--from",
-                    String(Math.max(0, (dragged[0]! - start) / 1000 - 0.2)),
-                    "--to",
-                    String((dragged[1]! - start) / 1000),
-                  ]
-                : []),
-            ],
-            { encoding: "utf8" },
-          )
-            .split("\n")
-            .filter(Boolean)
-            .map((line) => line.split("  ")[0]!),
+          ...(await sheets(
+            page,
+            file.replace(/\.png$/, ".webm"),
+            out,
+            closed,
+            dragged,
+          )),
         );
-      }
     }
   }
   return files;
