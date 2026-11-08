@@ -80,6 +80,7 @@ export const Tile = ({
     style={{
       ...place(col, spot, lift, fixed),
       transform: push ? `translateY(${push}px)` : undefined,
+      marginBottom: push && push < 0 ? push : undefined,
     }}
   >
     {moving && (
