@@ -8,6 +8,7 @@ import { SessionBest, TowerHead } from "./TowerHead.tsx";
 import { useFit, type Fit } from "./towerFit.ts";
 import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
+import { Hint } from "./Hint.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -197,6 +198,10 @@ const Gained = ({ gained }: { gained: number | null }) => (
   </td>
 );
 
+const CATCHING = "The gap to the car ahead gets smaller.";
+const OVERTAKE =
+  "The driver was within one second of the car ahead at the detection line. The driver gets extra electrical energy for this lap.";
+
 interface IntervalProps {
   row: Row;
   pad: string;
@@ -211,24 +216,20 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
       <span className="flex gap-1">
         <span className="inline-block w-3">
           {row.catching && (
-            <span
-              className="inline-flex text-emerald-400"
-              title="Catching the car ahead"
-              aria-label="Catching the car ahead"
+            <Hint
+              label="Catching the car ahead"
+              text={CATCHING}
+              tone="text-emerald-400"
             >
               <ChevronsUp size={12} strokeWidth={3} />
-            </span>
+            </Hint>
           )}
         </span>
         <span className="inline-block w-3">
           {row.overtake && (
-            <span
-              className="inline-flex text-yellow-300"
-              title="Overtake Mode"
-              aria-label="Overtake Mode"
-            >
+            <Hint label="Overtake Mode" text={OVERTAKE} tone="text-yellow-300">
               <Zap size={12} strokeWidth={3} fill="currentColor" />
-            </span>
+            </Hint>
           )}
         </span>
       </span>
