@@ -1,4 +1,4 @@
-import { Focus, X } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
 import {
   useEffect,
   useLayoutEffect,
@@ -98,7 +98,7 @@ const Status = ({
       </div>
     )}
     <span className="tabular ml-auto font-mono text-xl">{clock}</span>
-    <div className="flex items-center justify-end gap-3 max-sm:basis-full">
+    <div className="flex items-center justify-end gap-2 max-sm:basis-full">
       {children}
     </div>
   </div>
@@ -255,12 +255,12 @@ export const Board = ({
               ? "Show the full page"
               : "Show only the timing, the lap count and the flags"
           }
-          className="glass-gear flex h-9 w-32 cursor-pointer items-center justify-center gap-2 text-sm max-sm:mr-auto max-sm:w-9"
+          className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm max-sm:w-[2.625rem] max-sm:px-0"
         >
           {focus ? (
-            <X aria-hidden="true" size={16} />
+            <Minimize aria-hidden="true" className="size-5" />
           ) : (
-            <Focus aria-hidden="true" size={16} />
+            <Maximize aria-hidden="true" className="size-5" />
           )}
           <span className="max-sm:sr-only">
             {focus ? "Exit focus" : "Focus"}
