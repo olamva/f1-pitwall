@@ -12,6 +12,7 @@ import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
 import { Splits, track } from "./Splits.tsx";
 import { Tile, TOP } from "./Tile.tsx";
+import { useCentered } from "./useCentered.ts";
 import { useHeights } from "./useHeights.ts";
 import { useDiscard, useLayout } from "./useLayout.ts";
 import { useSize } from "./useSize.ts";
@@ -364,6 +365,7 @@ export const Dashboard = ({
   };
 
   const below = pairs(columns, placed, height);
+  useCentered(below, grid, cells.current, contents.current, push);
 
   const present = new Set(saved.flatMap((c) => c.tiles.map((t) => t.id)));
   const missing = (Object.keys(WIDGETS) as WidgetId[]).filter(
