@@ -48,9 +48,11 @@ export const stick = (
   const push = new Map<string, number>();
   sticky.forEach((i) => {
     const tiles = columns[i]!.tiles.filter((t) => spots.has(t.id));
-    const at = tiles.findLastIndex((t) => kind(t.id) !== "content");
+    const at = tiles.findLastIndex(
+      (t) => t.h === null && kind(t.id) === "fill",
+    );
     const last = tiles[at];
-    if (over[i] || last?.h !== null || kind(last.id) !== "fill") return;
+    if (over[i] || !last) return;
     let bottom = avail;
     tiles
       .slice(at + 1)
