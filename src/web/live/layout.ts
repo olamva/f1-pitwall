@@ -6,6 +6,7 @@ const EDGE = 64;
 const ZONE = 40;
 const REACH = 64;
 const TURN = 24;
+const MIN_SHRINK = 160;
 
 export type Size = "phone" | "tablet" | "desktop" | "display";
 export type Tile = { id: string; h: number | null };
@@ -47,25 +48,38 @@ export const stick = (
   const sticky = new Set(columns.length < 2 ? [] : columns.keys());
   const stretch = new Map<string, number>();
   const push = new Map<string, number>();
+  const fit = [...ends];
+  const moved = new Map(spots);
   sticky.forEach((i) => {
     const tiles = columns[i]!.tiles.filter((t) => spots.has(t.id));
-    const at = tiles.findLastIndex(
-      (t) => t.h === null && kind(t.id) === "fill",
-    );
+    const want = over[i] ? "shrink" : "fill";
+    const at = tiles.findLastIndex((t) => t.h === null && kind(t.id) === want);
     const last = tiles[at];
-    if (over[i] || !last) return;
-    let bottom = avail;
-    tiles
-      .slice(at + 1)
-      .reverse()
-      .forEach((t) => {
-        bottom -= px(t.id);
-        push.set(t.id, bottom - spots.get(t.id)!.top * ROW);
-        bottom -= GAP;
+    if (!last) return;
+    const after = tiles.slice(at + 1).reverse();
+    const spot = spots.get(last.id)!;
+    const tall =
+      avail - spot.top * ROW - after.reduce((n, t) => n + px(t.id) + GAP, 0);
+    if (over[i] && tall < MIN_SHRINK) return;
+    if (over[i]) {
+      const cut = spot.height - Math.ceil((tall + GAP) / ROW);
+      moved.set(last.id, { ...spot, height: spot.height - cut });
+      after.forEach((t) => {
+        const s = spots.get(t.id)!;
+        moved.set(t.id, { ...s, top: s.top - cut });
       });
-    stretch.set(last.id, Math.max(0, bottom - spots.get(last.id)!.top * ROW));
+      over[i] = 0;
+      fit[i] -= cut;
+    }
+    let bottom = avail;
+    after.forEach((t) => {
+      bottom -= px(t.id);
+      push.set(t.id, bottom - moved.get(t.id)!.top * ROW);
+      bottom -= GAP;
+    });
+    stretch.set(last.id, Math.max(0, tall));
   });
-  return { over, sticky, stretch, push };
+  return { over, sticky, stretch, push, ends: fit, spots: moved };
 };
 
 export const autoscroll = (

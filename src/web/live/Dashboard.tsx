@@ -138,14 +138,16 @@ export const Dashboard = ({
             : 0;
     return editing ? Math.max(EDIT_MIN, r) : r;
   };
-  const { spots: placed, ends } = place(columns, rows);
-  const { over, sticky, stretch, push } = stick(
-    columns,
-    placed,
-    ends,
-    avail,
-    height,
-    (id) => (fixed.get(id) == null ? (px[id] ?? 0) : fixed.get(id)! * ROW),
+  const { spots, ends } = place(columns, rows);
+  const {
+    over,
+    sticky,
+    stretch,
+    push,
+    ends: fit,
+    spots: placed,
+  } = stick(columns, spots, ends, avail, height, (id) =>
+    fixed.get(id) == null ? (px[id] ?? 0) : fixed.get(id)! * ROW,
   );
   frozen.current = stretch;
   const natural = (id: string) => {
@@ -371,7 +373,7 @@ export const Dashboard = ({
   const missing = (Object.keys(WIDGETS) as WidgetId[]).filter(
     (id) => !present.has(id),
   );
-  const total = Math.max(1, ...ends);
+  const total = Math.max(1, ...fit);
 
   return (
     <>

@@ -232,6 +232,29 @@ test("columns of a multi-column board stick, and a column taller than the screen
   ]);
   assert.deepEqual([...sized.stretch], [["c", screen - 2 * (40 + 16)]]);
   assert.deepEqual([...sized.push.keys()], ["w", "b"]);
+  assert.deepEqual([...under.stretch.keys()], ["c"]);
+  const rowsOf = (id: string) => height(id) || 6;
+  const long = [col(7, "c"), col(5, "a", "tower", "w")];
+  const { spots, ends } = place(long, rowsOf);
+  const fitted = stick(
+    long,
+    spots,
+    ends,
+    screen,
+    (id) => (id === "tower" ? "shrink" : kind(id)),
+    (id) => rowsOf(id) * 8 - 16,
+  );
+  assert.deepEqual(fitted.over, [0, 0]);
+  assert.deepEqual(fitted.ends, [10, 77]);
+  assert.deepEqual(
+    [...fitted.stretch],
+    [
+      ["c", screen],
+      ["tower", screen - 20 * 8 - 48],
+    ],
+  );
+  assert.deepEqual(fitted.spots.get("w"), { col: 1, top: 71, height: 6 });
+  assert.deepEqual([...fitted.push], [["w", 0]]);
 });
 
 test("a drag scrolls only near the screen edges, and never past the end of the board", () => {
