@@ -61,6 +61,14 @@ export const current = (rounds: Round[], now: number) =>
     )
     .find((s) => now >= s.at && now <= s.at + (s.minutes + 30) * 60_000);
 
+const DAY = 86_400_000;
+
+export const roundAt = (rounds: Round[], start: number) =>
+  rounds.find((r) => {
+    const race = Date.parse(r.sessions.race ?? "");
+    return race > start - DAY / 4 && race < start + 4 * DAY;
+  })?.round ?? 0;
+
 const span = (ms: number) => {
   const s = Math.floor(ms / 1000);
   const d = Math.floor(s / 86400);

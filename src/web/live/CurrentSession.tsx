@@ -22,11 +22,11 @@ import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
 import { setSearchParam } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
-import { Loading } from "../Loading.tsx";
+import { Loading, LoadingRound } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
 import { useActive, useBack } from "../Swipe.tsx";
 import { Board } from "./Board.tsx";
-import { Countdown, current } from "./Countdown.tsx";
+import { Countdown, current, roundAt } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
 import { ScrubCard } from "./ScrubCard.tsx";
@@ -432,13 +432,20 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         </div>
       </div>
     ) : (
-      <Live
-        key={key}
-        session={key}
-        positions={info.data.positions}
-        token={info.data.token}
-        rounds={season.data.rounds}
-      />
+      <LoadingRound
+        value={{
+          year: String(season.data.year),
+          round: roundAt(season.data.rounds, Date.now()),
+        }}
+      >
+        <Live
+          key={key}
+          session={key}
+          positions={info.data.positions}
+          token={info.data.token}
+          rounds={season.data.rounds}
+        />
+      </LoadingRound>
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
