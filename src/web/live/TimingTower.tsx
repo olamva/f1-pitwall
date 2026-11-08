@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite, useTeamRow } from "../favourite.ts";
-import { HoverCard } from "../HoverCard.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
@@ -9,6 +8,7 @@ import { SessionBest, TowerHead } from "./TowerHead.tsx";
 import { useFit, type Fit } from "./towerFit.ts";
 import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
+import { Hint } from "./Hint.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -198,12 +198,9 @@ const Gained = ({ gained }: { gained: number | null }) => (
   </td>
 );
 
-const Tip = ({ title, children }: { title: string; children: string }) => (
-  <>
-    <p className="font-semibold">{title}</p>
-    <p className="mt-1 text-xs text-zinc-400">{children}</p>
-  </>
-);
+const CATCHING = "The gap to the car ahead gets smaller.";
+const OVERTAKE =
+  "The driver was within one second of the car ahead at the detection line. The driver gets extra electrical energy for this lap.";
 
 interface IntervalProps {
   row: Row;
@@ -219,36 +216,20 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
       <span className="flex gap-1">
         <span className="inline-block w-3">
           {row.catching && (
-            <HoverCard
-              card={
-                <Tip title="Catching the car ahead">
-                  The gap to the car ahead gets smaller.
-                </Tip>
-              }
-              className="inline-flex text-emerald-400"
+            <Hint
+              label="Catching the car ahead"
+              text={CATCHING}
+              tone="text-emerald-400"
             >
-              <span aria-label="Catching the car ahead">
-                <ChevronsUp size={12} strokeWidth={3} />
-              </span>
-            </HoverCard>
+              <ChevronsUp size={12} strokeWidth={3} />
+            </Hint>
           )}
         </span>
         <span className="inline-block w-3">
           {row.overtake && (
-            <HoverCard
-              card={
-                <Tip title="Overtake Mode">
-                  The driver was within one second of the car ahead at the
-                  detection line. The driver gets extra electrical energy for
-                  this lap.
-                </Tip>
-              }
-              className="inline-flex text-yellow-300"
-            >
-              <span aria-label="Overtake Mode">
-                <Zap size={12} strokeWidth={3} fill="currentColor" />
-              </span>
-            </HoverCard>
+            <Hint label="Overtake Mode" text={OVERTAKE} tone="text-yellow-300">
+              <Zap size={12} strokeWidth={3} fill="currentColor" />
+            </Hint>
           )}
         </span>
       </span>
