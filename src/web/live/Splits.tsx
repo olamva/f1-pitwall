@@ -14,6 +14,37 @@ interface SplitsProps {
   onSave: (columns: Column[]) => void;
 }
 
+export const track = (
+  event: ReactPointerEvent<HTMLElement>,
+  columns: Column[],
+  next: (e: PointerEvent) => Column[],
+  onDraft: SplitsProps["onDraft"],
+  onSave: SplitsProps["onSave"],
+) => {
+  if (event.button !== 0) return;
+  event.preventDefault();
+  const bar = event.currentTarget;
+  let last = columns;
+  bar.setPointerCapture(event.pointerId);
+  const moved = (e: PointerEvent) => {
+    claim(e);
+    const now = next(e);
+    if (same(now, last)) return;
+    last = now;
+    onDraft(now);
+  };
+  const ended = (e: PointerEvent) => {
+    bar.removeEventListener("pointermove", moved);
+    bar.removeEventListener("pointerup", ended);
+    bar.removeEventListener("pointercancel", ended);
+    if (e.type === "pointerup" && last !== columns) onSave(last);
+    onDraft(null);
+  };
+  bar.addEventListener("pointermove", moved);
+  bar.addEventListener("pointerup", ended);
+  bar.addEventListener("pointercancel", ended);
+};
+
 export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
   const [first, setFirst] = useState<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<number | null>(null);
@@ -59,34 +90,17 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
   }, [hover, first]);
 
   const begin = (col: number, event: ReactPointerEvent<HTMLElement>) => {
-    if (event.button !== 0) return;
-    event.preventDefault();
     const bar = event.currentTarget;
-    let last = columns;
-    bar.setPointerCapture(event.pointerId);
-    const moved = (e: PointerEvent) => {
-      claim(e);
-      const box = bar.parentElement!.parentElement!.getBoundingClientRect();
-      const next = widen(
-        columns,
-        box.width,
-        col,
-        e.clientX - box.left - GAP / 2,
-      );
-      if (same(next, last)) return;
-      last = next;
-      onDraft(next);
-    };
-    const ended = (e: PointerEvent) => {
-      bar.removeEventListener("pointermove", moved);
-      bar.removeEventListener("pointerup", ended);
-      bar.removeEventListener("pointercancel", ended);
-      if (e.type === "pointerup" && last !== columns) onSave(last);
-      onDraft(null);
-    };
-    bar.addEventListener("pointermove", moved);
-    bar.addEventListener("pointerup", ended);
-    bar.addEventListener("pointercancel", ended);
+    track(
+      event,
+      columns,
+      (e) => {
+        const box = bar.parentElement!.parentElement!.getBoundingClientRect();
+        return widen(columns, box.width, col, e.clientX - box.left - GAP / 2);
+      },
+      onDraft,
+      onSave,
+    );
   };
 
   return columns.slice(1).map((_, i) => (

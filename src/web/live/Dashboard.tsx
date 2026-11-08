@@ -3,7 +3,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
@@ -11,9 +10,11 @@ import { RotateCcw } from "lucide-react";
 import { createPortal } from "react-dom";
 import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
-import { Splits } from "./Splits.tsx";
+import { Splits, track } from "./Splits.tsx";
 import { Tile, TOP } from "./Tile.tsx";
+import { useHeights } from "./useHeights.ts";
 import { useDiscard, useLayout } from "./useLayout.ts";
+import { useSize } from "./useSize.ts";
 import { floor, pin, settle, useSlide } from "./useSlide.ts";
 import {
   add,
@@ -23,15 +24,18 @@ import {
   GAP,
   gapAt,
   MAX_COLUMNS,
+  pairs,
   place,
   remove,
   resize,
   ROW,
   same,
   SIZES,
+  split,
   stick,
   widen,
   type Column,
+  type Side,
   type Size,
 } from "./layout.ts";
 import {
@@ -42,11 +46,6 @@ import {
   type WidgetId,
 } from "./widgets.ts";
 
-const QUERIES = [
-  "(width >= 48rem)",
-  "(width >= 80rem) and (pointer: fine)",
-  "(width >= 120rem) and (pointer: fine)",
-].map(matchMedia);
 const PREVIEW: Record<Size, string | undefined> = {
   phone: "430px",
   tablet: "calc(1210px - 2rem)",
@@ -56,15 +55,6 @@ const PREVIEW: Record<Size, string | undefined> = {
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
 const DWELL = 250;
-
-const sizeNow = () => SIZES[QUERIES.findLastIndex((q) => q.matches) + 1]!;
-
-const useSize = () =>
-  useSyncExternalStore((change) => {
-    QUERIES.forEach((q) => q.addEventListener("change", change));
-    return () =>
-      QUERIES.forEach((q) => q.removeEventListener("change", change));
-  }, sizeNow);
 
 const prevent = (e: TouchEvent) => e.preventDefault();
 
@@ -110,8 +100,6 @@ export const Dashboard = ({
   const [saved, setSaved] = useLayout(size);
   const [draft, setDraft] = useState<Column[] | null>(null);
   const [active, setActive] = useState<Drag | null>(null);
-  const [px, setPx] = useState<Record<string, number>>({});
-  const [avail, setAvail] = useState(Infinity);
   const [added, setAdded] = useState<string | null>(null);
   const grid = useRef<HTMLDivElement>(null);
   const probe = useRef<HTMLDivElement>(null);
@@ -125,6 +113,12 @@ export const Dashboard = ({
   const [hideOff, setHideOff] = useState(false);
   const hidden = (id: string) => !!off[id as WidgetId] && (!editing || hideOff);
   const columns = draft ?? saved;
+  const { px, avail } = useHeights(
+    contents,
+    probe,
+    (id) => frozen.current.has(id) || latest.current.fixed.get(id) != null,
+    [columns.flatMap((c) => c.tiles.map((t) => t.id)).join(), editing, size],
+  );
   const fixed = new Map(
     columns.flatMap((c) =>
       c.tiles.map((t) => [t.id, height(t.id) === "content" ? null : t.h]),
@@ -153,31 +147,14 @@ export const Dashboard = ({
     (id) => (fixed.get(id) == null ? (px[id] ?? 0) : fixed.get(id)! * ROW),
   );
   frozen.current = stretch;
-  const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
+  const natural = (id: string) => {
+    const shown = contents.current.get(id)!;
+    return fixed.get(id) == null
+      ? shown.offsetHeight
+      : (px[id] ?? shown.firstElementChild?.scrollHeight ?? 0);
+  };
   const latest = useRef({ rows, size, fixed, placed });
   latest.current = { rows, size, fixed, placed };
-
-  useLayoutEffect(() => {
-    const read = () => {
-      setAvail(probe.current!.offsetHeight);
-      setPx((old) => {
-        let next = old;
-        contents.current.forEach((el, id) => {
-          if (frozen.current.has(id) || latest.current.fixed.get(id) != null)
-            return;
-          const value = el.offsetHeight;
-          if (Math.abs((old[id] ?? -99) - value) > 1)
-            next = { ...next, [id]: value };
-        });
-        return next;
-      });
-    };
-    read();
-    const observer = new ResizeObserver(read);
-    contents.current.forEach((el) => observer.observe(el));
-    observer.observe(probe.current!);
-    return () => observer.disconnect();
-  }, [ids, editing, size]);
 
   useSlide(editing, columns, cells, () => drag.current?.id);
 
@@ -281,7 +258,6 @@ export const Dashboard = ({
     if (kind === "size") event.preventDefault();
     if (editing) event.stopPropagation();
     const card = cards.current.get(id)!.getBoundingClientRect();
-    const shown = contents.current.get(id)!;
     const d: Drag = {
       kind,
       id,
@@ -293,7 +269,7 @@ export const Dashboard = ({
         kind === "move"
           ? event.clientY - card.top
           : cells.current.get(id)!.getBoundingClientRect().top +
-            shown.offsetHeight -
+            contents.current.get(id)!.offsetHeight -
             event.clientY,
       sx: event.clientX,
       sy: event.clientY,
@@ -304,10 +280,7 @@ export const Dashboard = ({
       since: 0,
       gap: -1,
       live: false,
-      natural:
-        fixed.get(id) == null
-          ? shown.offsetHeight
-          : (px[id] ?? shown.firstElementChild?.scrollHeight ?? 0),
+      natural: natural(id),
       tail:
         document.documentElement.scrollHeight -
         scrollY -
@@ -373,6 +346,24 @@ export const Dashboard = ({
     addEventListener("pointercancel", ended);
     addEventListener("keydown", key, true);
   };
+
+  const share = (pair: string[], event: ReactPointerEvent<HTMLElement>) => {
+    const sides = pair.map((id) => ({
+      id,
+      px: contents.current.get(id)!.offsetHeight,
+      max: height(id) === "shrink" ? natural(id) : Infinity,
+    })) as [Side, Side];
+    track(
+      event,
+      saved,
+      (e) =>
+        split(saved, sides, EDIT_MIN * ROW - GAP, e.clientY - event.clientY),
+      setDraft,
+      setSaved,
+    );
+  };
+
+  const below = pairs(columns, placed, height);
 
   const present = new Set(saved.flatMap((c) => c.tiles.map((t) => t.id)));
   const missing = (Object.keys(WIDGETS) as WidgetId[]).filter(
@@ -490,6 +481,11 @@ export const Dashboard = ({
                 onPress={(kind, e) => begin(kind, id, e)}
                 onRemove={() => setSaved(remove(saved, id))}
                 onAuto={() => setSaved(resize(saved, id, null))}
+                onSplit={
+                  editing && !active && below.has(id)
+                    ? (e) => share([id, below.get(id)!], e)
+                    : null
+                }
               />,
             ];
           })}

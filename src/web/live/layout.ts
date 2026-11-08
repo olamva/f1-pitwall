@@ -210,5 +210,41 @@ export const resize = (columns: Column[], id: string, h: number | null) =>
     tiles: c.tiles.map((t) => (t.id === id ? { ...t, h } : t)),
   }));
 
+export const pairs = (
+  columns: Column[],
+  spots: Map<string, Spot>,
+  kind: (id: string) => string,
+) =>
+  new Map(
+    columns.flatMap(({ tiles }) => {
+      const ids = tiles.map((t) => t.id).filter((id) => spots.has(id));
+      return ids
+        .slice(1)
+        .map((next, i) => [ids[i]!, next] as const)
+        .filter((pair) => pair.every((id) => kind(id) !== "content"));
+    }),
+  );
+
+export type Side = { id: string; px: number; max: number };
+
+export const split = (
+  columns: Column[],
+  [a, b]: [Side, Side],
+  min: number,
+  dy: number,
+) => {
+  const total = a.px + b.px;
+  const top = Math.max(
+    min,
+    total - b.max,
+    Math.min(total - min, a.max, a.px + dy),
+  );
+  return resize(
+    resize(columns, a.id, Math.round(top / ROW)),
+    b.id,
+    Math.round((total - top) / ROW),
+  );
+};
+
 export const same = (a: Column[], b: Column[]) =>
   JSON.stringify(a) === JSON.stringify(b);
