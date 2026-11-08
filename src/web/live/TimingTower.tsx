@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite, useTeamRow } from "../favourite.ts";
+import { HoverCard } from "../HoverCard.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
@@ -197,6 +198,13 @@ const Gained = ({ gained }: { gained: number | null }) => (
   </td>
 );
 
+const Tip = ({ title, children }: { title: string; children: string }) => (
+  <>
+    <p className="font-semibold">{title}</p>
+    <p className="mt-1 text-xs text-zinc-400">{children}</p>
+  </>
+);
+
 interface IntervalProps {
   row: Row;
   pad: string;
@@ -211,24 +219,36 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
       <span className="flex gap-1">
         <span className="inline-block w-3">
           {row.catching && (
-            <span
+            <HoverCard
+              card={
+                <Tip title="Catching the car ahead">
+                  The gap to the car ahead gets smaller.
+                </Tip>
+              }
               className="inline-flex text-emerald-400"
-              title="Catching the car ahead"
-              aria-label="Catching the car ahead"
             >
-              <ChevronsUp size={12} strokeWidth={3} />
-            </span>
+              <span aria-label="Catching the car ahead">
+                <ChevronsUp size={12} strokeWidth={3} />
+              </span>
+            </HoverCard>
           )}
         </span>
         <span className="inline-block w-3">
           {row.overtake && (
-            <span
+            <HoverCard
+              card={
+                <Tip title="Overtake Mode">
+                  The driver was within one second of the car ahead at the
+                  detection line. The driver gets extra electrical energy for
+                  this lap.
+                </Tip>
+              }
               className="inline-flex text-yellow-300"
-              title="Overtake Mode"
-              aria-label="Overtake Mode"
             >
-              <Zap size={12} strokeWidth={3} fill="currentColor" />
-            </span>
+              <span aria-label="Overtake Mode">
+                <Zap size={12} strokeWidth={3} fill="currentColor" />
+              </span>
+            </HoverCard>
           )}
         </span>
       </span>
