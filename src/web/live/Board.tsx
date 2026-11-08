@@ -265,7 +265,7 @@ export const Board = ({
             ) : (
               <Maximize aria-hidden="true" className="size-5" />
             )}
-            <span className="max-sm:sr-only">
+            <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
               {focus ? "Exit focus" : "Focus"}
             </span>
           </button>

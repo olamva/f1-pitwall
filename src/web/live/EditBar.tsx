@@ -336,7 +336,9 @@ export const EditBar = ({
               className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-[2.625rem] max-sm:px-0"
             >
               <LayoutDashboard aria-hidden="true" className="size-5" />
-              <span className="max-sm:sr-only">Customize</span>
+              <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
+                Customize
+              </span>
             </button>
           </Hint>
         )}
