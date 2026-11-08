@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Hint } from "../Hint.tsx";
 import { LineChart, type Series } from "../charts/LineChart.tsx";
 import { lapTime } from "../charts/summary.ts";
 import type { LapRow, Period } from "../../shared/timing.ts";
@@ -136,9 +137,9 @@ export const LapCharts = ({
       <div className="mb-2 flex flex-wrap gap-2">
         <Tabs items={VIEWS} value={view} onChange={setView} small />
         {view === "Chart" && (
-          <div title="Last 15 shows only laps within 108% of the fastest">
+          <Hint label="Last 15 shows only laps within 108% of the fastest">
             <Tabs items={RANGES} value={range} onChange={setRange} small />
-          </div>
+          </Hint>
         )}
       </div>
       {view === "Laps" ? (

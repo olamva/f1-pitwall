@@ -8,6 +8,7 @@ import {
 import { Flag, Pause, Play } from "lucide-react";
 import type { Period } from "../../shared/timing.ts";
 import { GlassSeek } from "../GlassSeek.tsx";
+import { Hint } from "../Hint.tsx";
 import { HoverCard } from "../HoverCard.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { StealthInput } from "./StealthInput.tsx";
@@ -153,18 +154,19 @@ export const ReplayBar = ({
       ref={bar}
       className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
     >
-      <button
-        onClick={onToggle}
-        aria-label={playing ? "Pause" : "Play"}
-        title={playing ? "Pause" : "Play"}
-        className="glass-control grid size-10 cursor-pointer place-items-center max-sm:order-first"
-      >
-        {playing ? (
-          <Pause aria-hidden="true" className="size-4" />
-        ) : (
-          <Play aria-hidden="true" className="size-4" />
-        )}
-      </button>
+      <Hint label={playing ? "Pause" : "Play"} className="max-sm:order-first">
+        <button
+          onClick={onToggle}
+          aria-label={playing ? "Pause" : "Play"}
+          className="glass-control grid size-10 cursor-pointer place-items-center"
+        >
+          {playing ? (
+            <Pause aria-hidden="true" className="size-4" />
+          ) : (
+            <Play aria-hidden="true" className="size-4" />
+          )}
+        </button>
+      </Hint>
       <div className="order-first flex min-w-0 flex-1 basis-[calc(100%-4rem)] items-center gap-3 sm:order-1 sm:basis-60">
         <HoverCard
           card={card(hover.v)}
@@ -248,18 +250,19 @@ export const ReplayBar = ({
           )}
         </span>
       </div>
-      <button
-        onClick={() => setFlags(!flags)}
-        aria-pressed={flags}
-        aria-label="Flag periods"
-        title={flags ? "Hide flag periods" : "Show flag periods"}
-        className="glass-control grid size-10 cursor-pointer place-items-center"
-      >
-        <Flag
-          aria-hidden="true"
-          className={`size-4 ${flags ? "fill-yellow-400 text-yellow-400" : ""}`}
-        />
-      </button>
+      <Hint label={flags ? "Hide flag periods" : "Show flag periods"}>
+        <button
+          onClick={() => setFlags(!flags)}
+          aria-pressed={flags}
+          aria-label="Flag periods"
+          className="glass-control grid size-10 cursor-pointer place-items-center"
+        >
+          <Flag
+            aria-hidden="true"
+            className={`size-4 ${flags ? "fill-yellow-400 text-yellow-400" : ""}`}
+          />
+        </button>
+      </Hint>
       {onSpeed && (
         <select
           aria-label="Replay speed"

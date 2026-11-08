@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { Hint } from "../Hint.tsx";
 import { Compound, tyreColor } from "../Tyre.tsx";
 import type { Fit } from "./towerFit.ts";
 import type { Row } from "./view.ts";
@@ -44,10 +45,14 @@ export const Stints = ({ stints, scale, wide }: StintsProps) => {
         {stints.map((stint, i) => (
           <span
             key={i}
-            title={`${stint.compound.charAt(0)}${stint.compound.slice(1).toLowerCase()}, ${stint.laps} laps`}
             className={`min-w-1 rounded-xs bg-current ${tyreColor(stint.compound)}`}
             style={{ flex: stint.laps }}
-          />
+          >
+            <Hint
+              label={`${stint.compound.charAt(0)}${stint.compound.slice(1).toLowerCase()}, ${stint.laps} laps`}
+              className="h-full"
+            />
+          </span>
         ))}
         <span
           style={{
@@ -57,13 +62,13 @@ export const Stints = ({ stints, scale, wide }: StintsProps) => {
         />
       </span>
       {set && (
-        <span
-          title={set.new ? "New set" : "Used set"}
+        <Hint
+          label={set.new ? "New set" : "Used set"}
           className={`text-[10px] text-zinc-400 ${wide ? "w-[4ch]" : ""}`}
         >
           {set.new ? "N" : "U"}
           {wide && (set.new ? "ew" : "sed")}
-        </span>
+        </Hint>
       )}
     </Cover>
   );

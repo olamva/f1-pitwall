@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { Hint } from "../Hint.tsx";
 import { BUST, Figure } from "../Headshot.tsx";
 import { ink } from "../ink.ts";
 import type { Duel, Who } from "./derive.ts";
@@ -22,16 +23,16 @@ const Split = ({ label, pair, color }: SplitProps) => {
     return (
       <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2 text-sm">
         <span />
-        <div className="text-center text-xs text-zinc-500" title={label}>
+        <Hint label={label} className="text-center text-xs text-zinc-500">
           N/A
-        </div>
+        </Hint>
         <span />
       </div>
     );
   return (
     <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2 text-sm">
       <span className="tabular text-right font-semibold">{pair[0]}</span>
-      <div className="flex h-3 gap-0.5" title={label}>
+      <Hint label={label} className="flex h-3 gap-0.5">
         <div
           className="rounded-l"
           style={{
@@ -43,7 +44,7 @@ const Split = ({ label, pair, color }: SplitProps) => {
           className="rounded-r bg-zinc-600"
           style={{ width: `${(pair[1] / total) * 100}%` }}
         />
-      </div>
+      </Hint>
       <span className="tabular font-semibold">{pair[1]}</span>
     </div>
   );

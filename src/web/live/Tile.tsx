@@ -1,5 +1,6 @@
 import { Minus } from "lucide-react";
 import type { CSSProperties, PointerEvent, ReactNode } from "react";
+import { Hint } from "../Hint.tsx";
 import { GAP, ROW, type Spot } from "./layout.ts";
 import { WIDGETS, type WidgetId } from "./widgets.ts";
 
@@ -149,12 +150,17 @@ const Split = ({ onSplit }: Pick<TileProps, "onSplit">) =>
     <div
       role="separator"
       aria-orientation="horizontal"
-      title="Drag to resize the widgets"
+      aria-label="Drag to resize the widgets"
       onPointerDown={onSplit}
-      className="group absolute inset-x-0 bottom-0 z-20 flex cursor-row-resize touch-none items-center justify-center"
+      className="group absolute inset-x-0 bottom-0 z-20 cursor-row-resize touch-none"
       style={{ height: GAP }}
     >
-      <span className="light:bg-zinc-500 h-1.5 w-12 rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100" />
+      <Hint
+        label="Drag to resize the widgets"
+        className="flex h-full items-center justify-center"
+      >
+        <span className="light:bg-zinc-500 h-1.5 w-12 rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100" />
+      </Hint>
     </div>
   );
 
@@ -168,16 +174,21 @@ interface HandleProps {
 const Handle = ({ id, shown, onPress, onAuto }: HandleProps) =>
   shown &&
   WIDGETS[id].height !== "content" && (
-    <span
-      role="presentation"
-      title="Drag to resize. Double-tap to use automatic height."
-      onPointerDown={(e) => onPress("size", e)}
-      onPointerUp={(e) => {
-        if (tap.id === id && e.timeStamp - tap.at < DOUBLE_TAP) onAuto();
-        tap = { id, at: e.timeStamp };
-      }}
-      className="absolute right-0 bottom-0 z-20 size-20 cursor-nwse-resize touch-none"
+    <Hint
+      label="Drag to resize"
+      text="Double-tap to use automatic height."
+      className="absolute right-0 bottom-0 z-20 size-20"
     >
-      <span className="light:border-zinc-400 absolute right-1 bottom-5 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
-    </span>
+      <span
+        role="presentation"
+        onPointerDown={(e) => onPress("size", e)}
+        onPointerUp={(e) => {
+          if (tap.id === id && e.timeStamp - tap.at < DOUBLE_TAP) onAuto();
+          tap = { id, at: e.timeStamp };
+        }}
+        className="absolute inset-0 cursor-nwse-resize touch-none"
+      >
+        <span className="light:border-zinc-400 absolute right-1 bottom-5 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
+      </span>
+    </Hint>
   );

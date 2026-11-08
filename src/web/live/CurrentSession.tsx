@@ -1,4 +1,5 @@
 import { ChevronLeft, Eye, Settings, SkipBack } from "lucide-react";
+import { Hint } from "../Hint.tsx";
 import {
   memo,
   useEffect,
@@ -96,19 +97,20 @@ interface GoLiveProps {
 }
 
 const GoLive = ({ behind, onClick }: GoLiveProps) => (
-  <button
-    onClick={onClick}
-    title="Go to live"
-    className="glass-control tabular flex cursor-pointer items-center px-3 py-1.5 text-sm font-semibold"
-  >
-    <span
-      aria-hidden="true"
-      className={
-        behind < 1000 ? "live-dot" : "mr-2 size-2 rounded-full bg-zinc-500"
-      }
-    />
-    {behind < 1000 ? "LIVE" : `−${clip(behind / 1000)}`}
-  </button>
+  <Hint label="Go to live">
+    <button
+      onClick={onClick}
+      className="glass-control tabular flex cursor-pointer items-center px-3 py-1.5 text-sm font-semibold"
+    >
+      <span
+        aria-hidden="true"
+        className={
+          behind < 1000 ? "live-dot" : "mr-2 size-2 rounded-full bg-zinc-500"
+        }
+      />
+      {behind < 1000 ? "LIVE" : `−${clip(behind / 1000)}`}
+    </button>
+  </Hint>
 );
 
 interface DelaySettingsProps {
@@ -119,14 +121,15 @@ interface DelaySettingsProps {
 
 const DelaySettings = ({ race, ready, onSync }: DelaySettingsProps) => (
   <>
-    <button
-      popoverTarget="tv-delay"
-      aria-label="TV delay"
-      title="TV delay"
-      className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
-    >
-      <Settings aria-hidden="true" className="size-4" />
-    </button>
+    <Hint label="TV delay">
+      <button
+        popoverTarget="tv-delay"
+        aria-label="TV delay"
+        className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
+      >
+        <Settings aria-hidden="true" className="size-4" />
+      </button>
+    </Hint>
     <div
       id="tv-delay"
       popover="auto"

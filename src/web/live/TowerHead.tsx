@@ -1,3 +1,4 @@
+import { Hint } from "../Hint.tsx";
 import { ink } from "../ink.ts";
 import type { Fit } from "./towerFit.ts";
 import { Cover } from "./TowerTyres.tsx";
@@ -67,18 +68,14 @@ export const TowerHead = ({
         <th className={`${pad} py-2 text-right`}>P</th>
         <th className={`${pad} py-2`}>Driver</th>
         {race && fit.wide && (
-          <th
-            className="px-2 py-2 text-right"
-            title="Places gained or lost since the start"
-          >
-            +/−
+          <th className="px-2 py-2 text-right">
+            <Hint label="Places gained or lost since the start">+/−</Hint>
           </th>
         )}
-        <th
-          className={`${pad} py-2 text-right`}
-          title={cut ? `Gap to the time of P${cut}` : undefined}
-        >
-          {race ? "Gap" : cut ? "Cut" : "Diff"}
+        <th className={`${pad} py-2 text-right`}>
+          <Hint label={cut ? `Gap to the time of P${cut}` : ""}>
+            {race ? "Gap" : cut ? "Cut" : "Diff"}
+          </Hint>
         </th>
         {fit.int && (
           <th data-tyres className={`${pad} py-2 text-right ${hide}`}>
@@ -118,9 +115,8 @@ export const TowerHead = ({
             <th
               data-tyres={tyresCell}
               className={`px-2 py-2 text-right ${cover}`}
-              title="Stationary time of the last pit stop"
             >
-              Stop
+              <Hint label="Stationary time of the last pit stop">Stop</Hint>
             </th>
           </>
         )}

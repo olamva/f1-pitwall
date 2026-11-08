@@ -4,6 +4,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { Hint } from "../Hint.tsx";
 import { claim } from "../Swipe.tsx";
 import { GAP, same, widen, type Column } from "./layout.ts";
 import { TOP } from "./Tile.tsx";
@@ -113,19 +114,21 @@ export const Splits = ({ columns, onDraft, onSave }: SplitsProps) => {
       <div
         role="separator"
         aria-orientation="vertical"
-        title="Drag to resize the columns"
+        aria-label="Drag to resize the columns"
         onPointerDown={(e) => begin(i, e)}
         onPointerEnter={(e) => e.pointerType === "mouse" && setHover(i)}
         className="group absolute inset-y-0 left-full cursor-col-resize touch-none"
         style={{ width: GAP }}
       >
-        <span
-          className={`light:bg-zinc-500 fixed h-12 w-1.5 rounded-full bg-zinc-400 transition-opacity group-active:opacity-100 pointer-coarse:opacity-100 ${hover === i ? "" : "opacity-0"}`}
-          style={{
-            marginLeft: GAP / 2 - 3,
-            top: `calc((max(var(--split-top), ${TOP}) + min(var(--split-bottom), 100dvh)) / 2 - 1.5rem)`,
-          }}
-        />
+        <Hint label="Drag to resize the columns" className="h-full">
+          <span
+            className={`light:bg-zinc-500 fixed h-12 w-1.5 rounded-full bg-zinc-400 transition-opacity group-active:opacity-100 pointer-coarse:opacity-100 ${hover === i ? "" : "opacity-0"}`}
+            style={{
+              marginLeft: GAP / 2 - 3,
+              top: `calc((max(var(--split-top), ${TOP}) + min(var(--split-bottom), 100dvh)) / 2 - 1.5rem)`,
+            }}
+          />
+        </Hint>
       </div>
     </div>
   ));

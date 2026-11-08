@@ -1,4 +1,5 @@
 import { Maximize, Minimize } from "lucide-react";
+import { Hint } from "../Hint.tsx";
 import {
   useEffect,
   useLayoutEffect,
@@ -243,29 +244,32 @@ export const Board = ({
         clock={remaining(state, utc)}
         onLap={onLap}
       >
-        <button
-          type="button"
-          aria-pressed={focus}
-          onClick={() => {
-            flushSync(() => setFocus(!focus));
-            scrollTo(0, 0);
-          }}
-          title={
+        <Hint
+          label={
             focus
               ? "Show the full page"
               : "Show only the timing, the lap count and the flags"
           }
-          className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm max-sm:w-[2.625rem] max-sm:px-0"
         >
-          {focus ? (
-            <Minimize aria-hidden="true" className="size-5" />
-          ) : (
-            <Maximize aria-hidden="true" className="size-5" />
-          )}
-          <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
-            {focus ? "Exit focus" : "Focus"}
-          </span>
-        </button>
+          <button
+            type="button"
+            aria-pressed={focus}
+            onClick={() => {
+              flushSync(() => setFocus(!focus));
+              scrollTo(0, 0);
+            }}
+            className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm max-sm:w-[2.625rem] max-sm:px-0"
+          >
+            {focus ? (
+              <Minimize aria-hidden="true" className="size-5" />
+            ) : (
+              <Maximize aria-hidden="true" className="size-5" />
+            )}
+            <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
+              {focus ? "Exit focus" : "Focus"}
+            </span>
+          </button>
+        </Hint>
         <span ref={setSlot} className="contents" />
       </Status>
       <Dashboard

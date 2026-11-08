@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Hint } from "./Hint.tsx";
 import type {
   LapPositions,
   Practice,
@@ -196,11 +197,10 @@ const raceCells = (result: Result) => {
   const status = describe(result);
   return (
     <>
-      <td
-        className="py-2 pl-2 text-right text-zinc-400 sm:max-w-48 sm:truncate"
-        title={status}
-      >
-        {status}
+      <td className="py-2 pl-2 text-right text-zinc-400 sm:max-w-48 sm:truncate">
+        <Hint label={status} className="sm:truncate">
+          {status}
+        </Hint>
       </td>
       <td className="py-2 pl-2 text-right font-semibold">
         {result.points || "–"}

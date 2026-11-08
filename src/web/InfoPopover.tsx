@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { Hint } from "./Hint.tsx";
 
 interface InfoPopoverProps {
   label: string;
@@ -59,18 +60,19 @@ export const InfoPopover = ({ label, children }: InfoPopoverProps) => {
   }, [open]);
   return (
     <>
-      <button
-        ref={button}
-        type="button"
-        aria-label={label}
-        aria-expanded={open}
-        aria-controls={id}
-        title={label}
-        onClick={() => setOpen((o) => !o)}
-        className="inline-grid size-6 shrink-0 cursor-pointer place-items-center rounded-full align-middle text-zinc-400 hover:text-zinc-100"
-      >
-        <Info aria-hidden="true" className="size-4" />
-      </button>
+      <Hint label={label} className="inline-flex shrink-0 align-middle">
+        <button
+          ref={button}
+          type="button"
+          aria-label={label}
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => setOpen((o) => !o)}
+          className="grid size-6 cursor-pointer place-items-center rounded-full text-zinc-400 hover:text-zinc-100"
+        >
+          <Info aria-hidden="true" className="size-4" />
+        </button>
+      </Hint>
       {open &&
         createPortal(
           <div
