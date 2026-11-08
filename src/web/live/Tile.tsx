@@ -14,9 +14,12 @@ const place = (
   spot: Spot | undefined,
   lift: number | null,
   fixed: boolean,
+  push: number,
 ): CSSProperties =>
   spot
     ? {
+        transform: push ? `translateY(${push}px)` : undefined,
+        marginBottom: Math.min(0, push) || undefined,
         gridColumn: spot.col + 1,
         gridRow: `${spot.top + 1} / ${lift === null ? `span ${spot.height}` : -1}`,
         paddingBottom: GAP,
@@ -78,8 +81,7 @@ export const Tile = ({
     data-held={held}
     className={`min-w-0 has-[.map-fullscreen]:z-50 data-[held=true]:z-30 ${spot ? "relative" : "absolute inset-x-0 top-0"}`}
     style={{
-      ...place(col, spot, lift, fixed),
-      transform: push ? `translateY(${push}px)` : undefined,
+      ...place(col, spot, lift, fixed, push ?? 0),
     }}
   >
     {moving && (

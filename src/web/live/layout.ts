@@ -58,11 +58,26 @@ export const stick = (
     if (!last) return;
     const after = tiles.slice(at + 1).reverse();
     const spot = spots.get(last.id)!;
+    const prev = tiles[at - 1];
+    const slack =
+      over[i] && prev
+        ? Math.max(
+            0,
+            Math.min(
+              ROW - 1,
+              spots.get(prev.id)!.height * ROW - px(prev.id) - GAP,
+            ),
+          )
+        : 0;
     const tall =
-      avail - spot.top * ROW - after.reduce((n, t) => n + px(t.id) + GAP, 0);
+      avail -
+      spot.top * ROW +
+      slack -
+      after.reduce((n, t) => n + px(t.id) + GAP, 0);
     if (over[i] && tall < MIN_SHRINK) return;
     if (over[i]) {
-      const cut = spot.height - Math.ceil((tall + GAP) / ROW);
+      const cut = spot.height - Math.floor((tall - slack + GAP) / ROW);
+      if (slack) push.set(last.id, -slack);
       moved.set(last.id, { ...spot, height: spot.height - cut });
       after.forEach((t) => {
         const s = spots.get(t.id)!;
