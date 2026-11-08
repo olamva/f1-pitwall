@@ -7,7 +7,7 @@ import { Circuit, useTracks } from "./Circuit.tsx";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { CalendarList } from "./live/CalendarList.tsx";
-import { LABEL as NAMES } from "./live/Countdown.tsx";
+import { LABEL as NAMES, roundAt } from "./live/Countdown.tsx";
 import { Replay } from "./live/CurrentSession.tsx";
 import { CardHead, OpenHint } from "./live/Schedule.tsx";
 import { Loading, LoadingRound } from "./Loading.tsx";
@@ -306,12 +306,19 @@ export const Calendar = ({ season, onPlaying }: CalendarProps) => {
     );
   if (chosen)
     return (
-      <Replay
-        key={chosen.path}
-        session={chosen}
-        rounds={season.data.rounds}
-        onClose={close}
-      />
+      <LoadingRound
+        value={{
+          year: String(season.data.year),
+          round: roundAt(season.data.rounds, Date.parse(chosen.start)),
+        }}
+      >
+        <Replay
+          key={chosen.path}
+          session={chosen}
+          rounds={season.data.rounds}
+          onClose={close}
+        />
+      </LoadingRound>
     );
   return (
     <div className="space-y-4">
