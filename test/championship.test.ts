@@ -9,6 +9,8 @@ const finale: Round = {
   circuit: "Yas Marina Circuit",
   circuitId: "yas_marina",
   country: "UAE",
+  lat: 24.4672,
+  long: 54.6031,
   sessions: {
     fp1: null,
     fp2: null,

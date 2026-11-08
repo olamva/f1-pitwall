@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CloudRain, Droplets } from "lucide-react";
 import type { Fact, Round } from "../../shared/season.ts";
 import { useJson } from "../api.ts";
 import { Flag } from "../Flag.tsx";
+import { Rain } from "../Rain.tsx";
 
 export const LABEL: Record<string, string> = {
   fp1: "Practice 1",
@@ -138,6 +140,52 @@ const Facts = ({ circuit, year, session }: FactsProps) => {
   );
 };
 
+interface ForecastProps {
+  round: Round;
+  at: number;
+  session: string;
+}
+
+type Hourly = {
+  hourly: {
+    precipitation_probability: (number | null)[];
+    precipitation: (number | null)[];
+  };
+};
+
+const hour = (ms: number) => `${new Date(ms).toISOString().slice(0, 13)}:00`;
+
+const Forecast = ({ round, at, session }: ForecastProps) => {
+  const end = at + (MINUTES[session] ?? 60) * 60_000;
+  const { data } = useJson<Hourly>(
+    `https://api.open-meteo.com/v1/forecast?latitude=${round.lat}&longitude=${round.long}&hourly=precipitation_probability,precipitation&timezone=GMT&start_hour=${hour(at)}&end_hour=${hour(end)}`,
+    1_800_000,
+  );
+  const chance = Math.max(
+    0,
+    ...(data?.hourly.precipitation_probability ?? []).map(Number),
+  );
+  const mm = Math.max(0, ...(data?.hourly.precipitation ?? []).map(Number));
+  if (chance < 30) return null;
+  return (
+    <>
+      <div className="light:from-white/10 light:[--rain-drop:white] pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-linear-to-b from-sky-400/10 to-transparent">
+        <Rain drops={Math.round(32 + Math.min(mm, 4) * 32)} />
+      </div>
+      <span className="light:text-white flex items-center gap-1.5 text-sky-400 xl:text-[1.2vw]">
+        <CloudRain className="size-[1.2em]" />
+        {chance}% chance of rain
+        {mm > 0 && (
+          <>
+            <Droplets className="ml-3 size-[1.2em]" />
+            {mm}mm
+          </>
+        )}
+      </span>
+    </>
+  );
+};
+
 export const Countdown = ({ rounds }: CountdownProps) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -166,6 +214,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
           minute: "2-digit",
         })}
       </span>
+      <Forecast round={s.round} at={s.at} session={s.session} />
       <Facts
         circuit={s.round.circuitId}
         year={new Date(s.at).getUTCFullYear()}

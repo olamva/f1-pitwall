@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { InfoPopover } from "../InfoPopover.tsx";
+import { Rain } from "../Rain.tsx";
 import { ink } from "../ink.ts";
 import { TeamNumber } from "../stats/TeamNumber.tsx";
 import {
@@ -165,14 +166,6 @@ const WEATHER: [key: string, label: string, unit: string, Icon: LucideIcon][] =
     ["WindSpeed", "Wind", "m/s", Wind],
   ];
 
-const DROPS = Array.from({ length: 48 }, () => ({
-  left: `${Math.random() * 115 - 5}%`,
-  height: `${8 + Math.random() * 16}px`,
-  opacity: 0.15 + Math.random() * 0.5,
-  animationDuration: `${0.45 + Math.random() * 0.5}s`,
-  animationDelay: `${-Math.random()}s`,
-}));
-
 const Sparkline = ({ values }: { values: number[] }) => {
   const lo = Math.min(...values);
   const hi = Math.max(...values);
@@ -228,13 +221,7 @@ export const Weather = ({ weather, trend }: WeatherProps) => (
         </div>
       ))}
     </dl>
-    {weather?.Rainfall === "1" && (
-      <div className="pointer-events-none absolute inset-0 [content-visibility:auto]">
-        {DROPS.map((style, i) => (
-          <i key={i} className="rain-drop" style={style} />
-        ))}
-      </div>
-    )}
+    {weather?.Rainfall === "1" && <Rain drops={48} />}
   </Panel>
 );
 

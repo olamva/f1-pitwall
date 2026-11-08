@@ -9,6 +9,8 @@ const round = (n: number, sessions: Partial<Round["sessions"]>): Round => ({
   circuit: "",
   circuitId: "",
   country: "",
+  lat: 0,
+  long: 0,
   sessions: {
     fp1: null,
     fp2: null,
