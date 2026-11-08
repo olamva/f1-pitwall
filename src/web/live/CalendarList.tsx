@@ -27,7 +27,7 @@ interface CalendarListProps {
   sessions: SessionRef[];
   season: Season;
   races: Race[];
-  tracks: Record<number, Track>;
+  tracks: Record<number, Track> | undefined;
   hidden: Set<string>;
   onStart: (session: SessionRef) => void;
   onOpen: (round: number) => void;
@@ -314,7 +314,7 @@ export const CalendarList = ({
           <ScheduleWeekend
             round={r}
             year={season.year}
-            track={tracks[r.round]}
+            track={tracks?.[r.round]}
             featured={r.name === anchor}
           />
         </li>
@@ -329,7 +329,7 @@ export const CalendarList = ({
             <Weekend
               sessions={[...w, ...remaining(season, w)]}
               round={number}
-              track={number ? tracks[number] : undefined}
+              track={number ? tracks?.[number] : undefined}
               circuit={info?.circuit}
               onStart={onStart}
               onOpen={round ? () => onOpen(round) : undefined}

@@ -34,7 +34,7 @@ const calendarPath = (year: string, round: number, current: boolean) =>
 
 interface RaceListProps {
   races: Race[];
-  tracks: Record<number, Track>;
+  tracks: Record<number, Track> | undefined;
   hidden: Set<string>;
   onOpen: (round: number) => void;
 }
@@ -52,7 +52,7 @@ const RaceList = ({ races, tracks, hidden, onOpen }: RaceListProps) => (
           aria-label={`Results: ${race.name}`}
           className="peer absolute inset-0 cursor-pointer rounded-xl"
         />
-        <Circuit track={tracks[race.round]} round={race.round} />
+        <Circuit track={tracks?.[race.round]} round={race.round} />
         <CardHead
           label={new Date(race.date).toLocaleDateString([], {
             day: "numeric",
@@ -181,7 +181,7 @@ interface RacesProps {
   season: Season;
   archive: Loaded<RaceArchive>;
   race: Race | undefined;
-  tracks: Record<number, Track>;
+  tracks: Record<number, Track> | undefined;
   hidden: Set<string>;
   replays: SessionRef[];
   onOpen: (round: number) => void;

@@ -7,7 +7,7 @@ type Tracks = Record<number, Track>;
 const requests = new Map<string, Promise<unknown>>();
 const loaded: Record<string, Tracks> = {};
 
-export const useTracks = (year: string): Tracks => {
+export const useTracks = (year: string): Tracks | undefined => {
   const [, render] = useState(0);
   useEffect(() => {
     let alive = true;
@@ -24,7 +24,7 @@ export const useTracks = (year: string): Tracks => {
       alive = false;
     };
   }, [year]);
-  return loaded[year] ?? {};
+  return loaded[year];
 };
 
 interface CircuitProps {
