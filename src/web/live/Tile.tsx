@@ -127,23 +127,22 @@ export const Tile = ({
           >
             <Minus aria-hidden="true" className="size-4" strokeWidth={3} />
           </button>
-          {WIDGETS[id].height !== "content" && (
-            <span
-              role="presentation"
-              title="Drag to resize. Double-tap to use automatic height."
-              onPointerDown={(e) => onPress("size", e)}
-              onPointerUp={(e) => {
-                if (tap.id === id && e.timeStamp - tap.at < DOUBLE_TAP)
-                  onAuto();
-                tap = { id, at: e.timeStamp };
-              }}
-              className="absolute right-0 bottom-0 size-12 cursor-nwse-resize touch-none"
-            >
-              <span className="light:border-zinc-400 absolute right-1 bottom-1 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
-            </span>
-          )}
         </div>
       )}
     </div>
+    {editing && !moving && spot && WIDGETS[id].height !== "content" && (
+      <span
+        role="presentation"
+        title="Drag to resize. Double-tap to use automatic height."
+        onPointerDown={(e) => onPress("size", e)}
+        onPointerUp={(e) => {
+          if (tap.id === id && e.timeStamp - tap.at < DOUBLE_TAP) onAuto();
+          tap = { id, at: e.timeStamp };
+        }}
+        className="absolute right-0 bottom-0 z-20 size-20 cursor-nwse-resize touch-none"
+      >
+        <span className="light:border-zinc-400 absolute right-1 bottom-5 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
+      </span>
+    )}
   </div>
 );
