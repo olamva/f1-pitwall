@@ -105,6 +105,8 @@ const schedule = (r: any): Round => ({
   circuit: r.Circuit.circuitName,
   circuitId: r.Circuit.circuitId,
   country: r.Circuit.Location.country,
+  lat: Number(r.Circuit.Location.lat),
+  long: Number(r.Circuit.Location.long),
   sessions: {
     fp1: when(r.FirstPractice),
     fp2: when(r.SecondPractice),

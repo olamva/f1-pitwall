@@ -23,6 +23,8 @@ export type Round = {
   circuit: string;
   circuitId: string;
   country: string;
+  lat: number;
+  long: number;
   sessions: Record<
     | "fp1"
     | "fp2"

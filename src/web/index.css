@@ -1105,7 +1105,7 @@ section:has(> .spotlight),
   width: 1px;
   background: linear-gradient(
     transparent,
-    light-dark(rgb(2 132 199), rgb(186 230 253))
+    var(--rain-drop, light-dark(rgb(2 132 199), rgb(186 230 253)))
   );
   rotate: 12deg;
   animation: rain-fall linear infinite;
