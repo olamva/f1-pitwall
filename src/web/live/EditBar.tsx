@@ -322,10 +322,10 @@ export const EditBar = ({
             type="button"
             onClick={onEdit}
             title="Move, resize, add and remove widgets"
-            className="glass-gear my-1 flex shrink-0 cursor-pointer items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap"
+            className="glass-gear my-1 flex h-[2.625rem] shrink-0 cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-[2.625rem] max-sm:px-0"
           >
-            <LayoutDashboard aria-hidden="true" size={16} />
-            Customize
+            <LayoutDashboard aria-hidden="true" className="size-5" />
+            <span className="max-sm:sr-only">Customize</span>
           </button>
         )}
       </div>
