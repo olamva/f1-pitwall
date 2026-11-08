@@ -27,27 +27,27 @@ pnpm shot /calendar/2026/19 --favourite piastri:PIA --team williams --before ori
 
 Options:
 
-| Option                             | Effect                                                                      |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| `--theme dark\|light\|both`        | Color scheme. The default is `both`.                                        |
-| `--size phone\|ipad\|desktop\|WxH` | Viewport. `phone` is 430×932, `ipad` is 1024×1366, `desktop` is 1440×900.   |
-| `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.         |
-| `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                           |
-| `--layout <json>`                  | Mocked live board columns for all sizes. See the gestures section.          |
-| `--replay <file>`, `--from <min>`  | Replay a recording from a minute. See the live-replay skill.                |
-| `--play <seconds>`                 | Capture this many seconds after the replay start.                           |
-| `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps.  |
-| `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.                |
-| `--wait <selector>`                | Wait for a visible element.                                                 |
-| `--eval <js>`                      | Run JavaScript in the page before the capture.                              |
-| `--drag <point>`, `--to <point>`   | Press, hold, drag and release before the capture. See the gestures section. |
-| `--hold <ms>`                      | Hold time before the drag moves. The default is 600.                        |
-| `--video`                          | Record a video and save contact sheets of its frames.                       |
-| `--element <selector>`             | Capture one element. The tab bar is hidden.                                 |
-| `--full`                           | Capture the full page.                                                      |
-| `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.      |
-| `--animate`                        | Keep animations running, such as the live-dot pulse.                        |
-| `--name`, `--out`                  | File name prefix and output directory.                                      |
+| Option                             | Effect                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------- |
+| `--theme dark\|light\|both`        | Color scheme. The default is `both`.                                                |
+| `--size phone\|ipad\|desktop\|WxH` | Viewport. `phone` is 430×932, `ipad` is 1366×1024 landscape, `desktop` is 1440×900. |
+| `--browser webkit\|chromium`       | The default is WebKit, because the user uses an iPhone and an iPad.                 |
+| `--favourite id:CODE`, `--team id` | Mocked favourite driver and team.                                                   |
+| `--layout <json>`                  | Mocked live board columns for all sizes. See the gestures section.                  |
+| `--replay <file>`, `--from <min>`  | Replay a recording from a minute. See the live-replay skill.                        |
+| `--play <seconds>`                 | Capture this many seconds after the replay start.                                   |
+| `--click <selector>`               | Click a visible element, then wait for the page. Repeat it for more steps.          |
+| `--hover <selector>`               | Keep the mouse on a visible element, such as `[data-hover]`.                        |
+| `--wait <selector>`                | Wait for a visible element.                                                         |
+| `--eval <js>`                      | Run JavaScript in the page before the capture.                                      |
+| `--drag <point>`, `--to <point>`   | Press, hold, drag and release before the capture. See the gestures section.         |
+| `--hold <ms>`                      | Hold time before the drag moves. The default is 600.                                |
+| `--video`                          | Record a video and save contact sheets of its frames.                               |
+| `--element <selector>`             | Capture one element. The tab bar is hidden.                                         |
+| `--full`                           | Capture the full page.                                                              |
+| `--confetti`                       | Show the confetti. It is off by default, because it makes WebKit slow.              |
+| `--animate`                        | Keep animations running, such as the live-dot pulse.                                |
+| `--name`, `--out`                  | File name prefix and output directory.                                              |
 
 A full `http://` URL uses a server that already runs. Then `--before` and `--replay` are not available.
 
