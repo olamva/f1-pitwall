@@ -130,7 +130,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
           />
         </div>
       )}
-      <div className="@2xl:hidden">
+      <div className="filled:min-h-0 filled:overflow-y-auto @2xl:hidden">
         <Swipe
           items={items}
           value={items.length > 1 ? champ : "drivers"}
@@ -140,7 +140,7 @@ export const Championship = ({ standings }: ChampionshipProps) => {
           render={table}
         />
       </div>
-      <div className="grid grid-cols-2 gap-6 @max-2xl:hidden">
+      <div className="filled:min-h-0 filled:overflow-y-auto grid grid-cols-2 gap-6 @max-2xl:hidden">
         {items.map((c) => (
           <Table key={c} champ={c} standing={standings[c]} />
         ))}
