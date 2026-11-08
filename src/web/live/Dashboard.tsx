@@ -33,7 +33,6 @@ import {
   widen,
   type Column,
   type Size,
-  type Target,
 } from "./layout.ts";
 import {
   DEFAULT_LAYOUT,
@@ -201,7 +200,7 @@ export const Dashboard = ({
 
   useLayoutEffect(follow);
 
-  const target = (d: Drag, box: DOMRect): Target | null => {
+  const target = (d: Drag, box: DOMRect) => {
     const { rows, placed, size } = latest.current;
     return aim(
       d,
