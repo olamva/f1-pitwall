@@ -32,7 +32,7 @@ const HotLap = ({ d, box }: Lap) => (
   <svg
     aria-hidden
     viewBox={box.join(" ")}
-    className="h-14 w-24"
+    className="h-14 w-24 md:h-28 md:w-48"
     fill="none"
     strokeWidth={3 * Math.max(box[2]! / 96, box[3]! / 56)}
     strokeLinejoin="round"
