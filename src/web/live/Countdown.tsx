@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CloudRain } from "lucide-react";
+import { CloudRain, Droplets } from "lucide-react";
 import type { Fact, Round } from "../../shared/season.ts";
 import { useJson } from "../api.ts";
 import { Flag } from "../Flag.tsx";
@@ -174,7 +174,13 @@ const Forecast = ({ round, at, session }: ForecastProps) => {
       </div>
       <span className="light:text-white flex items-center gap-1.5 text-sky-400 xl:text-[1.2vw]">
         <CloudRain className="size-[1.2em]" />
-        {chance}% chance of rain{mm > 0 && ` · ${mm} mm/h`}
+        {chance}% chance of rain
+        {mm > 0 && (
+          <>
+            <Droplets className="ml-3 size-[1.2em]" />
+            {mm}mm
+          </>
+        )}
       </span>
     </>
   );
