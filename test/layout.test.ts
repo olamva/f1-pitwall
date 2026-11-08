@@ -12,6 +12,7 @@ import {
   remove,
   stick,
   tidy,
+  split,
   widen,
   type Column,
 } from "../src/web/live/layout.ts";
@@ -125,6 +126,23 @@ test("a wider column takes its width from the column on its right", () => {
     [10, 2],
   );
   assert.equal(widen(board, width, 1, 100), board);
+});
+
+test("a split between two tiles keeps their total height and stops at the minimum and the natural height of a shrink tile", () => {
+  const after = (dy: number, max = Infinity) =>
+    split(
+      [col(12, "a", "b")],
+      [
+        { id: "a", px: 160, max },
+        { id: "b", px: 240, max: Infinity },
+      ],
+      80,
+      dy,
+    )[0]!.tiles.map((t) => t.h);
+  assert.deepEqual(after(40), [25, 25]);
+  assert.deepEqual(after(-400), [10, 40]);
+  assert.deepEqual(after(400), [40, 10]);
+  assert.deepEqual(after(40, 176), [22, 28]);
 });
 
 test("a drag picks a new column only when there is room and the pointer moved toward an edge or waited in a gap", () => {

@@ -48,6 +48,7 @@ interface TileProps {
   onPress: (kind: "move" | "size", e: PointerEvent<HTMLElement>) => void;
   onRemove: () => void;
   onAuto: () => void;
+  onSplit: ((e: PointerEvent<HTMLElement>) => void) | null;
 }
 
 export const Tile = ({
@@ -69,6 +70,7 @@ export const Tile = ({
   onPress,
   onRemove,
   onAuto,
+  onSplit,
 }: TileProps) => (
   <div
     ref={cell}
@@ -130,6 +132,7 @@ export const Tile = ({
         </div>
       )}
     </div>
+    <Split onSplit={onSplit} />
     <Handle
       id={id}
       shown={editing && !moving && !!spot}
@@ -138,6 +141,20 @@ export const Tile = ({
     />
   </div>
 );
+
+const Split = ({ onSplit }: Pick<TileProps, "onSplit">) =>
+  onSplit && (
+    <div
+      role="separator"
+      aria-orientation="horizontal"
+      title="Drag to resize the widgets"
+      onPointerDown={onSplit}
+      className="group absolute inset-x-0 bottom-0 z-20 flex cursor-row-resize touch-none items-center justify-center"
+      style={{ height: GAP }}
+    >
+      <span className="light:bg-zinc-500 h-1.5 w-12 rounded-full bg-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 pointer-coarse:opacity-100" />
+    </div>
+  );
 
 interface HandleProps {
   id: WidgetId;
