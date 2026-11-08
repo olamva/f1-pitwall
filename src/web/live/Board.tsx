@@ -255,14 +255,16 @@ export const Board = ({
               ? "Show the full page"
               : "Show only the timing, the lap count and the flags"
           }
-          className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm max-sm:mr-auto"
+          className="glass-gear flex h-9 w-32 cursor-pointer items-center justify-center gap-2 text-sm max-sm:mr-auto max-sm:w-9"
         >
           {focus ? (
             <X aria-hidden="true" size={16} />
           ) : (
             <Focus aria-hidden="true" size={16} />
           )}
-          {focus ? "Exit focus" : "Focus"}
+          <span className="max-sm:sr-only">
+            {focus ? "Exit focus" : "Focus"}
+          </span>
         </button>
         <span ref={setSlot} className="contents" />
       </Status>
