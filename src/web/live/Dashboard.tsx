@@ -12,6 +12,7 @@ import { claim } from "../Swipe.tsx";
 import { EditBar } from "./EditBar.tsx";
 import { Splits, track } from "./Splits.tsx";
 import { Tile, TOP } from "./Tile.tsx";
+import { useCentered } from "./useCentered.ts";
 import { useHeights } from "./useHeights.ts";
 import { useDiscard, useLayout } from "./useLayout.ts";
 import { useSize } from "./useSize.ts";
@@ -364,24 +365,7 @@ export const Dashboard = ({
   };
 
   const below = pairs(columns, placed, height);
-
-  useLayoutEffect(() => {
-    const y = (el: HTMLElement): number =>
-      el.offsetTop +
-      (el.offsetParent === grid.current
-        ? 0
-        : y(el.offsetParent as HTMLElement));
-    below.forEach((b, a) => {
-      const cell = cells.current.get(a);
-      const upper = contents.current.get(a);
-      const lower = contents.current.get(b);
-      const bar = cell?.querySelector<HTMLElement>(":scope > [role=separator]");
-      if (!cell || !upper || !lower || !bar) return;
-      const shift = (push.get(b) ?? 0) - (push.get(a) ?? 0);
-      const mid = (y(upper) + upper.offsetHeight + y(lower) + shift) / 2;
-      bar.style.translate = `0 ${mid - y(cell) - cell.offsetHeight + GAP / 2}px`;
-    });
-  });
+  useCentered(below, grid, cells.current, contents.current, push);
 
   const present = new Set(saved.flatMap((c) => c.tiles.map((t) => t.id)));
   const missing = (Object.keys(WIDGETS) as WidgetId[]).filter(
