@@ -151,7 +151,7 @@ export const Dashboard = ({
     ends,
     avail,
     height,
-    (id) => px[id] ?? 0,
+    (id) => (fixed.get(id) == null ? (px[id] ?? 0) : fixed.get(id)! * ROW),
   );
   frozen.current = stretch;
   const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
@@ -490,6 +490,7 @@ export const Dashboard = ({
                 }}
                 onPress={(kind, e) => begin(kind, id, e)}
                 onRemove={() => setSaved(remove(saved, id))}
+                onAuto={() => setSaved(resize(saved, id, null))}
               />,
             ];
           })}
