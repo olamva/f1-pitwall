@@ -196,6 +196,16 @@
   --animate-place: place 3.6s ease both;
   --animate-rumble: rumble 90ms steps(2) infinite;
   --animate-roll: roll 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-hot-lap: hot-lap 1.6s linear infinite;
+
+  @keyframes hot-lap {
+    from {
+      stroke-dashoffset: 18;
+    }
+    to {
+      stroke-dashoffset: -82;
+    }
+  }
 
   @keyframes place {
     0%,
