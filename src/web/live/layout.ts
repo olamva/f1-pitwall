@@ -4,6 +4,7 @@ export const NEW_WIDTH = 4;
 const MIN_WIDTH = 2;
 const EDGE = 64;
 const ZONE = 40;
+const REACH = 64;
 const TURN = 24;
 
 export type Size = "phone" | "tablet" | "desktop" | "display";
@@ -99,7 +100,10 @@ export const columnAt = (columns: Column[], width: number, x: number) => {
 
 export const gapAt = (columns: Column[], width: number, x: number) =>
   bounds(columns, width).findIndex(
-    (s, i) => i > 0 && Math.abs(x - s.left + GAP / 2) < ZONE / 2,
+    (s, i, all) =>
+      i > 0 &&
+      Math.abs(x - s.left + GAP / 2) <
+        GAP / 2 + Math.min(REACH, all[i - 1]!.width / 4, s.width / 4),
   );
 
 const without = (columns: Column[], id: string) =>
@@ -149,18 +153,19 @@ export const aim = (
     y: number;
     sx: number;
     dy: number;
+    near: number;
     gap: number;
   },
   box: { left: number; right: number; top: number; width: number },
   max: number,
   rows: number,
   lift: (col: number) => number,
-): Target => {
+): Target | null => {
   const room = remove(d.start, d.id).length < max;
   if (room && d.x < box.left + ZONE && d.x < d.sx - TURN) return { at: 0 };
   if (room && d.x > box.right - ZONE && d.x > d.sx + TURN)
     return { at: d.start.length };
-  if (room && d.gap > 0) return { at: d.gap };
+  if (room && d.near > 0) return d.gap > 0 ? { at: d.gap } : null;
   const col = columnAt(d.start, box.width, d.x - box.left);
   const top = (d.y - d.dy - box.top - lift(col)) / ROW;
   return { col, top, bottom: top + rows - GAP / ROW };

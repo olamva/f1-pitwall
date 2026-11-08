@@ -33,7 +33,6 @@ import {
   widen,
   type Column,
   type Size,
-  type Target,
 } from "./layout.ts";
 import {
   DEFAULT_LAYOUT,
@@ -201,7 +200,7 @@ export const Dashboard = ({
 
   useLayoutEffect(follow);
 
-  const target = (d: Drag, box: DOMRect): Target => {
+  const target = (d: Drag, box: DOMRect) => {
     const { rows, placed, size } = latest.current;
     return aim(
       d,
@@ -233,12 +232,14 @@ export const Dashboard = ({
       d.gap = performance.now() - d.since > DWELL ? near : -1;
       const to = target(d, box);
       const base = draftRef.current ?? d.start;
-      next = drop(
-        "at" in to || base.length !== d.start.length ? d.start : base,
-        rows,
-        d.id,
-        to,
-      );
+      next = to
+        ? drop(
+            "at" in to || base.length !== d.start.length ? d.start : base,
+            rows,
+            d.id,
+            to,
+          )
+        : base;
     } else {
       const spot = place(d.start, rows).spots.get(d.id)!;
       const content = d.y + d.dy - box.top - cells.current.get(d.id)!.offsetTop;
