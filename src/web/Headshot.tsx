@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { DriverInfo } from "../shared/season.ts";
+import { logoSrc } from "./TeamLogo.tsx";
 
 export type Pose = "front" | "left" | "right";
 export const BODY = "c_lfill,h_600";
@@ -59,6 +60,7 @@ export const usePreload = (drivers?: DriverInfo[]) =>
       for (const src of [
         d.headshot,
         numberSrc(d.art),
+        logoSrc(d.team),
         ...VARIANTS.map(([pose, t]) => d.art && artSrc(d.art, pose, t)),
       ])
         if (src) Object.assign(new Image(), { fetchPriority: "low", src });
