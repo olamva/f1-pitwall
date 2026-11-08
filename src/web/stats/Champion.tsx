@@ -1,5 +1,6 @@
 import type { CSSProperties, RefObject } from "react";
 import { useLayoutEffect, useMemo, useRef } from "react";
+import { Hint } from "../Hint.tsx";
 import { ChevronDown } from "lucide-react";
 import type { Championship, Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
@@ -227,20 +228,24 @@ const Road = ({ season, h }: RoadProps) => (
         return (
           <li
             key={b.round}
-            title={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? (b.dsq ? "disqualified" : "no finish") : `P${b.position}`}`}
-            className={`champion-chip flex flex-col items-center rounded-md py-1 text-xs xl:py-1.5 xl:text-sm ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#d4af37] ring-offset-2 ring-offset-transparent" : ""}`}
+            className={`champion-chip rounded-md text-xs xl:text-sm ${CHIP[b.position - 1] ?? "bg-black/30 text-white"} ${won ? "ring-2 ring-[#d4af37] ring-offset-2 ring-offset-transparent" : ""}`}
             style={{ "--delay": `${i * 40}ms` } as CSSProperties}
           >
-            <span className="text-sm leading-tight [&>span]:mr-0">
-              <Flag country={r?.country} />
-            </span>
-            <span className="tabular font-f1 font-bold">
-              {b.position !== Infinity
-                ? `P${b.position}`
-                : b.dsq
-                  ? "DSQ"
-                  : "DNF"}
-            </span>
+            <Hint
+              label={`${r?.name ?? `Round ${b.round}`}: ${b.position === Infinity ? (b.dsq ? "disqualified" : "no finish") : `P${b.position}`}`}
+              className="flex flex-col items-center py-1 xl:py-1.5"
+            >
+              <span className="text-sm leading-tight [&>span]:mr-0">
+                <Flag country={r?.country} />
+              </span>
+              <span className="tabular font-f1 font-bold">
+                {b.position !== Infinity
+                  ? `P${b.position}`
+                  : b.dsq
+                    ? "DSQ"
+                    : "DNF"}
+              </span>
+            </Hint>
           </li>
         );
       })}

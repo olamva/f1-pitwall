@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Hint } from "../Hint.tsx";
 import {
   Droplets,
   Pause,
@@ -391,18 +392,22 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               <p className="font-f1 text-xl font-black text-zinc-50">RADIO</p>
             </div>
             <Bars audio={audio} playing={playing} color={color} />
-            <button
-              onClick={() => toggle(current)}
-              aria-label={playing ? "Pause radio" : "Play radio"}
-              title={playing ? "Pause radio" : "Play radio"}
-              className="grid w-14 shrink-0 cursor-pointer place-items-center text-zinc-50 after:absolute after:inset-0"
+            <Hint
+              label={playing ? "Pause radio" : "Play radio"}
+              className="flex w-14 shrink-0"
             >
-              {playing ? (
-                <Pause aria-hidden="true" className="size-6 fill-current" />
-              ) : (
-                <Play aria-hidden="true" className="size-6 fill-current" />
-              )}
-            </button>
+              <button
+                onClick={() => toggle(current)}
+                aria-label={playing ? "Pause radio" : "Play radio"}
+                className="grid grow cursor-pointer place-items-center text-zinc-50 after:absolute after:inset-0"
+              >
+                {playing ? (
+                  <Pause aria-hidden="true" className="size-6 fill-current" />
+                ) : (
+                  <Play aria-hidden="true" className="size-6 fill-current" />
+                )}
+              </button>
+            </Hint>
           </div>
           <div className="h-0.5 shrink-0 bg-zinc-800">
             <div
@@ -443,12 +448,13 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
                 <span className="font-f1 font-bold uppercase">
                   {d?.last ?? r.number}
                 </span>
-                <span
-                  role="img"
-                  aria-label="Not played"
-                  title="Not played"
-                  className={`ml-auto size-2 shrink-0 rounded-full bg-sky-400 ${played.includes(r.url) ? "invisible" : ""}`}
-                />
+                <Hint label="Not played" className="ml-auto flex shrink-0">
+                  <span
+                    role="img"
+                    aria-label="Not played"
+                    className={`size-2 rounded-full bg-sky-400 ${played.includes(r.url) ? "invisible" : ""}`}
+                  />
+                </Hint>
                 <span className="tabular font-mono text-xs text-zinc-500">
                   {time(r.utc)}
                 </span>

@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Trophy } from "lucide-react";
+import { Hint } from "../Hint.tsx";
 import type {
   Classified,
   DriverProfile as Profile,
@@ -93,25 +94,24 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       </h3>
       <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
-          <li
-            key={round.round}
-            title={[
-              round.name,
-              ...sessions.map(
-                (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
-              ),
-            ].join("\n")}
-            className="flex flex-col items-center gap-1 rounded-md bg-zinc-800/60 px-1 py-1.5 *:mr-0"
-          >
-            <Flag country={round.country} />
-            {sessions.map((s) => (
-              <Place
-                key={s.name}
-                result={s.result}
-                quali={s.quali}
-                sprint={s.name === "Sprint"}
-              />
-            ))}
+          <li key={round.round} className="rounded-md bg-zinc-800/60">
+            <Hint
+              label={round.name}
+              text={sessions
+                .map((s) => `${s.name}: ${s.result?.status ?? "Did not race"}`)
+                .join("\n")}
+              className="flex h-full flex-col items-center gap-1 px-1 py-1.5 *:mr-0"
+            >
+              <Flag country={round.country} />
+              {sessions.map((s) => (
+                <Place
+                  key={s.name}
+                  result={s.result}
+                  quali={s.quali}
+                  sprint={s.name === "Sprint"}
+                />
+              ))}
+            </Hint>
           </li>
         ))}
       </ol>
@@ -240,20 +240,21 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                   ["Avg finish", data.averageFinish?.toFixed(1)],
                 ] as const
               ).map(([label, value]) => (
-                <div
+                <Hint
                   key={label}
-                  title={
+                  label={
                     label === "Poles" && value === null
                       ? "Qualifying data is incomplete for this driver."
-                      : undefined
+                      : ""
                   }
-                  className="rounded-lg bg-zinc-800/60 p-3"
                 >
-                  <p className="text-xs text-zinc-400">{label}</p>
-                  <p className="tabular font-f1 text-2xl font-bold">
-                    {value ?? "—"}
-                  </p>
-                </div>
+                  <div className="h-full rounded-lg bg-zinc-800/60 p-3">
+                    <p className="text-xs text-zinc-400">{label}</p>
+                    <p className="tabular font-f1 text-2xl font-bold">
+                      {value ?? "—"}
+                    </p>
+                  </div>
+                </Hint>
               ))}
             </div>
           </section>

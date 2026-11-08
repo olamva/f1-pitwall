@@ -1,5 +1,6 @@
 import { Trophy } from "lucide-react";
 import { useRef, useState } from "react";
+import { Hint } from "../Hint.tsx";
 import type { Championship as Champ } from "../../shared/clinch.ts";
 import { ChampionMark } from "../stats/Champion.tsx";
 import { Swipe } from "../Swipe.tsx";
@@ -41,18 +42,12 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
             <th className="px-2 py-1">
               {champ === "drivers" ? "Driver" : "Team"}
             </th>
-            <th
-              className="px-2 py-1 text-right"
-              title="Places gained or lost in the championship"
-            >
-              +/−
+            <th className="px-2 py-1 text-right">
+              <Hint label="Places gained or lost in the championship">+/−</Hint>
             </th>
             <th className="px-2 py-1 text-right">Pts</th>
-            <th
-              className="px-2 py-1 text-right"
-              title="Points from this session"
-            >
-              +Pts
+            <th className="px-2 py-1 text-right">
+              <Hint label="Points from this session">+Pts</Hint>
             </th>
           </tr>
         </thead>
@@ -65,9 +60,9 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
               <td className="px-2 py-1">
                 <span className="flex items-center gap-2">
                   <TeamLogo team={d.team} className="h-4 w-6 shrink-0" />
-                  <span className="truncate font-semibold" title={d.name}>
+                  <Hint label={d.name} className="truncate font-semibold">
                     {d.tla}
-                  </span>
+                  </Hint>
                 </span>
               </td>
               <td

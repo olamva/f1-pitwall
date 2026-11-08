@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, type ReactNode, type RefObject } from "react";
+import { Hint } from "./Hint.tsx";
 
 const EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
 const timing = { duration: 400, easing: EASE, fill: "forwards" } as const;
@@ -113,15 +114,16 @@ export const Sheet = ({
         <div className="flex items-center gap-2">
           <h2 className="font-f1 grow text-lg font-bold">{title}</h2>
           {actions}
-          <button
-            type="button"
-            aria-label="Close"
-            title="Close"
-            onClick={() => dismiss(sheet.current!)}
-            className="glass-gear grid size-11 shrink-0 cursor-pointer place-items-center"
-          >
-            <X aria-hidden="true" className="size-5" />
-          </button>
+          <Hint label="Close" className="shrink-0">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => dismiss(sheet.current!)}
+              className="glass-gear grid size-11 cursor-pointer place-items-center"
+            >
+              <X aria-hidden="true" className="size-5" />
+            </button>
+          </Hint>
         </div>
         {children}
       </div>

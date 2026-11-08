@@ -8,7 +8,7 @@ import { SessionBest, TowerHead } from "./TowerHead.tsx";
 import { useFit, type Fit } from "./towerFit.ts";
 import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
-import { Hint } from "./Hint.tsx";
+import { Hint } from "../Hint.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -125,13 +125,14 @@ interface CallProps {
 
 const Call = ({ title, tone }: CallProps) =>
   title ? (
-    <span
-      className={`flex size-4 items-center justify-center rounded-sm text-xs font-bold ${tone}`}
-      title={title}
-      aria-label={title}
-    >
-      !
-    </span>
+    <Hint label={title}>
+      <span
+        className={`flex size-4 items-center justify-center rounded-sm text-xs font-bold ${tone}`}
+        aria-label={title}
+      >
+        !
+      </span>
+    </Hint>
   ) : null;
 
 interface PitLineProps {
@@ -163,25 +164,25 @@ interface SectorsProps {
 const Sectors = ({ sectors, qualifying, wide }: SectorsProps) => (
   <span className={`flex ${wide ? "gap-1.5" : "gap-1"}`}>
     {sectors.map((s, i) => (
-      <span
-        key={i}
-        title={s.value}
-        className={`flex flex-col gap-0.5 ${wide ? (qualifying ? "min-w-17" : "min-w-5") : "w-5 min-w-5"}`}
-      >
+      <Hint key={i} label={s.value}>
         <span
-          className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
+          className={`flex flex-col gap-0.5 ${wide ? (qualifying ? "min-w-17" : "min-w-5") : "w-5 min-w-5"}`}
         >
-          {qualifying && wide && s.value}
+          <span
+            className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
+          >
+            {qualifying && wide && s.value}
+          </span>
+          <span className={`flex ${wide ? "gap-px" : ""}`}>
+            {s.segments.map((m, j) => (
+              <span
+                key={j}
+                className={`h-1 flex-1 ${wide ? "min-w-1.5" : "min-w-0"} ${BAR[m]}`}
+              />
+            ))}
+          </span>
         </span>
-        <span className={`flex ${wide ? "gap-px" : ""}`}>
-          {s.segments.map((m, j) => (
-            <span
-              key={j}
-              className={`h-1 flex-1 ${wide ? "min-w-1.5" : "min-w-0"} ${BAR[m]}`}
-            />
-          ))}
-        </span>
-      </span>
+      </Hint>
     ))}
   </span>
 );
@@ -197,10 +198,6 @@ const Gained = ({ gained }: { gained: number | null }) => (
         : "–"}
   </td>
 );
-
-const CATCHING = "The gap to the car ahead gets smaller.";
-const OVERTAKE =
-  "The driver was within one second of the car ahead at the detection line. The driver gets extra electrical energy for this lap.";
 
 interface IntervalProps {
   row: Row;
@@ -218,17 +215,24 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
           {row.catching && (
             <Hint
               label="Catching the car ahead"
-              text={CATCHING}
-              tone="text-emerald-400"
+              className="inline-flex text-emerald-400"
             >
-              <ChevronsUp size={12} strokeWidth={3} />
+              <span role="img" aria-label="Catching the car ahead">
+                <ChevronsUp size={12} strokeWidth={3} />
+              </span>
             </Hint>
           )}
         </span>
         <span className="inline-block w-3">
           {row.overtake && (
-            <Hint label="Overtake Mode" text={OVERTAKE} tone="text-yellow-300">
-              <Zap size={12} strokeWidth={3} fill="currentColor" />
+            <Hint
+              label="Overtake Mode"
+              text="Within 1 s of the car ahead. Extra energy this lap."
+              className="inline-flex text-yellow-300"
+            >
+              <span role="img" aria-label="Overtake Mode">
+                <Zap size={12} strokeWidth={3} fill="currentColor" />
+              </span>
             </Hint>
           )}
         </span>
@@ -250,12 +254,12 @@ const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
   <td className={`${pad} py-1 text-right ${tone}`}>
     <span className={hide}>
       {projected ? (
-        <span
-          className={`-mr-1 rounded-sm border border-dashed border-current px-0.5 italic ${MARK[projected.mark]}`}
-          title="Predicted lap time, not a real time"
+        <Hint
+          label="Predicted lap time, not a real time"
+          className={`-mr-1 inline-block rounded-sm border border-dashed border-current px-0.5 italic ${MARK[projected.mark]}`}
         >
           ~{projected.value}
-        </span>
+        </Hint>
       ) : (
         time
       )}
@@ -346,17 +350,18 @@ const TowerRow = ({
           className={`flex w-max items-center ${fit.wide ? "gap-2" : "gap-1"}`}
         >
           {fit.wide && <TeamLogo team={row.team} className="block h-4 w-6" />}
-          <span className="font-semibold" title={row.name}>
-            {row.tla}
-          </span>
+          <Hint label={row.name}>
+            <span className="font-semibold">{row.tla}</span>
+          </Hint>
           {lapOwner && (
-            <span
-              className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
-              title="Fastest lap owner"
-              aria-label="Fastest lap owner"
-            >
-              <Timer className="size-3" strokeWidth={2.5} />
-            </span>
+            <Hint label="Fastest lap owner">
+              <span
+                className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
+                aria-label="Fastest lap owner"
+              >
+                <Timer className="size-3" strokeWidth={2.5} />
+              </span>
+            </Hint>
           )}
           <Call title={row.investigation} tone="bg-yellow-400 text-black" />
           <Call title={row.penalty} tone="bg-red-600 text-white" />

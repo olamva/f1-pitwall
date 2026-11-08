@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useState } from "react";
+import { Hint } from "../Hint.tsx";
 import type { LapRow, Telemetry } from "../../shared/timing.ts";
 import { LineChart } from "../charts/LineChart.tsx";
 import { ink } from "../ink.ts";
@@ -98,8 +99,8 @@ export const PitStops = ({
               <th className="px-1 py-1 text-right">Lap</th>
               <th className="px-1 py-1">Driver</th>
               <th className="px-1 py-1">Tyres</th>
-              <th className="px-1 py-1 text-right" title="Places lost">
-                Places
+              <th className="px-1 py-1 text-right">
+                <Hint label="Places lost">Places</Hint>
               </th>
             </tr>
           </thead>

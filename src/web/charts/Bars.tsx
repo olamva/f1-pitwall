@@ -189,7 +189,6 @@ export const DivergingBars = ({ bars, format }: DivergingBarsProps) => {
         const x = b.value >= 0 ? mid : mid - w;
         return (
           <g key={b.id}>
-            <title>{`${b.label}: ${format(b.value)}`}</title>
             <text
               x={L - 8}
               y={y + 4}

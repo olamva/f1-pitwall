@@ -5,18 +5,21 @@ interface HoverCardProps {
   card: ReactNode;
   at?: number;
   interactive?: boolean;
+  tip?: boolean;
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const WIDTH = 288;
 const MARGIN = 12;
 const GAP = 8;
+const TALL = 96;
 
 export const HoverCard = ({
   card,
   at,
   interactive = false,
+  tip = false,
   className,
   children,
 }: HoverCardProps) => {
@@ -25,9 +28,11 @@ export const HoverCard = ({
   const timer = useRef(0);
   const [box, setBox] = useState<DOMRect>();
   const [edge, setEdge] = useState<{ top?: number; bottom?: number }>();
+  const [width, setWidth] = useState(WIDTH);
   useLayoutEffect(() => {
     if (!box) return;
     pop.current!.showPopover();
+    setWidth(pop.current!.offsetWidth);
     const height = pop.current!.offsetHeight;
     setEdge(
       box.top >= height
@@ -59,18 +64,22 @@ export const HoverCard = ({
       data-hover
       className={className}
       onPointerOver={(e) => {
-        if (e.pointerType !== "mouse") return;
+        if (e.pointerType !== "mouse" || (tip && e.buttons)) return;
         const target = e.target as Element;
         if (
           target.closest("[data-hover]") !== ref.current &&
           !pop.current?.contains(target)
         )
           return close();
-        timer.current ||= window.setTimeout(
-          () => setBox(ref.current!.getBoundingClientRect()),
-          300,
-        );
+        const y = e.clientY;
+        timer.current ||= window.setTimeout(() => {
+          const r = ref.current!.getBoundingClientRect();
+          setBox(
+            tip && r.height > TALL ? new DOMRect(r.left, y, r.width, 0) : r,
+          );
+        }, 300);
       }}
+      onPointerDown={tip ? close : undefined}
       onPointerLeave={close}
     >
       {children}
@@ -82,10 +91,11 @@ export const HoverCard = ({
             aria-hidden={!interactive}
             className={`fixed inset-auto m-0 overflow-visible bg-transparent text-sm text-zinc-100 ${interactive ? "" : "pointer-events-none"}`}
             style={{
-              width: WIDTH,
+              width: tip ? "max-content" : WIDTH,
+              maxWidth: WIDTH,
               left: Math.min(
-                Math.max(box.left + (at ?? box.width / 2) - WIDTH / 2, MARGIN),
-                innerWidth - WIDTH - MARGIN,
+                Math.max(box.left + (at ?? box.width / 2) - width / 2, MARGIN),
+                innerWidth - width - MARGIN,
               ),
               ...edge,
               paddingBlock: GAP,

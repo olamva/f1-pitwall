@@ -1,3 +1,4 @@
+import { Hint } from "../Hint.tsx";
 import {
   Check,
   ClipboardPaste,
@@ -238,33 +239,38 @@ export const EditBar = ({
 
   const controls = (
     <>
-      <button
-        type="button"
-        aria-label="Add a widget"
-        title="Add a widget"
-        onClick={() => {
-          setOpen(true);
-          sheet.current!.showModal();
-        }}
-        className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center"
-      >
-        <Plus aria-hidden="true" className="size-5" />
-      </button>
-      {hideOff !== undefined && (
+      <Hint label="Add a widget" className="shrink-0">
         <button
           type="button"
-          aria-label="Hide widgets that do not show in this session"
-          title="Hide widgets that do not show in this session"
-          aria-pressed={hideOff}
-          onClick={() => onHideOff(!hideOff)}
-          className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center"
+          aria-label="Add a widget"
+          onClick={() => {
+            setOpen(true);
+            sheet.current!.showModal();
+          }}
+          className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center"
         >
-          {hideOff ? (
-            <EyeOff aria-hidden="true" className="size-5" />
-          ) : (
-            <Eye aria-hidden="true" className="size-5" />
-          )}
+          <Plus aria-hidden="true" className="size-5" />
         </button>
+      </Hint>
+      {hideOff !== undefined && (
+        <Hint
+          label="Hide widgets that do not show in this session"
+          className="shrink-0"
+        >
+          <button
+            type="button"
+            aria-label="Hide widgets that do not show in this session"
+            aria-pressed={hideOff}
+            onClick={() => onHideOff(!hideOff)}
+            className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center"
+          >
+            {hideOff ? (
+              <EyeOff aria-hidden="true" className="size-5" />
+            ) : (
+              <Eye aria-hidden="true" className="size-5" />
+            )}
+          </button>
+        </Hint>
       )}
       {sizes.length > 1 && (
         <Tabs
@@ -287,25 +293,27 @@ export const EditBar = ({
           iconOnly
         />
       )}
-      <button
-        type="button"
-        aria-label="Discard changes"
-        title="Discard changes"
-        onClick={onDiscard}
-        disabled={!onDiscard}
-        className="glass-gear grid size-[2.625rem] shrink-0 cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
-      >
-        <Undo2 aria-hidden="true" className="size-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Done"
-        title="Done"
-        onClick={onDone}
-        className="grid size-[2.625rem] shrink-0 cursor-pointer place-items-center rounded-full bg-red-600 text-white"
-      >
-        <Check aria-hidden="true" className="size-5" />
-      </button>
+      <Hint label="Discard changes" className="shrink-0">
+        <button
+          type="button"
+          aria-label="Discard changes"
+          onClick={onDiscard}
+          disabled={!onDiscard}
+          className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
+        >
+          <Undo2 aria-hidden="true" className="size-5" />
+        </button>
+      </Hint>
+      <Hint label="Done" className="shrink-0">
+        <button
+          type="button"
+          aria-label="Done"
+          onClick={onDone}
+          className="grid size-[2.625rem] cursor-pointer place-items-center rounded-full bg-red-600 text-white"
+        >
+          <Check aria-hidden="true" className="size-5" />
+        </button>
+      </Hint>
     </>
   );
 
@@ -318,15 +326,19 @@ export const EditBar = ({
         {editing ? (
           controls
         ) : (
-          <button
-            type="button"
-            onClick={onEdit}
-            title="Move, resize, add and remove widgets"
-            className="glass-gear my-1 flex h-[2.625rem] shrink-0 cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-[2.625rem] max-sm:px-0"
+          <Hint
+            label="Move, resize, add and remove widgets"
+            className="my-1 shrink-0"
           >
-            <LayoutDashboard aria-hidden="true" className="size-5" />
-            <span className="max-sm:sr-only">Customize</span>
-          </button>
+            <button
+              type="button"
+              onClick={onEdit}
+              className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-[2.625rem] max-sm:px-0"
+            >
+              <LayoutDashboard aria-hidden="true" className="size-5" />
+              <span className="max-sm:sr-only">Customize</span>
+            </button>
+          </Hint>
         )}
       </div>
       {editing &&

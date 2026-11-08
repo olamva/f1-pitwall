@@ -1,5 +1,6 @@
 import type { RaceArchive, Stint, Stints } from "../shared/season.ts";
 import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
+import { Hint } from "./Hint.tsx";
 import { TeamHover } from "./TeamCard.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Compound, tyreColor } from "./Tyre.tsx";
@@ -30,20 +31,25 @@ const Line = ({ stints, at }: LineProps) => {
       {stints.map((stint) => (
         <span
           key={stint.from}
-          title={describe(stint)}
           className="absolute top-0 -translate-x-1/2"
           style={{ left: at(stint.from - 1) }}
         >
-          <Compound compound={stint.compound} className="bg-zinc-950" />
+          <Hint label={describe(stint)}>
+            <Compound compound={stint.compound} className="bg-zinc-950" />
+          </Hint>
         </span>
       ))}
       {last && (
         <span
-          title={`${last.to - last.from + 1} laps on the last set`}
-          className={`absolute top-0 grid size-5 -translate-x-1/2 place-items-center rounded-full bg-current text-[10px] font-bold ${tyreColor(last.compound)}`}
+          className="absolute top-0 -translate-x-1/2"
           style={{ left: at(last.to) }}
         >
-          <span className="text-black">{last.to - last.from + 1}</span>
+          <Hint
+            label={`${last.to - last.from + 1} laps on the last set`}
+            className={`grid size-5 place-items-center rounded-full bg-current text-[10px] font-bold ${tyreColor(last.compound)}`}
+          >
+            <span className="text-black">{last.to - last.from + 1}</span>
+          </Hint>
         </span>
       )}
     </div>

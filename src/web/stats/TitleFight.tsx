@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useRef, useState } from "react";
+import { Hint } from "../Hint.tsx";
 import {
   clinchMatrix,
   constructorNeeds,
@@ -123,17 +124,18 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
             {m.cells[i]!.map((c, j) => {
               const n = margin(mine, m.theirs[j]!);
               return (
-                <span
+                <Hint
                   key={j}
-                  title={
+                  label={
                     c === null
                       ? "Same finish position"
-                      : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${n} points. ${legend[c]}.`
+                      : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${n} points`
                   }
+                  text={c === null ? undefined : `${legend[c]}.`}
                   className={`tabular flex h-7 items-center justify-center rounded ${c === null ? "" : STYLE[c]}`}
                 >
                   {c === null ? "" : n < 0 ? `−${-n}` : n}
-                </span>
+                </Hint>
               );
             })}
           </Fragment>
