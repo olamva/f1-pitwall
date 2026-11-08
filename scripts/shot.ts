@@ -17,7 +17,7 @@ import { lock, LOCK } from "./lock.ts";
 
 const SIZES = {
   phone: { width: 430, height: 932, deviceScaleFactor: 2, isMobile: true },
-  ipad: { width: 1024, height: 1366, deviceScaleFactor: 2, isMobile: true },
+  ipad: { width: 1366, height: 1024, deviceScaleFactor: 2, isMobile: true },
   desktop: { width: 1440, height: 900, deviceScaleFactor: 2, isMobile: false },
 };
 const SNAPSHOT = 30_000;
