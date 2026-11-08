@@ -126,7 +126,7 @@ export const Tile = ({
           {WIDGETS[id].height !== "content" && (
             <span
               role="presentation"
-              title="Drag to resize"
+              title="Drag to resize. Double-tap to use automatic height."
               onPointerDown={(e) => onPress("size", e)}
               className="absolute right-0 bottom-0 size-12 cursor-nwse-resize touch-none"
             >

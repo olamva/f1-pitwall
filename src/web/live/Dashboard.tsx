@@ -57,6 +57,7 @@ const PREVIEW: Record<Size, string | undefined> = {
 const ESTIMATE = 30;
 const EDIT_MIN = 12;
 const DWELL = 250;
+const DOUBLE_TAP = 350;
 
 const sizeNow = () => SIZES[QUERIES.findLastIndex((q) => q.matches) + 1]!;
 
@@ -120,6 +121,7 @@ export const Dashboard = ({
   const cards = useRef(new Map<string, HTMLDivElement>());
   const contents = useRef(new Map<string, HTMLDivElement>());
   const drag = useRef<Drag | null>(null);
+  const tap = useRef({ id: "", at: 0 });
   const draftRef = useRef<Column[] | null>(null);
   const frozen = useRef(new Map<string, number>());
   const discard = useDiscard(editing);
@@ -151,7 +153,7 @@ export const Dashboard = ({
     ends,
     avail,
     height,
-    (id) => px[id] ?? 0,
+    (id) => (fixed.get(id) == null ? (px[id] ?? 0) : fixed.get(id)! * ROW),
   );
   frozen.current = stretch;
   const ids = columns.flatMap((c) => c.tiles.map((t) => t.id)).join();
@@ -352,6 +354,12 @@ export const Dashboard = ({
     const ended = (e: PointerEvent) => {
       if (e.pointerId !== event.pointerId) return;
       clearTimeout(hold);
+      if (kind === "size" && !d.live && e.type === "pointerup") {
+        const now = performance.now();
+        if (tap.current.id === id && now - tap.current.at < DOUBLE_TAP)
+          setSaved(resize(saved, id, null));
+        tap.current = { id, at: now };
+      }
       finish(e.type === "pointerup");
       off();
     };
