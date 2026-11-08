@@ -10,7 +10,7 @@ import { CalendarList } from "./live/CalendarList.tsx";
 import { LABEL as NAMES } from "./live/Countdown.tsx";
 import { Replay } from "./live/CurrentSession.tsx";
 import { CardHead, OpenHint } from "./live/Schedule.tsx";
-import { Loading } from "./Loading.tsx";
+import { Loading, LoadingRound } from "./Loading.tsx";
 import { navigate, pathSegment, standalone } from "./path.ts";
 import { Finish, type Race } from "./Podium.tsx";
 import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
@@ -161,13 +161,15 @@ const RaceDetail = ({
         round={race.round}
       >
         <TeamSeason value={Number(year) === season.year ? season : null}>
-          <SessionResults
-            year={year}
-            race={race}
-            races={races}
-            kind={shown}
-            favourite={favourite?.id}
-          />
+          <LoadingRound value={{ year, round: race.round }}>
+            <SessionResults
+              year={year}
+              race={race}
+              races={races}
+              kind={shown}
+              favourite={favourite?.id}
+            />
+          </LoadingRound>
         </TeamSeason>
       </Spoiler>
     </section>
