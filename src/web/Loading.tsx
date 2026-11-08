@@ -32,7 +32,7 @@ const HotLap = ({ d, box }: Lap) => (
   <svg
     aria-hidden
     viewBox={box.join(" ")}
-    className="h-14 w-24 md:h-28 md:w-48"
+    className="h-21 w-36 md:h-28 md:w-48"
     fill="none"
     strokeWidth={3 * Math.max(box[2]! / 96, box[3]! / 56)}
     strokeLinejoin="round"
@@ -84,7 +84,7 @@ export const Loading = ({ label, error }: LoadingProps) => {
           `${innerHeight - e.getBoundingClientRect().top - 16}px`,
         )
       }
-      className="flex min-h-48 flex-col items-center justify-center gap-3 text-sm text-zinc-400 md:min-h-[max(12rem,var(--fill))]"
+      className="flex min-h-[max(12rem,calc(var(--fill)-5rem))] flex-col items-center justify-center gap-3 text-sm text-zinc-400 sm:min-h-[max(12rem,var(--fill))]"
     >
       {error ? (
         <p className="text-center wrap-anywhere text-red-400">{error}</p>
