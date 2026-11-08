@@ -78,7 +78,13 @@ export const Loading = ({ label, error }: LoadingProps) => {
   return (
     <div
       role="status"
-      className="flex min-h-48 flex-col items-center justify-center gap-3 text-sm text-zinc-400"
+      ref={(e) =>
+        e?.style.setProperty(
+          "--fill",
+          `${innerHeight - e.getBoundingClientRect().top - 16}px`,
+        )
+      }
+      className="flex min-h-48 flex-col items-center justify-center gap-3 text-sm text-zinc-400 md:min-h-[max(12rem,var(--fill))]"
     >
       {error ? (
         <p className="text-center wrap-anywhere text-red-400">{error}</p>
