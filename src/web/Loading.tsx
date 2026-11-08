@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { Round } from "../shared/season.ts";
 import type { Track } from "../shared/timing.ts";
 import { useTracks } from "./Circuit.tsx";
+import { SeasonData } from "./DriverCard.tsx";
 import { projector } from "./live/TrackMap.tsx";
 
 interface LoadingProps {
@@ -15,9 +17,20 @@ export const LoadingRound = createContext<{ year: string; round: number }>({
 
 type Lap = { d: string; box: readonly number[] };
 
-const SKETCH: Lap = {
-  d: "M20 50L70 50C80 50 84 44 80 38L72 28C69 24 72 20 76 20L82 20C88 20 90 14 86 10L30 10C22 10 18 14 20 20L26 30C28 34 24 38 18 38C12 38 10 44 14 48C16 50 18 50 20 50Z",
-  box: [8, 6, 84, 48],
+const DAY = 86_400_000;
+
+const raceWeek = (rounds: Round[]) => {
+  const monday =
+    new Date().setHours(0, 0, 0, 0) - ((new Date().getDay() + 6) % 7) * DAY;
+  return rounds.find((r) => {
+    const race = Date.parse(r.sessions.race ?? "");
+    return race >= monday && race < monday + 7 * DAY;
+  })?.round;
+};
+
+const pick = (pool: Record<number, Track>, rounds: Round[], seed: number) => {
+  const all = Object.values(pool);
+  return pool[raceWeek(rounds) ?? -1] ?? all[Math.floor(seed * all.length)];
 };
 
 const lap = (track: Track): Lap => {
@@ -28,23 +41,27 @@ const lap = (track: Track): Lap => {
   return { d: `M${points.join("L")}Z`, box };
 };
 
-const HotLap = ({ d, box }: Lap) => (
+const HotLap = ({ lap }: { lap: Lap | undefined }) => (
   <svg
     aria-hidden
-    viewBox={box.join(" ")}
+    viewBox={lap?.box.join(" ")}
     className="h-21 w-36 md:h-28 md:w-48"
     fill="none"
-    strokeWidth={3 * Math.max(box[2]! / 96, box[3]! / 56)}
+    strokeWidth={lap && 3 * Math.max(lap.box[2]! / 96, lap.box[3]! / 56)}
     strokeLinejoin="round"
   >
-    <path d={d} className="stroke-zinc-700" />
-    <path
-      d={d}
-      pathLength={100}
-      strokeDasharray="18 82"
-      strokeLinecap="round"
-      className="animate-hot-lap stroke-[#e10600]"
-    />
+    {lap && (
+      <>
+        <path d={lap.d} className="stroke-zinc-700" />
+        <path
+          d={lap.d}
+          pathLength={100}
+          strokeDasharray="18 82"
+          strokeLinecap="round"
+          className="animate-hot-lap stroke-[#e10600]"
+        />
+      </>
+    )}
   </svg>
 );
 
@@ -69,12 +86,13 @@ const Slow = () => {
 
 export const Loading = ({ label, error }: LoadingProps) => {
   const { year, round } = useContext(LoadingRound);
-  const own = useTracks(year)[round];
-  const pool = Object.values(useTracks(String(new Date().getFullYear())));
-  const [shown] = useState(() => {
-    const track = own ?? pool[Math.floor(Math.random() * pool.length)];
-    return track ? lap(track) : SKETCH;
-  });
+  const season = useContext(SeasonData);
+  const own = useTracks(year);
+  const pool = useTracks(String(season?.year ?? year));
+  const [seed] = useState(Math.random);
+  const track =
+    own && (own[round] ?? (pool && season && pick(pool, season.rounds, seed)));
+  const shown = useMemo(() => track && lap(track), [track]);
   return (
     <div
       role="status"
@@ -90,7 +108,7 @@ export const Loading = ({ label, error }: LoadingProps) => {
         <p className="text-center wrap-anywhere text-red-400">{error}</p>
       ) : (
         <>
-          <HotLap {...shown} />
+          <HotLap lap={shown} />
           <p className="min-h-5">{label ?? <Slow />}</p>
         </>
       )}

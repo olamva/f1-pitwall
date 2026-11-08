@@ -256,7 +256,7 @@ export const Calendar = ({ season, onPlaying }: CalendarProps) => {
   const shown = year ?? String(season.data?.year ?? currentYear);
   const current = Number(shown) === season.data?.year;
   const archive = useJson<RaceArchive>(`/api/results/${shown}`);
-  const tracks = useTracks(shown);
+  const tracks = useTracks(shown) ?? {};
   const races = archive.data?.year === Number(shown) ? archive.data.races : [];
   const race = find(races, round, name);
   const hidden = useHidden(shown, season.data);
