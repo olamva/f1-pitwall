@@ -6,7 +6,14 @@ import {
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
-import type { Classified, QualiResult, Season } from "../../shared/season.ts";
+import type {
+  Classified,
+  DriverInfo,
+  QualiResult,
+  RaceArchive,
+  Season,
+  SeasonStandings,
+} from "../../shared/season.ts";
 import { lapSeconds } from "../../shared/timing.ts";
 import { teamColor } from "../../shared/teams.ts";
 
@@ -98,6 +105,71 @@ export const teamTables = (s: Season) =>
 
 export const latest = (t: Map<number, Standing[]>): Standing[] =>
   [...t.values()].at(-1) ?? [];
+
+type Archived = RaceArchive["races"][number]["results"][number];
+
+const classify = (r: Archived): Classified => ({
+  driver: r.driver,
+  team: r.team,
+  grid: r.grid,
+  position: /^\d+$/.test(r.positionText) ? r.position : null,
+  order: r.position,
+  points: r.points,
+  status: r.status,
+});
+
+export const archiveSeason = (
+  archive: RaceArchive,
+  standings: SeasonStandings | null,
+  faces: Map<string, DriverInfo>,
+): Season => {
+  const races = archive.races.toReversed();
+  const rows = races.flatMap((r) => [...r.sprint, ...r.results]);
+  const last = new Map(rows.map((r) => [r.driver, r]));
+  const points = (table: SeasonStandings["drivers"] = []) =>
+    table.map(({ id, points }) => ({ id, points }));
+  return {
+    year: archive.year,
+    rounds: [],
+    drivers: [...last.values()].map((r) => ({
+      headshot: null,
+      art: null,
+      ...faces.get(r.driver),
+      id: r.driver,
+      code: r.code,
+      name: r.name,
+      number: r.number,
+      team: r.team,
+      reserve: false,
+    })),
+    teams: [...new Map(rows.map((r) => [r.team, r.teamName]))].map(
+      ([id, name]) => ({ id, name }),
+    ),
+    races: races.map((r) => ({
+      round: r.round,
+      results: r.results.map(classify),
+    })),
+    sprints: races
+      .filter((r) => r.sprint.length)
+      .map((r) => ({ round: r.round, results: r.sprint.map(classify) })),
+    qualifying: races.map((r) => ({
+      round: r.round,
+      results: r.results
+        .filter((x) => x.grid === 1)
+        .map((x) => ({
+          driver: x.driver,
+          team: x.team,
+          position: 1,
+          q1: null,
+          q2: null,
+          q3: null,
+        })),
+    })),
+    sprintQualifying: [],
+    driverStandings: points(standings?.drivers),
+    constructorStandings: points(standings?.constructors),
+  };
+};
 
 export function remaining(s: Season, after = Infinity): Upcoming[] {
   const done = (rows: { round: number }[]) =>
