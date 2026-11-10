@@ -9,7 +9,7 @@ import { ink } from "./ink.ts";
 import { Slow } from "./Loading.tsx";
 import { METALS } from "./Podium.tsx";
 import { useHidden } from "./spoilers.ts";
-import { clinched, driverTables, latest } from "./stats/derive.ts";
+import { clinched, driverTables, latest, remaining } from "./stats/derive.ts";
 import { SHORT } from "./stats/DriverProfile.tsx";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 
@@ -121,7 +121,10 @@ const SeasonCard = ({ id, season }: { id: string; season: Season }) => {
     races,
     sprints: season.sprints.filter(keep("sprint")),
   };
-  const table = latest(driverTables(shown));
+  const table =
+    season.driverStandings.length && !remaining(shown).length
+      ? season.driverStandings
+      : latest(driverTables(shown));
   const place = table.findIndex((s) => s.id === id);
   const champion = clinched(shown, "drivers");
   const info = new Map(season.drivers.map((d) => [d.id, d]));

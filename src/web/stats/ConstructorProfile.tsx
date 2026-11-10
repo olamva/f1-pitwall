@@ -8,7 +8,7 @@ import { useJson } from "../api.ts";
 import { Car } from "../Headshot.tsx";
 import { useConfetti } from "../confetti.ts";
 import { Loading } from "../Loading.tsx";
-import { DriverHover } from "../DriverCard.tsx";
+import { DriverHover, SeasonData } from "../DriverCard.tsx";
 import { openDriver } from "../path.ts";
 import { useBack } from "../Swipe.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
@@ -129,37 +129,42 @@ export const ConstructorProfile = ({
                 </tr>
               </thead>
               <tbody>
-                {data.seasons.map((season) => (
+                {data.seasons.map((row) => (
                   <tr
-                    key={season.year}
+                    key={row.year}
                     className="border-t border-zinc-800 align-top"
                   >
-                    <td className="py-1.5 font-semibold">{season.year}</td>
+                    <td className="py-1.5 font-semibold">{row.year}</td>
                     <td className="py-1.5 pl-3">
-                      {season.drivers.map((driver, i) => (
-                        <span key={driver.id}>
-                          {i > 0 && ", "}
-                          <DriverHover id={driver.id} className="inline-block">
-                            <button
-                              type="button"
-                              onClick={() => openDriver(driver.id)}
-                              className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
+                      <SeasonData
+                        value={row.year === season.year ? season : null}
+                      >
+                        {row.drivers.map((driver, i) => (
+                          <span key={driver.id}>
+                            {i > 0 && ", "}
+                            <DriverHover
+                              id={driver.id}
+                              className="inline-block"
                             >
-                              {driver.name}
-                            </button>
-                          </DriverHover>
-                        </span>
-                      ))}
+                              <button
+                                type="button"
+                                onClick={() => openDriver(driver.id)}
+                                className="cursor-pointer text-left hover:text-zinc-50 hover:underline"
+                              >
+                                {driver.name}
+                              </button>
+                            </DriverHover>
+                          </span>
+                        ))}
+                      </SeasonData>
                     </td>
-                    <td className="py-1.5 pl-3 text-right">{season.starts}</td>
+                    <td className="py-1.5 pl-3 text-right">{row.starts}</td>
+                    <td className="py-1.5 pl-3 text-right">{row.wins || ""}</td>
                     <td className="py-1.5 pl-3 text-right">
-                      {season.wins || ""}
-                    </td>
-                    <td className="py-1.5 pl-3 text-right">
-                      {season.podiums || ""}
+                      {row.podiums || ""}
                     </td>
                     <td className="py-1.5 pl-3 text-right font-semibold">
-                      {season.points}
+                      {row.points}
                     </td>
                   </tr>
                 ))}

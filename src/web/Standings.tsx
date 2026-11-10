@@ -1,8 +1,9 @@
 import { Trophy } from "lucide-react";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import type { Championship } from "../shared/clinch.ts";
 import type {
   DriverInfo,
+  RaceArchive,
   Season,
   SeasonStandings,
   StandingRow,
@@ -10,12 +11,12 @@ import type {
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { useConfetti } from "./confetti.ts";
-import { DriverHover } from "./DriverCard.tsx";
-import { FALLBACK, Headshot } from "./Headshot.tsx";
+import { DriverHover, SeasonData } from "./DriverCard.tsx";
+import { Faces, FALLBACK, Headshot } from "./Headshot.tsx";
 import { Loading } from "./Loading.tsx";
 import { openConstructor, openDriver, pathPart, pathSegment } from "./path.ts";
 import { GOLD } from "./stats/Champion.tsx";
-import { clinched } from "./stats/derive.ts";
+import { archiveSeason, clinched } from "./stats/derive.ts";
 import { TeamNumber } from "./stats/TeamNumber.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -238,7 +239,15 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
   const [champ, setChamp] = useState<Championship>(initial ?? "drivers");
   const blob = useRef<(offset: number, held: boolean) => void>(null);
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
+  const now = Number(year) === season.year;
+  const archive = useJson<RaceArchive>(now ? null : `/api/results/${year}`);
+  const faces = useContext(Faces);
   const ready = data?.year === Number(year);
+  const shown = now
+    ? season
+    : ready && archive.data?.year === Number(year)
+      ? archiveSeason(archive.data, data, faces)
+      : null;
   const crowned = (champ: Championship) =>
     season.year === Number(year) && clinched(season, champ);
   const decided = (champ: Championship) =>
@@ -266,11 +275,11 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
       <YearSelect value={year} onChange={pick} />
     </div>
   );
-  if (data?.year !== Number(year))
+  if (!ready || !shown)
     return (
       <div className="space-y-4">
         {picker}
-        <Loading error={error} />
+        <Loading error={error ?? archive.error} />
       </div>
     );
   if (!data.drivers.length)
@@ -286,35 +295,37 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
   return (
     <div className="space-y-4">
       {picker}
-      <TeamSeason value={Number(year) === season.year ? season : null}>
-        <Swipe
-          items={teams ? CHAMPS : CHAMPS.slice(0, 1)}
-          value={teams ? champ : "drivers"}
-          onChange={setChamp}
-          drive={blob}
-          render={(c) =>
-            c === "drivers" ? (
-              <Cards
-                rows={data.drivers}
-                season={season}
-                teams={names}
-                champion={decided(c) ? `${year} World Champion` : undefined}
-                onSelect={openDriver}
-              />
-            ) : (
-              <Cards
-                rows={data.constructors}
-                drivers={data.drivers}
-                season={season}
-                teams={names}
-                champion={
-                  decided(c) ? `${year} Constructors' Champions` : undefined
-                }
-                onSelect={openConstructor}
-              />
-            )
-          }
-        />
+      <TeamSeason value={now ? season : null}>
+        <SeasonData value={shown}>
+          <Swipe
+            items={teams ? CHAMPS : CHAMPS.slice(0, 1)}
+            value={teams ? champ : "drivers"}
+            onChange={setChamp}
+            drive={blob}
+            render={(c) =>
+              c === "drivers" ? (
+                <Cards
+                  rows={data.drivers}
+                  season={shown}
+                  teams={names}
+                  champion={decided(c) ? `${year} World Champion` : undefined}
+                  onSelect={openDriver}
+                />
+              ) : (
+                <Cards
+                  rows={data.constructors}
+                  drivers={data.drivers}
+                  season={shown}
+                  teams={names}
+                  champion={
+                    decided(c) ? `${year} Constructors' Champions` : undefined
+                  }
+                  onSelect={openConstructor}
+                />
+              )
+            }
+          />
+        </SeasonData>
       </TeamSeason>
     </div>
   );
