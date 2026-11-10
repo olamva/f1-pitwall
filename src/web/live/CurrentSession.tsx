@@ -286,7 +286,7 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
             <DelayWait due={due} delay={live + pos.back} />
           </>
         ) : (
-          <Loading label="Connecting to live timing…" />
+          <Loading word="Connecting" />
         )}
       </div>
     </Frozen>
@@ -401,7 +401,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const on = wasLive.current || !!info.data?.recent;
   const spoiler = useLiveSpoiler(season.data?.rounds, on);
   if (!info.data || !season.data)
-    return <Loading label="Loading…" error={info.error ?? season.error} />;
+    return <Loading error={info.error ?? season.error} />;
   const key = String(info.data.info?.Key);
   const start = info.data.start;
   const go = (back: number) => {

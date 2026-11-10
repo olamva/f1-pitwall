@@ -6,8 +6,8 @@ import { SeasonData } from "./DriverCard.tsx";
 import { projector } from "./live/TrackMap.tsx";
 
 interface LoadingProps {
-  label?: string;
   error?: string | null;
+  word?: string;
 }
 
 export const LoadingRound = createContext<{ year: string; round: number }>({
@@ -65,7 +65,7 @@ const HotLap = ({ lap }: { lap: Lap | undefined }) => (
   </svg>
 );
 
-const Slow = () => {
+export const Slow = ({ word = "Loading" }: { word?: string }) => {
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 500);
@@ -75,7 +75,7 @@ const Slow = () => {
   const dots = ((tick - 20) % 3) + 1;
   return (
     <>
-      Loading
+      {word}
       <span aria-hidden>
         {".".repeat(dots)}
         <span className="invisible">{".".repeat(3 - dots)}</span>
@@ -84,7 +84,7 @@ const Slow = () => {
   );
 };
 
-export const Loading = ({ label, error }: LoadingProps) => {
+export const Loading = ({ error, word }: LoadingProps) => {
   const { year, round } = useContext(LoadingRound);
   const season = useContext(SeasonData);
   const own = useTracks(year);
@@ -109,7 +109,9 @@ export const Loading = ({ label, error }: LoadingProps) => {
       ) : (
         <>
           <HotLap lap={shown} />
-          <p className="min-h-5">{label ?? <Slow />}</p>
+          <p className="min-h-5">
+            <Slow word={word} />
+          </p>
         </>
       )}
     </div>

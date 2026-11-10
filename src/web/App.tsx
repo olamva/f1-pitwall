@@ -166,10 +166,7 @@ export const App = () => {
                         <Stats season={season.data} />
                       </Spoiler>
                     ) : (
-                      <Loading
-                        label="Loading the season…"
-                        error={season.error}
-                      />
+                      <Loading error={season.error} />
                     ))}
                   {t === "Settings" && (
                     <Settings

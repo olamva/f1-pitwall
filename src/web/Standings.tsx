@@ -270,7 +270,7 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
     return (
       <div className="space-y-4">
         {picker}
-        <Loading label="Loading standings…" error={error} />
+        <Loading error={error} />
       </div>
     );
   if (!data.drivers.length)
