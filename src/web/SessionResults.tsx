@@ -356,7 +356,8 @@ const PracticeBody = ({
 };
 
 const LAP = /^(\d+):(\d\d\.\d+)$/;
-const lap = (v: ReactNode): v is string => typeof v === "string" && LAP.test(v);
+const clock = (v: ReactNode): v is string =>
+  typeof v === "string" && LAP.test(v);
 
 const seconds = (time: string) => {
   const [, minutes, rest] = LAP.exec(time) ?? [];
@@ -364,7 +365,7 @@ const seconds = (time: string) => {
 };
 
 const gap = (entry: PodiumEntry, leader: PodiumEntry, index: number) =>
-  index && lap(entry.value) && lap(leader.value)
+  index && clock(entry.value) && clock(leader.value)
     ? {
         ...entry,
         value: `+${(seconds(entry.value) - seconds(leader.value)).toFixed(3)}`,
