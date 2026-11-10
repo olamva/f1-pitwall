@@ -248,11 +248,23 @@ export function constructorNeeds(
   });
 }
 
-export const outscoreBy = (needs: Need[]): number | null => {
-  const m = Math.min(
-    ...needs.flatMap((n) => (n.need === null ? [] : [n.need - n.rival])),
+export type Outscore = { by: number; least: number };
+
+export const outscoreBy = (needs: Need[]): Outscore | null => {
+  const fits = needs.filter(
+    (n): n is { rival: number; need: number } => n.need !== null,
   );
-  return needs.at(-1)?.need === m ? m : null;
+  if (!fits.length) return null;
+  const by = Math.min(...fits.map((n) => n.need - n.rival));
+  const least = Math.min(...fits.map((n) => n.need));
+  const top = needs[0]!.rival;
+  const sound = needs.every(
+    (n) => n.need !== null || Math.max(n.rival + by, least) > top,
+  );
+  const matters = fits.some((n) => n.rival + by > least);
+  return sound && matters
+    ? { by, least: least > Math.max(by, 0) ? least : 0 }
+    : null;
 };
 
 export type Finish = { best: number; other: number | null };

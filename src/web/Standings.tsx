@@ -308,7 +308,7 @@ export const Standings = ({ season, champ: initial }: StandingsProps) => {
                 season={season}
                 teams={names}
                 champion={
-                  decided(c) ? `${year} Constructors' Champion` : undefined
+                  decided(c) ? `${year} Constructors' Champions` : undefined
                 }
                 onSelect={openConstructor}
               />

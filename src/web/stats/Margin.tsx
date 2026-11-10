@@ -3,6 +3,7 @@ import type { Who } from "./derive.ts";
 
 interface MarginProps {
   by: number;
+  least: number;
   focus: string;
   rival: string;
   who: Map<string, Who>;
@@ -20,6 +21,7 @@ const Logo = ({ id, className }: { id: string; className: string }) => (
 
 export const Margin = ({
   by,
+  least,
   focus,
   rival,
   who,
@@ -56,6 +58,11 @@ export const Margin = ({
           <Logo id={rival} className="size-6 sm:size-7" />
           by {by > 0 ? "" : "no more than"}
         </p>
+        {least > 0 && (
+          <p className="mt-2 text-[10px] font-bold tracking-[0.15em] text-white/70 sm:text-xs">
+            and score at least {least} points
+          </p>
+        )}
       </div>
       <div className="flex flex-col items-center">
         <span
