@@ -184,6 +184,17 @@ export const Champion = ({
 
 const Poster = ({ champ, id }: PosterProps) => {
   const d = useArt(id);
+  const logo = logoSrc(id);
+  if (champ === "constructors")
+    return (
+      logo && (
+        <img
+          src={logo}
+          alt=""
+          className="pointer-events-none mb-6 h-32 w-full object-contain drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] sm:absolute sm:top-6 sm:right-0 sm:m-0 sm:h-72 sm:w-1/2 sm:max-w-xl"
+        />
+      )
+    );
   return (
     champ === "drivers" &&
     d?.art && (
