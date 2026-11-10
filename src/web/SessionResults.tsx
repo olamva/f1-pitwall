@@ -400,7 +400,10 @@ export const SessionPodium = ({
       : race &&
         podium(kind === "sprint" ? race.sprint : race.results, (r) => (
           <>
-            {gained(r)} {r.time || r.status}
+            {r.time || r.status}
+            <span className="ml-1.5 inline-block min-w-[3.5ch]">
+              {gained(r)}
+            </span>
           </>
         ));
   const rows = top?.map((e, i, all) => gap(e, all[0]!, i));
