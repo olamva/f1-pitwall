@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
 import { DriverHover } from "./DriverCard.tsx";
@@ -12,7 +12,7 @@ export interface PodiumEntry {
   id: string;
   name: string;
   color: string;
-  value: string;
+  value: ReactNode;
   team?: string;
 }
 
@@ -178,17 +178,16 @@ interface FinishProps {
 
 type Result = Race["results"][number];
 
-export const start = ({ grid }: Result) =>
-  grid ? `from P${grid}` : "from pit lane";
-
-const Gain = ({ grid, position }: Result) => {
+export const gained = ({ grid, position }: Result, rest: ReactNode = null) => {
   const gain = grid - position;
   return grid && gain ? (
     <span className={gain > 0 ? "text-emerald-400" : "text-red-500"}>
       {gain > 0 ? "▲" : "▼"}
       {Math.abs(gain)}
     </span>
-  ) : null;
+  ) : (
+    rest
+  );
 };
 
 export const Finish = ({ race, hidden }: FinishProps) => {
@@ -211,9 +210,7 @@ export const Finish = ({ race, hidden }: FinishProps) => {
               <p className="font-f1 truncate text-base leading-tight font-bold">
                 {winner.name}
               </p>
-              <span className="shrink-0 text-xs">
-                <Gain {...winner} />
-              </span>
+              <span className="shrink-0 text-xs">{gained(winner)}</span>
             </div>
             {sprint && <p className="text-xs text-zinc-400">Sprint winner</p>}
           </div>
@@ -228,7 +225,7 @@ export const Finish = ({ race, hidden }: FinishProps) => {
                 {index + 2}
               </span>
               {result.code || result.name}
-              <Gain {...result} />
+              {gained(result)}
             </span>
           ))}
         </p>
