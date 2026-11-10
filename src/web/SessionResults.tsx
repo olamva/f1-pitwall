@@ -237,7 +237,6 @@ const RaceBody = ({
       <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
     ) : (
       <Loading
-        label="Loading tyre strategy…"
         error={strategy.error && "Tyre data is not available for this session."}
       />
     )
@@ -246,7 +245,6 @@ const RaceBody = ({
       <Positions rows={rows} laps={positions.data} favourite={favourite} />
     ) : (
       <Loading
-        label="Loading positions…"
         error={
           positions.error && "Position data is not available for this session."
         }
@@ -283,7 +281,6 @@ const QualifyingBody = ({
   if (!quali.data)
     return (
       <Loading
-        label="Loading qualifying results…"
         error={
           quali.error &&
           "Qualifying results are not available for this session."
@@ -329,7 +326,6 @@ const PracticeBody = ({
   if (!practice.data)
     return (
       <Loading
-        label="Loading practice results…"
         error={
           practice.error &&
           "Practice results are not available for this session."

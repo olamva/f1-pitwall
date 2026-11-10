@@ -53,7 +53,7 @@ export const Spoiler = ({
   const seen = useSeen();
   if (!seen || year !== (season?.year ?? new Date().getUTCFullYear()))
     return children;
-  if (!season) return <Loading label="Loading the season…" />;
+  if (!season) return <Loading />;
   const pending = fresh(season.rounds, Date.now()).filter(
     (s) =>
       kinds.includes(s.kind) &&

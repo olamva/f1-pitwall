@@ -200,7 +200,7 @@ const Races = ({
   onReplay,
 }: RacesProps) => {
   if (archive.data?.year !== Number(year))
-    return <Loading label="Loading race results…" error={archive.error} />;
+    return <Loading error={archive.error} />;
   const races = archive.data.races;
   if (race)
     return (
@@ -298,12 +298,7 @@ export const Calendar = ({ season, onPlaying }: CalendarProps) => {
   useBack(race && !chosen ? back : undefined);
   useEffect(() => onPlaying(!!chosen), [!!chosen]);
   if (!season.data || (path && !sessions.data))
-    return (
-      <Loading
-        label="Loading the calendar…"
-        error={season.error ?? sessions.error}
-      />
-    );
+    return <Loading error={season.error ?? sessions.error} />;
   if (chosen)
     return (
       <LoadingRound
@@ -350,7 +345,7 @@ export const Calendar = ({ season, onPlaying }: CalendarProps) => {
             onOpen={open}
           />
         ) : (
-          <Loading label="Loading the calendar…" error={sessions.error} />
+          <Loading error={sessions.error} />
         )
       ) : (
         <Races

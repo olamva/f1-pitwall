@@ -178,7 +178,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
         All drivers
       </button>
       {!data ? (
-        <Loading label="Loading driver…" error={error} />
+        <Loading error={error} />
       ) : (
         <>
           <section
