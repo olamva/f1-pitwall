@@ -178,9 +178,7 @@ interface FinishProps {
 
 type Result = Race["results"][number];
 
-type GainProps = Pick<Result, "grid" | "position"> & { rest?: ReactNode };
-
-export const Gain = ({ grid, position, rest = null }: GainProps) => {
+export const gained = ({ grid, position }: Result, rest: ReactNode = null) => {
   const gain = grid - position;
   return grid && gain ? (
     <span className={gain > 0 ? "text-emerald-400" : "text-red-500"}>
@@ -212,9 +210,7 @@ export const Finish = ({ race, hidden }: FinishProps) => {
               <p className="font-f1 truncate text-base leading-tight font-bold">
                 {winner.name}
               </p>
-              <span className="shrink-0 text-xs">
-                <Gain {...winner} />
-              </span>
+              <span className="shrink-0 text-xs">{gained(winner)}</span>
             </div>
             {sprint && <p className="text-xs text-zinc-400">Sprint winner</p>}
           </div>
@@ -229,7 +225,7 @@ export const Finish = ({ race, hidden }: FinishProps) => {
                 {index + 2}
               </span>
               {result.code || result.name}
-              <Gain {...result} />
+              {gained(result)}
             </span>
           ))}
         </p>
