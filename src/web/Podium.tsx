@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { EyeOff, Trophy } from "lucide-react";
 import type { RaceArchive } from "../shared/season.ts";
 import { DriverHover } from "./DriverCard.tsx";
@@ -12,7 +12,7 @@ export interface PodiumEntry {
   id: string;
   name: string;
   color: string;
-  value: string;
+  value: ReactNode;
   team?: string;
 }
 
@@ -178,17 +178,18 @@ interface FinishProps {
 
 type Result = Race["results"][number];
 
-export const start = ({ grid }: Result) =>
-  grid ? `from P${grid}` : "from pit lane";
+type GainProps = Pick<Result, "grid" | "position"> & { rest?: ReactNode };
 
-const Gain = ({ grid, position }: Result) => {
+export const Gain = ({ grid, position, rest = null }: GainProps) => {
   const gain = grid - position;
   return grid && gain ? (
     <span className={gain > 0 ? "text-emerald-400" : "text-red-500"}>
       {gain > 0 ? "▲" : "▼"}
       {Math.abs(gain)}
     </span>
-  ) : null;
+  ) : (
+    rest
+  );
 };
 
 export const Finish = ({ race, hidden }: FinishProps) => {

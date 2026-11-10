@@ -15,7 +15,7 @@ import { useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
-import { Podium, PodiumList, start, type PodiumEntry } from "./Podium.tsx";
+import { Gain, Podium, PodiumList, type PodiumEntry } from "./Podium.tsx";
 import { Positions } from "./Positions.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -61,7 +61,7 @@ type Known = ReturnType<typeof entrants>;
 
 const podium = <T extends Entry>(
   rows: T[],
-  value: (row: T) => string,
+  value: (row: T) => ReactNode,
 ): PodiumEntry[] =>
   rows.map((row) => ({
     id: row.driver,
@@ -363,7 +363,11 @@ const seconds = (time: string) => {
 };
 
 const gap = (entry: PodiumEntry, leader: PodiumEntry, index: number) =>
-  index && LAP.test(entry.value) && LAP.test(leader.value)
+  index &&
+  typeof entry.value === "string" &&
+  typeof leader.value === "string" &&
+  LAP.test(entry.value) &&
+  LAP.test(leader.value)
     ? {
         ...entry,
         value: `+${(seconds(entry.value) - seconds(leader.value)).toFixed(3)}`,
@@ -401,7 +405,11 @@ export const SessionPodium = ({
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race &&
         podium(kind === "sprint" ? race.sprint : race.results, (r) =>
-          past && kind === "race" ? start(r) : r.time || r.status,
+          past && kind === "race" ? (
+            <Gain {...r} rest="–" />
+          ) : (
+            r.time || r.status
+          ),
         );
   const rows = top?.map((e, i, all) => gap(e, all[0]!, i));
   return (rows ? rows.length < 3 : quali.error || practice.error) ? (
