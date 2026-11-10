@@ -178,16 +178,14 @@ interface FinishProps {
 
 type Result = Race["results"][number];
 
-export const gained = ({ grid, position }: Result, rest: ReactNode = null) => {
+export const gained = ({ grid, position }: Result) => {
   const gain = grid - position;
   return grid && gain ? (
     <span className={gain > 0 ? "text-emerald-400" : "text-red-500"}>
       {gain > 0 ? "▲" : "▼"}
       {Math.abs(gain)}
     </span>
-  ) : (
-    rest
-  );
+  ) : null;
 };
 
 export const Finish = ({ race, hidden }: FinishProps) => {

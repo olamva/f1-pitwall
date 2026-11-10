@@ -60,6 +60,7 @@ interface WeekendProps {
   onOpen?: () => void;
   preview?: Previewer;
   podium?: ReactNode;
+  card?: ReactNode;
   featured?: boolean;
   sprint: boolean;
 }
@@ -199,6 +200,7 @@ const Weekend = ({
   onOpen,
   preview,
   podium,
+  card,
   featured,
   sprint,
 }: WeekendProps) => {
@@ -206,59 +208,61 @@ const Weekend = ({
   const [calm, setCalm] = useState(false);
   const timer = useRef(0);
   return (
-    <article
-      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
-    >
-      {onOpen && (
-        <button
-          onClick={onOpen}
-          aria-label={`Results: ${sessions[0].meeting}`}
-          className={`peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5 ${calm ? "pointer-events-none" : ""}`}
-        />
-      )}
-      <Circuit track={track} round={round} />
-      <CardHead
-        label={
-          featured
-            ? `Current race weekend · ${dates(sessions)}`
-            : dates(sessions)
-        }
-        name={sessions[0].meeting}
-        country={sessions[0].country}
-        track={circuit}
-        featured={featured}
-        sprint={sprint}
-      />
-      {podium}
-      <div
-        className="pointer-events-none relative mt-auto"
-        onPointerOver={() => {
-          clearTimeout(timer.current);
-          setCalm(true);
-        }}
-        onPointerOut={() => {
-          timer.current = window.setTimeout(() => setCalm(false), 50);
-        }}
+    <HoverCard card={card} className="h-full">
+      <article
+        className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
       >
-        <Days
-          days={Object.values(
-            Object.groupBy(sessions, (s) => s.start.slice(0, 10)),
-          ).map((group) => [
-            weekday(group![0]),
-            group!.map((s) => (
-              <SessionButton
-                key={s.start}
-                session={s}
-                onStart={onStart}
-                next={s === next}
-                preview={preview}
-              />
-            )),
-          ])}
+        {onOpen && (
+          <button
+            onClick={onOpen}
+            aria-label={`Results: ${sessions[0].meeting}`}
+            className={`peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5 ${calm ? "pointer-events-none" : ""}`}
+          />
+        )}
+        <Circuit track={track} round={round} />
+        <CardHead
+          label={
+            featured
+              ? `Current race weekend · ${dates(sessions)}`
+              : dates(sessions)
+          }
+          name={sessions[0].meeting}
+          country={sessions[0].country}
+          track={circuit}
+          featured={featured}
+          sprint={sprint}
         />
-      </div>
-      {onOpen && <OpenHint />}
-    </article>
+        {podium}
+        <div
+          className="pointer-events-none relative mt-auto"
+          onPointerOver={() => {
+            clearTimeout(timer.current);
+            setCalm(true);
+          }}
+          onPointerOut={() => {
+            timer.current = window.setTimeout(() => setCalm(false), 50);
+          }}
+        >
+          <Days
+            days={Object.values(
+              Object.groupBy(sessions, (s) => s.start.slice(0, 10)),
+            ).map((group) => [
+              weekday(group![0]),
+              group!.map((s) => (
+                <SessionButton
+                  key={s.start}
+                  session={s}
+                  onStart={onStart}
+                  next={s === next}
+                  preview={preview}
+                />
+              )),
+            ])}
+          />
+        </div>
+        {onOpen && <OpenHint />}
+      </article>
+    </HoverCard>
   );
 };
 
@@ -324,6 +328,26 @@ export const CalendarList = ({
         const race = races.find((r) => r.round === round);
         const info = roundOf(season, w);
         const number = info?.round;
+        const preview: Previewer = (s) => {
+          const kind = kindOf(s.name);
+          return (
+            info &&
+            kind &&
+            (s.time ? (
+              <LastYear round={info} year={season.year} kind={kind} />
+            ) : (
+              <Preview
+                session={s}
+                kind={kind}
+                year={String(season.year)}
+                round={info.round}
+                races={races}
+                hidden={hidden}
+              />
+            ))
+          );
+        };
+        const latest = w.findLast((s) => kindOf(s.name));
         return (
           <li key={w[0].start} {...item(w[0].start)}>
             <Weekend
@@ -333,25 +357,8 @@ export const CalendarList = ({
               circuit={info?.circuit}
               onStart={onStart}
               onOpen={round ? () => onOpen(round) : undefined}
-              preview={(s) => {
-                const kind = kindOf(s.name);
-                return (
-                  info &&
-                  kind &&
-                  (s.time ? (
-                    <LastYear round={info} year={season.year} kind={kind} />
-                  ) : (
-                    <Preview
-                      session={s}
-                      kind={kind}
-                      year={String(season.year)}
-                      round={info.round}
-                      races={races}
-                      hidden={hidden}
-                    />
-                  ))
-                );
-              }}
+              preview={preview}
+              card={latest && preview(latest)}
               podium={race && <Finish race={race} hidden={hidden} />}
               featured={w[0].start === anchor}
               sprint={!!info?.sessions.sprint}
