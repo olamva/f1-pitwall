@@ -4,11 +4,14 @@ import {
   Cookie,
   LogIn,
   Menu,
+  Monitor,
+  Moon,
   Save,
   Share,
   Smartphone,
   SquarePlus,
   SquareTerminal,
+  Sun,
 } from "lucide-react";
 import type { DriverInfo, Season } from "../shared/season.ts";
 import { tokenProblem, type TokenStatus } from "../shared/token.ts";
@@ -39,6 +42,7 @@ const PUSH_NOTES: Partial<Record<PushState, string>> = {
 };
 
 const THEMES = ["system", "light", "dark"] as const;
+const THEME_ICONS = { system: Monitor, light: Sun, dark: Moon };
 
 const LOGIN = "https://account.formula1.com/#/en/login";
 const SIGN_IN = "/.auth/login/google?post_login_redirect_uri=/settings";
@@ -99,8 +103,7 @@ async function post(value: string): Promise<TokenStatus> {
   return body;
 }
 
-const SELECT =
-  "glass-control max-w-48 cursor-pointer truncate px-3 py-1.5 text-sm";
+const SELECT = "glass-control w-48 cursor-pointer truncate px-3 py-1.5 text-sm";
 
 interface GroupProps {
   title: ReactNode;
@@ -226,6 +229,8 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
                 localStorage.setItem("theme", t);
                 document.documentElement.dataset.theme = t;
               }}
+              icons={THEME_ICONS}
+              iconOnly
               small
             />
           </Row>
