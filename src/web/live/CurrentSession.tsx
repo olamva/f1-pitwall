@@ -286,7 +286,7 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
             <DelayWait due={due} delay={live + pos.back} />
           </>
         ) : (
-          <Loading />
+          <Loading word="Connecting" />
         )}
       </div>
     </Frozen>
