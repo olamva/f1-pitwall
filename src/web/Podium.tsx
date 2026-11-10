@@ -129,7 +129,7 @@ export const PodiumList = ({ entries, faded }: PodiumListProps) =>
           </span>
           <Face id={e.id} color={e.color} faded={faded} />
           <span className="min-w-0">
-            <span className="block truncate text-[13px] leading-tight font-bold">
+            <span className="line-clamp-2 text-[13px] leading-tight font-bold">
               {e.name}
             </span>
             {e.team && (
@@ -139,7 +139,7 @@ export const PodiumList = ({ entries, faded }: PodiumListProps) =>
               />
             )}
           </span>
-          <span className="tabular ml-auto shrink-0 text-xs text-zinc-400">
+          <span className="tabular ml-auto shrink-0 text-right text-xs text-zinc-400">
             {e.value}
           </span>
         </li>

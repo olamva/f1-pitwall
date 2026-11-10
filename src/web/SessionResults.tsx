@@ -401,7 +401,7 @@ export const SessionPodium = ({
         podium(kind === "sprint" ? race.sprint : race.results, (r) => (
           <>
             {r.time || r.status}
-            <span className="ml-1.5 inline-block min-w-[3.5ch]">
+            <span className="ml-auto block w-[3.5ch] text-left">
               {gained(r)}
             </span>
           </>
