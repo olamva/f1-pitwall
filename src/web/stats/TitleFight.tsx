@@ -184,7 +184,10 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const needs = all.filter(
     (n, i) => n.need !== null && n.need !== all[i - 1]?.need,
   );
-  const outscore = outscoreBy(all);
+  const margins = useMemo(
+    () => outscoreBy(table, events, focus, rival),
+    [table, events, focus, rival],
+  );
   const [a, b] = [who.get(focus)?.name ?? focus, who.get(rival)?.name ?? rival];
   if (!needs.length)
     return (
@@ -194,11 +197,10 @@ const Needs = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
     );
   return (
     <div>
-      {outscore && (
+      {margins && (
         <Margin
-          {...outscore}
+          margins={margins}
           focus={focus}
-          rival={rival}
           who={who}
           prize={prize}
           event={events[0]!.name}

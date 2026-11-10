@@ -1,11 +1,10 @@
+import type { Margin as Gap } from "../../shared/clinch.ts";
 import { logoSrc } from "../TeamLogo.tsx";
 import type { Who } from "./derive.ts";
 
 interface MarginProps {
-  by: number;
-  least: number;
+  margins: Gap[];
   focus: string;
-  rival: string;
   who: Map<string, Who>;
   prize: string;
   event: string;
@@ -19,16 +18,10 @@ const Logo = ({ id, className }: { id: string; className: string }) => (
   />
 );
 
-export const Margin = ({
-  by,
-  least,
-  focus,
-  rival,
-  who,
-  prize,
-  event,
-}: MarginProps) => {
+export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
+  const [{ id: rival, by }, ...also] = margins as [Gap, ...Gap[]];
   const color = who.get(focus)?.color ?? "#888";
+  const name = (id: string) => who.get(id)?.name ?? id;
   return (
     <div
       className="font-f1 relative flex max-w-lg items-center gap-4 overflow-hidden rounded-xl px-4 py-3 text-white uppercase scheme-dark"
@@ -40,8 +33,7 @@ export const Margin = ({
         <div className="flex items-center gap-2.5">
           <Logo id={focus} className="size-7 shrink-0 sm:size-8" />
           <p className="text-[10px] leading-snug font-bold tracking-[0.15em] text-balance text-white/70 sm:text-xs">
-            {who.get(focus)?.name ?? focus} secure {prize} at the {event} if
-            they
+            {name(focus)} secure {prize} at the {event} if they
           </p>
         </div>
         <p className="mt-2 text-2xl leading-none font-black sm:text-3xl">
@@ -53,16 +45,21 @@ export const Margin = ({
               color: `color-mix(in srgb, ${who.get(rival)?.color ?? "#888"} 85%, white)`,
             }}
           >
-            {who.get(rival)?.name ?? rival}
+            {name(rival)}
           </span>
           <Logo id={rival} className="size-6 sm:size-7" />
           by {by > 0 ? "" : "no more than"}
         </p>
-        {least > 0 && (
-          <p className="mt-2 text-[10px] font-bold tracking-[0.15em] text-white/70 sm:text-xs">
-            and score at least {least} points
+        {also.map((m) => (
+          <p
+            key={m.id}
+            className="mt-2 text-[10px] font-bold tracking-[0.15em] text-white/70 sm:text-xs"
+          >
+            and {m.by > 0 ? "outscore" : "trail"} {name(m.id)} by{" "}
+            {m.by > 0 ? "" : "no more than "}
+            {Math.abs(m.by)} {Math.abs(m.by) === 1 ? "point" : "points"}
           </p>
-        )}
+        ))}
       </div>
       <div className="flex flex-col items-center">
         <span
