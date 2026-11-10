@@ -50,7 +50,7 @@ export const ConstructorProfile = ({
         All constructors
       </button>
       {!data ? (
-        <Loading label="Loading constructor…" error={error} />
+        <Loading error={error} />
       ) : (
         <>
           <section

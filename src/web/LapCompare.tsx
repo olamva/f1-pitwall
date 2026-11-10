@@ -145,7 +145,7 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
         {shown.current}
       </div>
     ) : (
-      <Loading label="Loading the telemetry…" error={error} />
+      <Loading error={error} />
     );
   if (!traceA || !traceB)
     return (shown.current = (

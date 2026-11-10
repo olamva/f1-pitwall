@@ -6,6 +6,7 @@ import { useJson } from "../api.ts";
 import { Circuit } from "../Circuit.tsx";
 import { Flag } from "../Flag.tsx";
 import { HoverCard } from "../HoverCard.tsx";
+import { Slow } from "../Loading.tsx";
 import { SessionPodium, type Kind } from "../SessionResults.tsx";
 import { SprintLogo } from "../SprintLogo.tsx";
 import { LABEL } from "./Countdown.tsx";
@@ -227,11 +228,13 @@ export const LastYear = ({ round, year, kind }: LastYearProps) => {
           />
         ) : (
           <p className="py-8 text-center text-xs text-zinc-400">
-            {archive.data
-              ? "No race here last year"
-              : archive.error
-                ? "Results are not available."
-                : "Loading results…"}
+            {archive.data ? (
+              "No race here last year"
+            ) : archive.error ? (
+              "Results are not available."
+            ) : (
+              <Slow />
+            )}
           </p>
         )}
       </div>

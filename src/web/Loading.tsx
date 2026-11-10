@@ -6,7 +6,6 @@ import { SeasonData } from "./DriverCard.tsx";
 import { projector } from "./live/TrackMap.tsx";
 
 interface LoadingProps {
-  label?: string;
   error?: string | null;
 }
 
@@ -65,7 +64,7 @@ const HotLap = ({ lap }: { lap: Lap | undefined }) => (
   </svg>
 );
 
-const Slow = () => {
+export const Slow = () => {
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 500);
@@ -84,7 +83,7 @@ const Slow = () => {
   );
 };
 
-export const Loading = ({ label, error }: LoadingProps) => {
+export const Loading = ({ error }: LoadingProps) => {
   const { year, round } = useContext(LoadingRound);
   const season = useContext(SeasonData);
   const own = useTracks(year);
@@ -109,7 +108,9 @@ export const Loading = ({ label, error }: LoadingProps) => {
       ) : (
         <>
           <HotLap lap={shown} />
-          <p className="min-h-5">{label ?? <Slow />}</p>
+          <p className="min-h-5">
+            <Slow />
+          </p>
         </>
       )}
     </div>
