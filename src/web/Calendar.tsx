@@ -1,11 +1,18 @@
 import { ArrowLeft, Play } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
+import { useContext, useEffect, useRef, useState } from "react";
+import {
+  SESSION_MS,
+  type RaceArchive,
+  type Season,
+  type SeasonStandings,
+} from "../shared/season.ts";
 import type { SessionRef, Track } from "../shared/timing.ts";
 import { useJson, type Loaded } from "./api.ts";
 import { Circuit, useTracks } from "./Circuit.tsx";
+import { SeasonData } from "./DriverCard.tsx";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
+import { Faces } from "./Headshot.tsx";
 import { CalendarList } from "./live/CalendarList.tsx";
 import { LABEL as NAMES, roundAt } from "./live/Countdown.tsx";
 import { Replay } from "./live/CurrentSession.tsx";
@@ -17,6 +24,7 @@ import { SESSIONS, SessionResults, type Kind } from "./SessionResults.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { useBack } from "./Swipe.tsx";
 import { useHidden } from "./spoilers.ts";
+import { archiveSeason } from "./stats/derive.ts";
 import { Tabs } from "./Tabs.tsx";
 import { TeamSeason } from "./TeamCard.tsx";
 import { currentYear, YEARS, YearSelect } from "./YearSelect.tsx";
@@ -199,20 +207,37 @@ const Races = ({
   onOpen,
   onReplay,
 }: RacesProps) => {
+  const current = Number(year) === season.year;
+  const standings = useJson<SeasonStandings>(
+    current ? null : `/api/standings/${year}`,
+  );
+  const faces = useContext(Faces);
   if (archive.data?.year !== Number(year))
     return <Loading error={archive.error} />;
   const races = archive.data.races;
   if (race)
     return (
-      <RaceDetail
-        key={race.round}
-        year={year}
-        season={season}
-        races={races}
-        race={race}
-        replays={replays}
-        onReplay={onReplay}
-      />
+      <SeasonData
+        value={
+          current
+            ? season
+            : archiveSeason(
+                archive.data,
+                standings.data?.year === Number(year) ? standings.data : null,
+                faces,
+              )
+        }
+      >
+        <RaceDetail
+          key={race.round}
+          year={year}
+          season={season}
+          races={races}
+          race={race}
+          replays={replays}
+          onReplay={onReplay}
+        />
+      </SeasonData>
     );
   return races.length ? (
     <RaceList races={races} tracks={tracks} hidden={hidden} onOpen={onOpen} />
