@@ -167,7 +167,7 @@ export const Days = ({ days }: DaysProps) => (
 export const Slot = ({ name, time, next, race, card }: SlotProps) => (
   <HoverCard card={card} className="pointer-events-auto grid">
     <span
-      className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
+      className={`flex flex-col justify-between rounded-md bg-zinc-800/50 px-2 py-1 ${card ? "hover:bg-zinc-700" : ""} ${next ? "ring-1 ring-red-400 ring-inset" : ""}`}
     >
       <span className="flex items-baseline justify-between gap-1.5">
         <span className="truncate">{name}</span>

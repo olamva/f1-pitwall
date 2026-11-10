@@ -398,9 +398,14 @@ export const SessionPodium = ({
     : practiced
       ? practice.data && podium(practiceRows(practice.data, known), lap)
       : race &&
-        podium(kind === "sprint" ? race.sprint : race.results, (r) =>
-          past && kind === "race" ? gained(r, "–") : r.time || r.status,
-        );
+        podium(kind === "sprint" ? race.sprint : race.results, (r) => (
+          <>
+            {r.time || r.status}
+            <span className="ml-auto block w-[3.5ch] text-left">
+              {gained(r)}
+            </span>
+          </>
+        ));
   const rows = top?.map((e, i, all) => gap(e, all[0]!, i));
   return (rows ? rows.length < 3 : quali.error || practice.error) ? (
     <p className="py-8 text-center text-xs text-zinc-400">
