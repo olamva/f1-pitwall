@@ -13,7 +13,7 @@ const CHAMPS = ["drivers", "constructors"] as const;
 
 const CHAMPION: Record<Champ, string> = {
   drivers: "World Champion",
-  constructors: "Constructors' Champion",
+  constructors: "Constructors' Champions",
 };
 
 interface TableProps {
@@ -28,11 +28,10 @@ const Table = ({ champ, standing: { rows, title } }: TableProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase @max-2xl:hidden">
         {champ}
       </h3>
-      {crowned && (
+      {crowned && title === "clinching" && (
         <p className="mb-2 flex items-center gap-2 rounded-lg bg-amber-950 px-3 py-2 text-sm font-semibold text-amber-100">
           <Trophy aria-hidden className="text-gold size-4 shrink-0" />
-          {crowned.name} {title === "decided" ? "is" : "will be"}{" "}
-          {CHAMPION[champ]}
+          {crowned.name} will be {CHAMPION[champ]}
         </p>
       )}
       <table className="tabular w-full font-mono text-sm">

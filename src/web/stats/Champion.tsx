@@ -119,7 +119,7 @@ export const Champion = ({
   const full = me?.name ?? first.id;
   const surname = champ === "drivers" ? full.split(" ").at(-1)! : full;
   const title =
-    champ === "drivers" ? "World Champion" : "Constructors' Champion";
+    champ === "drivers" ? "World Champion" : "Constructors' Champions";
   const decider = season.rounds.find((r) => r.round === h.decider);
   const team =
     season.teams.find((t) => t.id === me?.team)?.name ?? me?.team ?? "";

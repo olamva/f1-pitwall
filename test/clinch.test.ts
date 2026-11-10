@@ -211,7 +211,23 @@ test("2026 constructors: Mercedes win in Brazil when they outscore Ferrari by 3 
   const events = [20, 21, 22, 23].map((n) => race(n, `R${n}`));
   const needs = constructorNeeds(table, events, "mercedes", "ferrari");
   assert.equal(needs.find((n) => n.rival === 18)!.need, 21);
-  assert.equal(outscoreBy(needs), 3);
+  assert.deepEqual(outscoreBy(table, events, "mercedes", "ferrari"), [
+    { id: "ferrari", by: 3 },
+  ]);
+});
+
+test("2026 constructors: Ferrari secure P2 in Las Vegas if they trail Red Bull by 8 or less and McLaren by 25 or less", () => {
+  const table = [
+    s("ferrari", 510, 2),
+    s("red_bull", 415, 3),
+    s("mclaren", 398, 3),
+    s("rb", 114, 0),
+  ];
+  const events = [21, 22, 23].map((n) => race(n, `R${n}`));
+  assert.deepEqual(outscoreBy(table, events, "ferrari", "red_bull"), [
+    { id: "red_bull", by: -8 },
+    { id: "mclaren", by: -25 },
+  ]);
 });
 
 test("a rival points cap lists the best finish pairs that stay within it", () => {
