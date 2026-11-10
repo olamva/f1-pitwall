@@ -248,12 +248,45 @@ export function constructorNeeds(
   });
 }
 
-export const outscoreBy = (needs: Need[]): number | null => {
-  const m = Math.min(
-    ...needs.flatMap((n) => (n.need === null ? [] : [n.need - n.rival])),
-  );
-  return needs.at(-1)?.need === m ? m : null;
-};
+export type Margin = { id: string; by: number };
+
+export function outscoreBy(
+  table: Standing[],
+  events: Upcoming[],
+  id: string,
+  rivalId: string,
+): Margin[] | null {
+  const [next, ...rest] = events as [Upcoming, ...Upcoming[]];
+  const scores = teamScores(next.kind);
+  const top = scores[0]!;
+  const restMax = maxGain(rest, "constructors");
+  const me = find(table, id);
+  const out: Margin[] = [];
+  for (const r of [
+    find(table, rivalId),
+    ...table.filter((r) => r.id !== id && r.id !== rivalId),
+  ]) {
+    const bar = ceiling(r, events, "constructors");
+    const need = (t: number) =>
+      scores
+        .filter((s) =>
+          ahead(
+            { ...me, points: me.points + s },
+            { ...bar, points: r.points + t + restMax },
+          ),
+        )
+        .at(-1);
+    const fits = scores.flatMap((t) => {
+      const s = need(t);
+      return s === undefined ? [] : [s - t];
+    });
+    if (!fits.length) return null;
+    const by = Math.min(...fits);
+    if (scores.some((t) => need(t) === undefined && t + by <= top)) return null;
+    if (r.id === rivalId || by > -top) out.push({ id: r.id, by });
+  }
+  return out;
+}
 
 export type Finish = { best: number; other: number | null };
 
