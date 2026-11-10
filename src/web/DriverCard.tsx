@@ -6,6 +6,7 @@ import { Shell, Snippet } from "./CardParts.tsx";
 import { BUST, Figure, Headshot, PORTRAIT } from "./Headshot.tsx";
 import { HoverCard } from "./HoverCard.tsx";
 import { ink } from "./ink.ts";
+import { Slow } from "./Loading.tsx";
 import { METALS } from "./Podium.tsx";
 import { useHidden } from "./spoilers.ts";
 import { clinched, driverTables, latest } from "./stats/derive.ts";
@@ -184,7 +185,7 @@ const CareerCard = ({ id }: { id: string }) => {
   if (!data)
     return (
       <p className="py-6 text-center text-xs text-zinc-400">
-        {error ? "Driver data is not available." : "Loading driver…"}
+        {error ? "Driver data is not available." : <Slow />}
       </p>
     );
   const last = data.seasons[0];

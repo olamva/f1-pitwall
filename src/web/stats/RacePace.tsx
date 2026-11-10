@@ -148,7 +148,7 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
                 )}
               </div>
             ) : (
-              <Loading label="Loading lap times…" error={pace.error} />
+              <Loading error={pace.error} />
             )}
           </Panel>
         )}
