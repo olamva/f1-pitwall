@@ -6,6 +6,7 @@ interface GlassSwitchProps {
   disabled?: boolean;
   onChange: (checked: boolean) => void;
   children: ReactNode;
+  className?: string;
 }
 
 export const GlassSwitch = ({
@@ -13,6 +14,7 @@ export const GlassSwitch = ({
   disabled = false,
   onChange,
   children,
+  className = "",
 }: GlassSwitchProps) => {
   const [progress, setProgress] = useState<number | null>(null);
   const [held, setHeld] = useState(false);
@@ -46,7 +48,7 @@ export const GlassSwitch = ({
 
   return (
     <label
-      className="flex cursor-pointer items-center gap-3 text-sm"
+      className={`flex cursor-pointer items-center gap-3 text-sm ${className}`}
       onClickCapture={(event) => {
         if (!suppressClick.current) return;
         event.preventDefault();

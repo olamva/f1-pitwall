@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ClipboardPaste,
   Cookie,
@@ -99,6 +99,64 @@ async function post(value: string): Promise<TokenStatus> {
   return body;
 }
 
+const SELECT =
+  "glass-control max-w-48 cursor-pointer truncate px-3 py-1.5 text-sm";
+
+interface GroupProps {
+  title: ReactNode;
+  children: ReactNode;
+}
+
+const Group = ({ title, children }: GroupProps) => (
+  <section className="space-y-2">
+    <h2 className="font-f1 flex items-center gap-1 px-1 text-base font-bold">
+      {title}
+    </h2>
+    <div className="bg-surface divide-y divide-zinc-800 rounded-xl">
+      {children}
+    </div>
+  </section>
+);
+
+interface LabelProps {
+  title: string;
+  note?: string;
+}
+
+const Label = ({ title, note }: LabelProps) => (
+  <span className="min-w-0">
+    <span className="block font-medium">{title}</span>
+    {note && <span className="block text-xs text-zinc-400">{note}</span>}
+  </span>
+);
+
+interface RowProps extends LabelProps {
+  children: ReactNode;
+}
+
+const Row = ({ title, note, children }: RowProps) => (
+  <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+    <Label title={title} note={note} />
+    {children}
+  </div>
+);
+
+interface ToggleProps extends LabelProps {
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean) => void;
+  children?: ReactNode;
+}
+
+const Toggle = ({ title, note, children, ...props }: ToggleProps) => (
+  <div className="space-y-2 px-4 py-3">
+    <GlassSwitch {...props} className="flex-row-reverse justify-between">
+      <Label title={title} note={note} />
+    </GlassSwitch>
+    {children}
+  </div>
+);
+
 interface SettingsProps {
   drivers: DriverInfo[];
   teams: Season["teams"];
@@ -156,180 +214,186 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
   const note = pushNote ?? (push && PUSH_NOTES[push]);
   const warning = status && tokenWarning(status);
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Appearance</h2>
-        <Tabs
-          items={THEMES}
-          value={theme}
-          onChange={(t) => {
-            setTheme(t);
-            localStorage.setItem("theme", t);
-            document.documentElement.dataset.theme = t;
-          }}
-          small
-        />
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Spoiler mode</h2>
-        <GlassSwitch
-          checked={spoilers}
-          onChange={(checked) => {
-            setSpoilers(checked);
-            setSpoilerMode(checked);
-          }}
-        >
-          Ask before showing new qualifying, sprint and race results
-        </GlassSwitch>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Favourite driver</h2>
-        <select
-          aria-label="Favourite driver"
-          value={favourite?.id ?? ""}
-          onChange={(e) =>
-            setFavourite(drivers.find((d) => d.id === e.target.value) ?? null)
-          }
-          className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm"
-        >
-          <option value="">None</option>
-          {drivers.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Favourite team</h2>
-        <select
-          aria-label="Favourite team"
-          value={team ?? ""}
-          onChange={(e) => setFavouriteTeam(e.target.value || null)}
-          className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm"
-        >
-          <option value="">None</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">TV delay</h2>
-        <DelayInput />
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Team radio</h2>
-        <GlassSwitch
-          checked={autoplay}
-          onChange={(checked) => {
-            setAutoplay(checked);
-            localStorage.setItem("autoplay", checked ? "1" : "0");
-          }}
-        >
-          Play new radio messages automatically
-        </GlassSwitch>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">App updates</h2>
-        <GlassSwitch
-          checked={autoupdate}
-          onChange={(checked) => {
-            setAutoupdate(checked);
-            localStorage.setItem("autoupdate", checked ? "1" : "0");
-          }}
-        >
-          Install new versions automatically
-        </GlassSwitch>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Qualifying</h2>
-        <GlassSwitch checked={projectedLap} onChange={setProjectedLap}>
-          Predict the lap time of each car on a push lap
-        </GlassSwitch>
-      </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="font-f1 text-lg font-bold">Replays</h2>
-        <GlassSwitch checked={scrubAhead} onChange={setScrubAhead}>
-          Show the order ahead of the replay point in the scrub preview
-        </GlassSwitch>
-      </section>
-      {signedOut ? (
-        <section className="bg-surface space-y-3 rounded-xl p-4">
-          <h2 className="font-f1 text-lg font-bold">Account</h2>
-          <p className="text-sm text-zinc-400">
-            Sync your settings, transcribe radio, get session reminders and add
-            an F1TV token.
-          </p>
-          <a
-            href={SIGN_IN}
-            className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
-          >
-            <LogIn aria-hidden="true" className="size-4" />
-            Sign in with Google
-          </a>
-        </section>
-      ) : status ? (
-        <>
-          <section className="bg-surface space-y-2 rounded-xl p-4">
-            <h2 className="font-f1 text-lg font-bold">Notifications</h2>
-            <GlassSwitch
+    <div className="grid items-start gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Group title="Display">
+          <Row title="Theme">
+            <Tabs
+              items={THEMES}
+              value={theme}
+              onChange={(t) => {
+                setTheme(t);
+                localStorage.setItem("theme", t);
+                document.documentElement.dataset.theme = t;
+              }}
+              small
+            />
+          </Row>
+          <Toggle
+            title="Spoiler mode"
+            note="Ask before showing new qualifying, sprint and race results"
+            checked={spoilers}
+            onChange={(checked) => {
+              setSpoilers(checked);
+              setSpoilerMode(checked);
+            }}
+          />
+        </Group>
+        <Group title="Favourites">
+          <Row title="Driver">
+            <select
+              aria-label="Favourite driver"
+              value={favourite?.id ?? ""}
+              onChange={(e) =>
+                setFavourite(
+                  drivers.find((d) => d.id === e.target.value) ?? null,
+                )
+              }
+              className={SELECT}
+            >
+              <option value="">None</option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </Row>
+          <Row title="Team">
+            <select
+              aria-label="Favourite team"
+              value={team ?? ""}
+              onChange={(e) => setFavouriteTeam(e.target.value || null)}
+              className={SELECT}
+            >
+              <option value="">None</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </Row>
+        </Group>
+        <Group title="Live timing">
+          <div className="space-y-2 px-4 py-3 text-sm">
+            <Label title="TV delay" />
+            <DelayInput />
+          </div>
+          <Toggle
+            title="Team radio"
+            note="Play new radio messages automatically"
+            checked={autoplay}
+            onChange={(checked) => {
+              setAutoplay(checked);
+              localStorage.setItem("autoplay", checked ? "1" : "0");
+            }}
+          />
+          <Toggle
+            title="Projected lap"
+            note="Predict the lap time of each car on a qualifying push lap"
+            checked={projectedLap}
+            onChange={setProjectedLap}
+          />
+          <Toggle
+            title="Order ahead in replays"
+            note="Show the order ahead of the replay point in the scrub preview"
+            checked={scrubAhead}
+            onChange={setScrubAhead}
+          />
+        </Group>
+      </div>
+      <div className="space-y-4">
+        <Group title="App">
+          {status && (
+            <Toggle
+              title="Session reminders"
+              note="Notify me 15 minutes and 5 minutes before each session"
               checked={push === "enabled"}
               disabled={push !== "enabled" && push !== "disabled"}
               onChange={togglePush}
             >
-              Notify me 15 minutes and 5 minutes before each session
-            </GlassSwitch>
-            {note && <p className="text-sm text-zinc-400">{note}</p>}
-            {push === "unsupported" && needsInstall && (
-              <GuideSheet title="Add to Home Screen" steps={INSTALL_STEPS} />
-            )}
-          </section>
-          <section className="bg-surface space-y-2 rounded-xl p-4 md:col-span-2">
-            <h2 className="font-f1 flex items-center gap-1 text-lg font-bold">
-              F1TV token
-              <InfoPopover label="What the F1TV token unlocks">
-                The token unlocks live car positions and car telemetry. The
-                track map shows the cars, and Lap compare shows live speed
-                traces.
-              </InfoPopover>
-            </h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                save(value);
-              }}
-              className="flex gap-2"
-            >
-              <input
-                aria-label="F1TV token"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder={
-                  !status || tokenProblem(status)
-                    ? "Paste the login-session cookie value"
-                    : status.sessionExpiresAt
-                      ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
-                      : "Saved"
-                }
-                className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm placeholder:text-zinc-500"
-              />
-              <button
-                disabled={!value}
-                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+              {note && <p className="text-xs text-zinc-400">{note}</p>}
+              {push === "unsupported" && needsInstall && (
+                <GuideSheet title="Add to Home Screen" steps={INSTALL_STEPS} />
+              )}
+            </Toggle>
+          )}
+          <Toggle
+            title="Automatic updates"
+            note="Install new versions automatically"
+            checked={autoupdate}
+            onChange={(checked) => {
+              setAutoupdate(checked);
+              localStorage.setItem("autoupdate", checked ? "1" : "0");
+            }}
+          />
+        </Group>
+        {signedOut ? (
+          <Group title="Account">
+            <div className="space-y-3 px-4 py-3">
+              <p className="text-sm text-zinc-400">
+                Sync your settings, transcribe radio, get session reminders and
+                add an F1TV token.
+              </p>
+              <a
+                href={SIGN_IN}
+                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
               >
-                <Save aria-hidden="true" className="size-4" />
-                Save
-              </button>
-            </form>
-            {warning && <p className="text-sm text-yellow-300">{warning}</p>}
-            {message && <p className="text-sm text-zinc-400">{message}</p>}
-            <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS} />
-          </section>
-        </>
-      ) : null}
+                <LogIn aria-hidden="true" className="size-4" />
+                Sign in with Google
+              </a>
+            </div>
+          </Group>
+        ) : status ? (
+          <Group
+            title={
+              <>
+                F1TV token
+                <InfoPopover label="What the F1TV token unlocks">
+                  The token unlocks live car positions and car telemetry. The
+                  track map shows the cars, and Lap compare shows live speed
+                  traces.
+                </InfoPopover>
+              </>
+            }
+          >
+            <div className="space-y-2 px-4 py-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  save(value);
+                }}
+                className="flex gap-2"
+              >
+                <input
+                  aria-label="F1TV token"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  placeholder={
+                    !status || tokenProblem(status)
+                      ? "Paste the login-session cookie value"
+                      : status.sessionExpiresAt
+                        ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
+                        : "Saved"
+                  }
+                  className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm placeholder:text-zinc-500"
+                />
+                <button
+                  disabled={!value}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+                >
+                  <Save aria-hidden="true" className="size-4" />
+                  Save
+                </button>
+              </form>
+              {warning && <p className="text-sm text-yellow-300">{warning}</p>}
+              {message && <p className="text-sm text-zinc-400">{message}</p>}
+              <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS} />
+            </div>
+          </Group>
+        ) : null}
+      </div>
     </div>
   );
 };
