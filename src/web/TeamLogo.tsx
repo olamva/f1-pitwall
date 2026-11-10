@@ -24,10 +24,10 @@ const WHITE = ["astonmartin", "audi", "cadillac", "mercedes"];
 export const teamKey = (team: string) =>
   SLUGS[team] ?? team.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-export const logoSrc = (team: string) => {
+export const logoSrc = (team: string, width = 200) => {
   const key = teamKey(team);
   return TEAMS.has(key)
-    ? `https://media.formula1.com/image/upload/c_scale,w_200/q_auto/common/f1/2026/${key}/2026${key}logo${WHITE.includes(key) ? "white" : ""}.webp`
+    ? `https://media.formula1.com/image/upload/c_scale,w_${width}/q_auto/common/f1/2026/${key}/2026${key}logo${WHITE.includes(key) ? "white" : ""}.webp`
     : undefined;
 };
 
