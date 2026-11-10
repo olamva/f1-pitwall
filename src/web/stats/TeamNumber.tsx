@@ -13,7 +13,8 @@ export const TeamNumber = ({
   color,
   className,
 }: TeamNumberProps) => {
-  const src = numberSrc(useArt(id)?.art);
+  const art = useArt(id);
+  const src = art?.number === number && numberSrc(art.art);
   return src ? (
     <span
       aria-hidden
