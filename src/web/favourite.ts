@@ -19,7 +19,7 @@ export const setFavouriteTeam = (team: string | null) => save("team", team);
 
 export const useFavouriteTeam = () => useSetting<string>("team");
 
-export const FAVOURITE_ROW = "bg-red-600/15";
+export const FAVOURITE_ROW = "bg-red-600/15 light:bg-zinc-800";
 
 export const useTeamRow = (style = "bg-sky-500/15") => {
   const team = useFavouriteTeam();

@@ -172,7 +172,7 @@ export const Slot = ({ name, time, next, race, card }: SlotProps) => (
       <span className="flex items-baseline justify-between gap-1.5">
         <span className="truncate">{name}</span>
         <span
-          className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+          className={`tabular text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
         >
           {time}
         </span>

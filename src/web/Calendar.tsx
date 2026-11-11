@@ -347,7 +347,7 @@ export const Calendar = ({ season, onPlaying }: CalendarProps) => {
           <button
             type="button"
             onClick={back}
-            className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-50"
+            className="-my-3 flex cursor-pointer items-center gap-1.5 py-3 pr-4 text-sm text-zinc-400 hover:text-zinc-50"
           >
             <ArrowLeft aria-hidden className="size-4" />
             All races

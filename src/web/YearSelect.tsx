@@ -14,7 +14,7 @@ export const YearSelect = ({ value, onChange }: YearSelectProps) => (
     aria-label="Season"
     value={value}
     onChange={(event) => onChange(event.target.value)}
-    className="bg-surface ml-auto rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-50"
+    className="glass-control ml-auto cursor-pointer px-3.5 py-2 text-sm"
   >
     {YEARS.map((year) => (
       <option key={year}>{year}</option>

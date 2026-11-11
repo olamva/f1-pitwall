@@ -14,7 +14,7 @@ import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
   personal: "text-emerald-400",
-  normal: "text-yellow-300",
+  normal: "text-zinc-100",
   none: "text-zinc-600",
 };
 
@@ -215,7 +215,7 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
           {row.catching && (
             <Hint
               label="Catching the car ahead"
-              className="inline-flex text-emerald-400"
+              className="inline-flex text-sky-400"
             >
               <span role="img" aria-label="Catching the car ahead">
                 <ChevronsUp size={12} strokeWidth={3} />
@@ -332,20 +332,21 @@ const TowerRow = ({
 }: TowerRowProps) => {
   const pad = fit.wide ? "px-2" : "px-1";
   const gap = row.position === 1 && race && !relative ? "Leader" : row.gap;
+  const red = tint === FAVOURITE_ROW ? "featured-row light:bg-[#c81e1e]" : "";
   return (
     <tr
       ref={bind}
       onClick={onToggle}
       className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : tint} ${row.status === "OUT" ? "opacity-40" : ""}`}
     >
-      <td className={`${pad} py-1 text-right text-zinc-400`}>
+      <td className={`${pad} py-1 text-right text-zinc-400 ${red}`}>
         {children}
         <span className="flex items-center justify-between gap-1">
           <SwapArrow swap={swap} />
           {row.position}
         </span>
       </td>
-      <td className={`${pad} py-1`}>
+      <td className={`${pad} py-1 ${red}`}>
         <span
           className={`flex w-max items-center ${fit.wide ? "gap-2" : "gap-1"}`}
         >

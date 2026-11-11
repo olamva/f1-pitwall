@@ -172,7 +172,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
       <button
         type="button"
         onClick={onBack}
-        className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-50"
+        className="-mt-3 mb-1 flex cursor-pointer items-center gap-1.5 py-3 pr-4 text-sm text-zinc-400 hover:text-zinc-50"
       >
         <ArrowLeft aria-hidden className="size-4" />
         All drivers
