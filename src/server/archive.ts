@@ -435,7 +435,11 @@ export function replay(path: string): Promise<Replay> {
 export const scrub = (r: Replay): ScrubPoint[] =>
   r.checkpoints.map(({ t, state }: { t: number; state: any }) => ({
     t,
-    status: state.TrackStatus?.Status ?? null,
+    status: r.session.periods.some(
+      (p) => p.kind === "red" && p.from <= t && t < (p.to ?? Infinity),
+    )
+      ? "5"
+      : (state.TrackStatus?.Status ?? null),
     order: Object.entries<any>(state.TimingData?.Lines ?? {})
       .filter(([n]) => state.DriverList?.[n])
       .sort(([, a], [, b]) => Number(a.Position) - Number(b.Position))

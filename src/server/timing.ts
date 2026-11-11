@@ -172,13 +172,20 @@ export class Session {
       this.traces.see(e.t, e.data as Record<string, Telemetry>, this.track);
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
-    if (e.topic === "TrackStatus") this.trackStatus(e.t);
+    if (e.topic === "TrackStatus" || e.topic === "SessionStatus")
+      this.trackStatus(e.t);
     return true;
   }
 
   private trackStatus(t: number) {
-    const kind = PERIODS[(this.state.TrackStatus as any)?.Status];
     const open = this.periods.at(-1);
+    const session = (this.state.SessionStatus as any)?.Status;
+    const halted =
+      session === "Aborted" ||
+      (session === "Inactive" && open?.kind === "red" && open.to === null);
+    const kind = halted
+      ? "red"
+      : PERIODS[(this.state.TrackStatus as any)?.Status];
     if (open?.to === null) {
       if (open.kind === kind) return;
       open.to = t;
