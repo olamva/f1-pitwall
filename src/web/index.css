@@ -112,6 +112,12 @@
   --font-f1-wide: "Formula1Wide", var(--font-sans);
   --color-surface: light-dark(#fff, #18181b);
   --color-purple: light-dark(#9333ea, #a855f7);
+  --color-sector-normal: light-dark(oklch(86% 0.14 92), oklch(80% 0.13 90));
+  --color-sector-normal-text: light-dark(
+    oklch(47% 0.11 62),
+    oklch(90.5% 0.182 98.111)
+  );
+  --color-sector-personal: light-dark(oklch(72% 0.13 163), oklch(64% 0.12 163));
   --color-gold: light-dark(#a8842c, #d4af37);
   --color-zinc-50: light-dark(oklch(14.1% 0.005 285.823), oklch(98.5% 0 none));
   --color-zinc-100: light-dark(
@@ -583,6 +589,18 @@ textarea {
   }
 }
 
+.glass-panel :is(.glass-control, .glass-gear) {
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
+}
+
+.circuit-hole {
+  mask: radial-gradient(
+    2.25rem 1.5rem at calc(100% - 2.5rem) 1.75rem,
+    transparent 60%,
+    #000 100%
+  );
+}
+
 select.glass-control {
   appearance: none;
   padding-right: 2.25rem;
@@ -1019,7 +1037,15 @@ select.glass-control {
       #b91c1c 45%,
       #7f1d1d
     );
-    animation: spotlight-on 3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation:
+      spotlight-on 3s cubic-bezier(0.22, 1, 0.36, 1) both,
+      spotlight-pulse 4s ease-in-out 3s infinite alternate;
+  }
+}
+
+@keyframes spotlight-pulse {
+  to {
+    filter: brightness(0.92);
   }
 }
 

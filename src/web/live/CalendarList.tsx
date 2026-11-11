@@ -13,6 +13,7 @@ import {
   Days,
   LastYear,
   OpenHint,
+  FEATURED_GRID,
   ScheduleWeekend,
   sessions as schedule,
   short,
@@ -210,7 +211,7 @@ const Weekend = ({
   return (
     <HoverCard card={card} className="h-full">
       <article
-        className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+        className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
       >
         {onOpen && (
           <button
@@ -220,19 +221,21 @@ const Weekend = ({
           />
         )}
         <Circuit track={track} round={round} />
-        <CardHead
-          label={
-            featured
-              ? `Current race weekend · ${dates(sessions)}`
-              : dates(sessions)
-          }
-          name={sessions[0].meeting}
-          country={sessions[0].country}
-          track={circuit}
-          featured={featured}
-          sprint={sprint}
-        />
-        {podium}
+        <div className="contents lg:flex lg:flex-col lg:gap-3">
+          <CardHead
+            label={
+              featured
+                ? `Current race weekend · ${dates(sessions)}`
+                : dates(sessions)
+            }
+            name={sessions[0].meeting}
+            country={sessions[0].country}
+            track={circuit}
+            featured={featured}
+            sprint={sprint}
+          />
+          {podium}
+        </div>
         <div
           className="pointer-events-none relative mt-auto"
           onPointerOver={() => {

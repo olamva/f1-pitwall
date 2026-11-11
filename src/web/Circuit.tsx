@@ -54,7 +54,11 @@ export const Circuit = ({ track, round }: CircuitProps) => (
     aria-hidden
     className="pointer-events-none absolute top-1 right-1 h-20 w-28 text-zinc-50"
   >
-    {track && <Shape track={track} />}
+    {track && (
+      <span className={`block size-full ${round ? "circuit-hole" : ""}`}>
+        <Shape track={track} />
+      </span>
+    )}
     {round && (
       <span className="font-f1 absolute top-4 right-5 text-2xl leading-none font-black text-zinc-700">
         {round}

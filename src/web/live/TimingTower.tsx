@@ -9,21 +9,8 @@ import { useFit, type Fit } from "./towerFit.ts";
 import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
 import { Hint } from "../Hint.tsx";
-import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
-
-const MARK: Record<Mark, string> = {
-  overall: "text-purple",
-  personal: "text-emerald-400",
-  normal: "text-zinc-100",
-  none: "text-zinc-600",
-};
-
-const BAR: Record<Mark, string> = {
-  overall: "bg-purple",
-  personal: "bg-emerald-500",
-  normal: "bg-yellow-400",
-  none: "bg-zinc-700",
-};
+import { relativeTo, type Row, type SessionBests } from "./view.ts";
+import { BAR, CHIP, MARK } from "./marks.ts";
 
 interface TimingTowerProps {
   rows: Row[];
@@ -169,7 +156,11 @@ const Sectors = ({ sectors, qualifying, wide }: SectorsProps) => (
           className={`flex flex-col gap-0.5 ${wide ? (qualifying ? "min-w-17" : "min-w-5") : "w-5 min-w-5"}`}
         >
           <span
-            className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
+            className={
+              qualifying && wide
+                ? `h-3.5 text-center text-[11px] leading-3.5 font-semibold ${CHIP[s.mark]}`
+                : `${qualifying ? "h-3.5" : "h-2"} ${BAR[s.mark]}`
+            }
           >
             {qualifying && wide && s.value}
           </span>
@@ -269,17 +260,22 @@ const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
 
 interface LapCellsProps {
   row: Row;
+  race: boolean;
   fit: Fit;
   pad: string;
   hide: string;
 }
 
-const LapCells = ({ row, fit, pad, hide }: LapCellsProps) => (
+const LapCells = ({ row, race, fit, pad, hide }: LapCellsProps) => (
   <>
     {fit.last && (
       <LapCell
         time={row.lastLap}
-        tone={MARK[row.lastMark]}
+        tone={
+          race && row.lastMark === "normal"
+            ? "text-zinc-100"
+            : MARK[row.lastMark]
+        }
         projected={row.projected}
         pad={pad}
         hide={hide}
@@ -332,27 +328,30 @@ const TowerRow = ({
 }: TowerRowProps) => {
   const pad = fit.wide ? "px-2" : "px-1";
   const gap = row.position === 1 && race && !relative ? "Leader" : row.gap;
-  const red = tint === FAVOURITE_ROW ? "featured-row light:bg-[#c81e1e]" : "";
+  const red =
+    tint === FAVOURITE_ROW
+      ? "featured-row light:-mx-1 light:rounded-sm light:bg-[#c81e1e] light:px-1"
+      : "";
   return (
     <tr
       ref={bind}
       onClick={onToggle}
       className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : tint} ${row.status === "OUT" ? "opacity-40" : ""}`}
     >
-      <td className={`${pad} py-1 text-right text-zinc-400 ${red}`}>
+      <td className={`${pad} py-1 text-right text-zinc-400`}>
         {children}
         <span className="flex items-center justify-between gap-1">
           <SwapArrow swap={swap} />
           {row.position}
         </span>
       </td>
-      <td className={`${pad} py-1 ${red}`}>
+      <td className={`${pad} py-1`}>
         <span
           className={`flex w-max items-center ${fit.wide ? "gap-2" : "gap-1"}`}
         >
           {fit.wide && <TeamLogo team={row.team} className="block h-4 w-6" />}
           <Hint label={row.name}>
-            <span className="font-semibold">{row.tla}</span>
+            <span className={`font-semibold ${red}`}>{row.tla}</span>
           </Hint>
           {lapOwner && (
             <Hint label="Fastest lap owner">
@@ -377,7 +376,7 @@ const TowerRow = ({
         )}
       </td>
       {fit.int && <Interval row={row} pad={pad} hide={hide} />}
-      <LapCells row={row} fit={fit} pad={pad} hide={hide} />
+      <LapCells row={row} race={race} fit={fit} pad={pad} hide={hide} />
       {fit.sectors && (
         <td className={`${pad} py-1`}>
           {hide && <Stints stints={row.stints} scale={scale} wide={fit.wide} />}

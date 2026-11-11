@@ -88,19 +88,15 @@ const Status = ({
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
     )}
-    {part && (
-      <span className="font-f1 rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
-        {part}
-      </span>
-    )}
+    {part && <span className="font-f1 text-2xl font-black">{part}</span>}
     {banner && (
       <div className="order-last grow basis-full sm:order-none sm:basis-60">
         {banner}
       </div>
     )}
-    <span className="tabular ml-auto font-mono text-xl">{clock}</span>
-    <div className="flex items-center justify-end gap-2 max-sm:basis-full">
-      {children}
+    <div className="ml-auto flex items-center gap-3">
+      <span className="tabular font-mono text-xl">{clock}</span>
+      <div className="flex items-center gap-2">{children}</div>
     </div>
   </div>
 );
@@ -138,8 +134,13 @@ const Heading = ({ info, focus }: HeadingProps) => {
       className={`font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre ${focus ? "max-md:hidden" : "max-md:max-w-none max-md:basis-full max-md:whitespace-normal"}`}
     >
       <Flag country={info?.Meeting?.Country?.Name} />
-      <span ref={ref}>{info?.Meeting?.Name} · </span>
-      {info?.Name}
+      <span ref={ref}>
+        {info?.Meeting?.Name}
+        <span className="max-md:hidden"> · </span>
+      </span>
+      <span className="max-md:block max-md:text-base max-md:text-zinc-400">
+        {info?.Name}
+      </span>
     </h1>
   );
 };
