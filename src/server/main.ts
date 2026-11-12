@@ -340,6 +340,8 @@ app.onError((e, c) => {
   return c.json({ error: e.message }, 500);
 });
 
+process.on("SIGTERM", () => process.exit());
+
 token
   .start()
   .catch((e) => console.error("token:", e.message))

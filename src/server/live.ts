@@ -67,11 +67,11 @@ export class Feed {
   private lag = 0;
   private connection: signalR.HubConnection | null = null;
   private listeners = new Set<Listener>();
-  private key: string | null;
+  private signed: boolean;
   private log: string | null = null;
 
-  constructor(key: string | null) {
-    this.key = key;
+  constructor(signed: boolean) {
+    this.signed = signed;
   }
 
   subscribe(fn: Listener) {
@@ -132,8 +132,8 @@ export class Feed {
   }
 
   private async connect() {
-    const bearer = this.key && token.current(this.key);
-    if (this.key && !bearer) return;
+    const bearer = this.signed ? token.valid() : null;
+    if (this.signed && !bearer) return;
     const conn = new signalR.HubConnectionBuilder()
       .withUrl(URL, {
         headers: { Cookie: await cookie() },
@@ -143,7 +143,7 @@ export class Feed {
       .build();
     conn.on("feed", (topic: string, data: Json) => {
       this.handle(topic, data);
-      if (!this.key && topic === "RaceControlMessages")
+      if (!this.signed && topic === "RaceControlMessages")
         notify(delays(this.session, data)).catch((e) =>
           console.error("delay push:", e.message),
         );
@@ -181,7 +181,7 @@ export class Feed {
 
   resume() {
     if (!DATA_DIR || process.env.NODE_ENV !== "production") return this;
-    const log = `${DATA_DIR}/live/${this.key ?? "shared"}.jsonl`;
+    const log = `${DATA_DIR}/live/${this.signed ? "f1tv" : "shared"}.jsonl`;
     mkdirSync(`${DATA_DIR}/live`, { recursive: true });
     if (existsSync(log) && !ended(log))
       for (const [t, topic, data] of read(log)) {
@@ -206,13 +206,14 @@ export class Feed {
   }
 }
 
-export const shared = new Feed(null);
-const feeds = new Map<string, Feed>();
+export const shared = new Feed(false);
+const signed = new Feed(true);
+let following = false;
 
-function follow(key: string) {
-  const f = feeds.get(key);
-  if (f) void f.reconnect();
-  else feeds.set(key, new Feed(key).start());
+function follow() {
+  if (following) return void signed.reconnect();
+  following = true;
+  signed.start();
 }
 
 export function start() {
@@ -224,12 +225,12 @@ export function start() {
     );
   if (process.env.NO_LIVE === "1") return;
   shared.start();
-  token.keys().forEach(follow);
+  if (token.keys().length) follow();
   token.onChange(follow);
 }
 
 export const feed = (key: string | null): Feed =>
-  (key && token.current(key) && feeds.get(key)) || shared;
+  key && token.current(key) && following ? signed : shared;
 
 export function isLive(): boolean {
   const { state } = shared.session;
