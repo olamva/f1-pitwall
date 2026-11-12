@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 
 export async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
-  const body = await res.json();
+  const body = await res.json().catch((e) => {
+    if (res.ok) throw e;
+  });
   if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
   return body as T;
 }
