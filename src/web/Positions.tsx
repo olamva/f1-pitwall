@@ -1,7 +1,7 @@
 import { useState, type PointerEvent } from "react";
 import type { LapPositions, RaceArchive } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
-import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
+import { chip, FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
 import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
@@ -118,7 +118,11 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
                   {row.positionText}
                 </span>
                 <TeamLogo team={row.team} className="mr-1.5 h-4 w-6" />
-                <span className="font-f1 font-bold">{row.code}</span>
+                <span
+                  className={`font-f1 font-bold ${chip(row.driver, favourite)}`}
+                >
+                  {row.code}
+                </span>
               </button>
             </li>
           ))}

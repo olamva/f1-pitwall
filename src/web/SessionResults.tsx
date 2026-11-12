@@ -11,7 +11,7 @@ import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
 import { DriverHover } from "./DriverCard.tsx";
-import { useTeamRow } from "./favourite.ts";
+import { chip, useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
@@ -137,12 +137,9 @@ const ResultsTable = <T extends Entry>({
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody className="*:relative *:isolate *:border-t *:border-zinc-800">
         {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
-          <tr
-            key={`${row.driver}:${index}`}
-            className={`relative isolate border-t border-zinc-800 ${row.driver === favourite ? "featured-row" : ""}`}
-          >
+          <tr key={`${row.driver}:${index}`}>
             <td className="py-2 font-semibold">
               {CODES[row.positionText] ?? row.positionText}
             </td>
@@ -152,12 +149,14 @@ const ResultsTable = <T extends Entry>({
                   type="button"
                   onClick={() => openDriver(row.driver)}
                   disabled={!row.driver}
-                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
+                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "before:bg-zinc-800" : teamRow(row.team)}`}
                 >
                   <TeamHover id={row.team} className={BADGE}>
                     <TeamLogo team={row.team} className="block h-4 w-6" />
                   </TeamHover>
-                  {row.name}
+                  <span className={chip(row.driver, favourite)}>
+                    {row.name}
+                  </span>
                 </button>
               </DriverHover>
             </td>

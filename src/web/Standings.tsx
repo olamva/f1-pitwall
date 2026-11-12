@@ -156,7 +156,7 @@ const Cards = ({
               style={{
                 backgroundImage: big
                   ? `linear-gradient(135deg, ${color}, ${color}66 45%, #09090b 90%)`
-                  : `linear-gradient(135deg, light-dark(var(--color-zinc-950), ${color}40), transparent 65%)`,
+                  : "linear-gradient(135deg, var(--color-zinc-950), transparent 65%)",
               }}
             >
               {team ? (

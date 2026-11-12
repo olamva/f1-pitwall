@@ -1047,25 +1047,28 @@ select.glass-control {
   }
 }
 
+@utility featured-row {
+  color: #fff;
+  --color-zinc-50: #fff;
+  --color-zinc-100: #fff;
+  --color-zinc-300: rgb(255 255 255 / 0.95);
+  --color-zinc-400: rgb(255 255 255 / 0.9);
+  --color-zinc-500: rgb(255 255 255 / 0.85);
+  --color-zinc-600: rgb(255 255 255 / 0.7);
+  --color-zinc-700: rgb(255 255 255 / 0.3);
+  --color-zinc-800: rgb(255 255 255 / 0.18);
+  --color-red-400: rgb(255 255 255 / 0.85);
+  --color-red-600: rgb(255 255 255 / 0.3);
+}
+
 .featured,
-.featured-row,
 section:has(> .spotlight),
 :root[data-tab="Countdown"]:has(.spotlight) header nav,
 :root[data-tab="Countdown"]:has(.spotlight) header > button,
 :root[data-champion] main .glass-tabs,
 :root[data-champion] header > button {
   @variant light {
-    color: #fff;
-    --color-zinc-50: #fff;
-    --color-zinc-100: #fff;
-    --color-zinc-300: rgb(255 255 255 / 0.95);
-    --color-zinc-400: rgb(255 255 255 / 0.9);
-    --color-zinc-500: rgb(255 255 255 / 0.85);
-    --color-zinc-600: rgb(255 255 255 / 0.7);
-    --color-zinc-700: rgb(255 255 255 / 0.3);
-    --color-zinc-800: rgb(255 255 255 / 0.18);
-    --color-red-400: rgb(255 255 255 / 0.85);
-    --color-red-600: rgb(255 255 255 / 0.3);
+    @apply featured-row;
   }
 }
 
