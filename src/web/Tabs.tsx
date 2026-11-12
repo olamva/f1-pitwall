@@ -196,7 +196,15 @@ export const Tabs = <T extends string>({
           />
         )}
         <span
-          className={iconOnly ? "sr-only" : Icon ? "max-sm:sr-only" : undefined}
+          className={
+            iconOnly
+              ? "sr-only"
+              : Icon && !(small && value === i)
+                ? "max-sm:sr-only"
+                : Icon
+                  ? "whitespace-nowrap max-sm:ml-1.5"
+                  : undefined
+          }
         >
           {labels?.[i] ?? i}
         </span>

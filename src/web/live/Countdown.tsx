@@ -133,7 +133,7 @@ const Facts = ({ circuit, year, session }: FactsProps) => {
   return (
     <span
       onAnimationIteration={() => setIndex((i) => i + 1)}
-      className={`absolute inset-x-4 bottom-[calc(21px+62px+12px)] text-sm text-zinc-400 sm:bottom-6 xl:text-[1vw] ${facts.length > 1 ? "animate-fact" : ""}`}
+      className={`absolute inset-x-4 bottom-[calc(21px+62px+12px)] text-sm text-zinc-400 sm:bottom-6 xl:text-[1vw] ${facts.length > 1 ? "motion-safe:animate-fact" : ""}`}
     >
       {fact.text}
     </span>

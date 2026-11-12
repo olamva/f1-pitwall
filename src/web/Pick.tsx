@@ -12,7 +12,7 @@ export const Pick = ({ label, value, ids, who, onChange }: PickProps) => (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full cursor-pointer truncate rounded-md bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100 ring-1 ring-zinc-700 focus:ring-zinc-400 focus:outline-none"
+      className="glass-control w-full cursor-pointer truncate px-3 py-1.5 text-sm"
     >
       {ids.map((id) => (
         <option key={id} value={id}>

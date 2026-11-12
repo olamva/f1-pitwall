@@ -9,21 +9,8 @@ import { useFit, type Fit } from "./towerFit.ts";
 import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
 import { Hint } from "../Hint.tsx";
-import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
-
-const MARK: Record<Mark, string> = {
-  overall: "text-purple",
-  personal: "text-emerald-400",
-  normal: "text-yellow-300",
-  none: "text-zinc-600",
-};
-
-const BAR: Record<Mark, string> = {
-  overall: "bg-purple",
-  personal: "bg-emerald-500",
-  normal: "bg-yellow-400",
-  none: "bg-zinc-700",
-};
+import { relativeTo, type Row, type SessionBests } from "./view.ts";
+import { BAR, MARK } from "./marks.ts";
 
 interface TimingTowerProps {
   rows: Row[];
@@ -215,7 +202,7 @@ const Interval = ({ row, pad, hide }: IntervalProps) => (
           {row.catching && (
             <Hint
               label="Catching the car ahead"
-              className="inline-flex text-emerald-400"
+              className="inline-flex text-sky-400"
             >
               <span role="img" aria-label="Catching the car ahead">
                 <ChevronsUp size={12} strokeWidth={3} />
@@ -269,17 +256,22 @@ const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
 
 interface LapCellsProps {
   row: Row;
+  race: boolean;
   fit: Fit;
   pad: string;
   hide: string;
 }
 
-const LapCells = ({ row, fit, pad, hide }: LapCellsProps) => (
+const LapCells = ({ row, race, fit, pad, hide }: LapCellsProps) => (
   <>
     {fit.last && (
       <LapCell
         time={row.lastLap}
-        tone={MARK[row.lastMark]}
+        tone={
+          race && row.lastMark === "normal"
+            ? "text-zinc-100"
+            : MARK[row.lastMark]
+        }
         projected={row.projected}
         pad={pad}
         hide={hide}
@@ -332,6 +324,10 @@ const TowerRow = ({
 }: TowerRowProps) => {
   const pad = fit.wide ? "px-2" : "px-1";
   const gap = row.position === 1 && race && !relative ? "Leader" : row.gap;
+  const red =
+    tint === FAVOURITE_ROW
+      ? "featured-row light:-mx-1 light:rounded-sm light:bg-[#c81e1e] light:px-1"
+      : "";
   return (
     <tr
       ref={bind}
@@ -351,7 +347,7 @@ const TowerRow = ({
         >
           {fit.wide && <TeamLogo team={row.team} className="block h-4 w-6" />}
           <Hint label={row.name}>
-            <span className="font-semibold">{row.tla}</span>
+            <span className={`font-semibold ${red}`}>{row.tla}</span>
           </Hint>
           {lapOwner && (
             <Hint label="Fastest lap owner">
@@ -376,7 +372,7 @@ const TowerRow = ({
         )}
       </td>
       {fit.int && <Interval row={row} pad={pad} hide={hide} />}
-      <LapCells row={row} fit={fit} pad={pad} hide={hide} />
+      <LapCells row={row} race={race} fit={fit} pad={pad} hide={hide} />
       {fit.sectors && (
         <td className={`${pad} py-1`}>
           {hide && <Stints stints={row.stints} scale={scale} wide={fit.wide} />}

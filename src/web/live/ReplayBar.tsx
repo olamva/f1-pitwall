@@ -152,7 +152,7 @@ export const ReplayBar = ({
   return (
     <div
       ref={bar}
-      className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
+      className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[1.75rem] p-2 text-sm"
     >
       <Hint label={playing ? "Pause" : "Play"} className="max-sm:order-first">
         <button

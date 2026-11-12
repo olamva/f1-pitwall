@@ -140,6 +140,9 @@ export const CardHead = ({
   </header>
 );
 
+export const FEATURED_GRID =
+  "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,40rem)] lg:items-end lg:gap-x-10 lg:pr-36 [&>p:last-child]:col-span-full";
+
 export const OpenHint = () => (
   <p
     aria-hidden
@@ -172,7 +175,7 @@ export const Slot = ({ name, time, next, race, card }: SlotProps) => (
       <span className="flex items-baseline justify-between gap-1.5">
         <span className="truncate">{name}</span>
         <span
-          className={`tabular font-mono text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
+          className={`tabular text-xs ${next ? "text-red-400" : "text-zinc-400"}`}
         >
           {time}
         </span>
@@ -252,7 +255,7 @@ export const ScheduleWeekend = ({
   const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
   return (
     <article
-      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+      className={`relative isolate flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
     >
       <Circuit track={track} round={round.round} />
       <CardHead

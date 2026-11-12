@@ -57,9 +57,10 @@ interface StatusProps {
   ref: React.Ref<HTMLDivElement>;
   heading: React.ReactNode;
   lap?: { CurrentLap: number; TotalLaps: number };
-  part: string | null;
+  part: React.ReactNode;
   banner: React.ReactNode;
   clock: string;
+  editing: boolean;
   onLap: (lap: number) => void;
   children: React.ReactNode;
 }
@@ -71,6 +72,7 @@ const Status = ({
   part,
   banner,
   clock,
+  editing,
   onLap,
   children,
 }: StatusProps) => (
@@ -88,29 +90,36 @@ const Status = ({
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
     )}
-    {part && (
-      <span className="font-f1 rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
-        {part}
-      </span>
-    )}
+    {part}
     {banner && (
       <div className="order-last grow basis-full sm:order-none sm:basis-60">
         {banner}
       </div>
     )}
-    <span className="tabular ml-auto font-mono text-xl">{clock}</span>
-    <div className="flex items-center justify-end gap-2 max-sm:basis-full">
-      {children}
+    <div
+      className={`ml-auto flex items-center gap-3 ${lap ? "max-sm:contents" : ""}`}
+    >
+      <span
+        className={`tabular ml-auto font-mono text-xl ${editing && !lap ? "max-sm:hidden" : ""}`}
+      >
+        {clock}
+      </span>
+      <div
+        className={`flex items-center gap-2 ${lap ? "max-sm:basis-full max-sm:justify-end" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   </div>
 );
 
 interface HeadingProps {
   info: Record<string, any> | undefined;
+  part: string | null;
   focus: boolean;
 }
 
-const Heading = ({ info, focus }: HeadingProps) => {
+const Heading = ({ info, part, focus }: HeadingProps) => {
   const ref = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     const name = ref.current!;
@@ -138,8 +147,14 @@ const Heading = ({ info, focus }: HeadingProps) => {
       className={`font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre ${focus ? "max-md:hidden" : "max-md:max-w-none max-md:basis-full max-md:whitespace-normal"}`}
     >
       <Flag country={info?.Meeting?.Country?.Name} />
-      <span ref={ref}>{info?.Meeting?.Name} · </span>
-      {info?.Name}
+      <span ref={ref}>
+        {info?.Meeting?.Name}
+        <span className="max-md:hidden"> · </span>
+      </span>
+      <span className="max-md:block max-md:text-base max-md:text-zinc-400">
+        {info?.Name}
+        {part && ` ${part}`}
+      </span>
     </h1>
   );
 };
@@ -237,11 +252,17 @@ export const Board = ({
     >
       <Status
         ref={row}
-        heading={<Heading info={state.SessionInfo} focus={focus} />}
+        heading={<Heading info={state.SessionInfo} part={part} focus={focus} />}
         lap={state.LapCount}
-        part={part}
+        part={
+          focus &&
+          part && (
+            <span className="font-f1 text-xl font-bold md:hidden">{part}</span>
+          )
+        }
         banner={banner}
         clock={remaining(state, utc)}
+        editing={editing}
         onLap={onLap}
       >
         <Hint

@@ -11,7 +11,7 @@ interface SessionBestProps {
 
 export const SessionBest = ({ bests, wide }: SessionBestProps) => (
   <>
-    <span className="font-f1 tracking-wider text-zinc-500 uppercase">
+    <span className="font-f1 tracking-wider text-zinc-500 uppercase max-sm:hidden">
       Session best
     </span>
     <div
