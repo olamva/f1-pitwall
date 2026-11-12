@@ -1,9 +1,11 @@
 import * as signalR from "@microsoft/signalr";
 import {
   appendFileSync,
+  closeSync,
   existsSync,
   mkdirSync,
-  statSync,
+  openSync,
+  readSync,
   writeFileSync,
 } from "node:fs";
 import type { Json } from "../shared/merge.ts";
@@ -35,6 +37,19 @@ const RETAIN_MS = 2 * 60 * 60_000;
 const MAX_LAG_MS = 60_000;
 
 type Listener = (reset: boolean) => void;
+
+function ended(log: string): boolean {
+  const head = Buffer.alloc(65_536);
+  const fd = openSync(log, "r");
+  const line = head.toString("utf8", 0, readSync(fd, head)).split("\n", 1)[0];
+  closeSync(fd);
+  try {
+    const info = (JSON.parse(line!) as Line)[2] as Record<string, unknown>;
+    return !(Date.now() <= at(info.EndDate, info.GmtOffset) + RETAIN_MS);
+  } catch {
+    return true;
+  }
+}
 
 async function cookie(): Promise<string> {
   const r = await fetch(`${URL}/negotiate`, { method: "OPTIONS" });
@@ -168,7 +183,7 @@ export class Feed {
     if (!DATA_DIR || process.env.NODE_ENV !== "production") return this;
     const log = `${DATA_DIR}/live/${this.key ?? "shared"}.jsonl`;
     mkdirSync(`${DATA_DIR}/live`, { recursive: true });
-    if (existsSync(log) && Date.now() - statSync(log).mtimeMs < RETAIN_MS)
+    if (existsSync(log) && !ended(log))
       for (const [t, topic, data] of read(log)) {
         this.handle(topic, data, t);
         this.flush();
