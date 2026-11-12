@@ -23,6 +23,9 @@ export const FAVOURITE_ROW = "bg-zinc-800";
 
 export const FAVOURITE_CODE = "featured-row -mx-1 rounded-sm bg-[#c81e1e] px-1";
 
+export const chip = (id?: string, favourite?: string) =>
+  favourite && id === favourite ? FAVOURITE_CODE : "";
+
 export const useTeamRow = (style = "bg-sky-500/15") => {
   const team = useFavouriteTeam();
   return (id: string) => (team && teamKey(id) === teamKey(team) ? style : "");

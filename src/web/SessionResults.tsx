@@ -11,7 +11,7 @@ import { teamColor } from "../shared/teams.ts";
 import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
 import { DriverHover } from "./DriverCard.tsx";
-import { FAVOURITE_CODE, useTeamRow } from "./favourite.ts";
+import { chip, useTeamRow } from "./favourite.ts";
 import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
@@ -157,9 +157,7 @@ const ResultsTable = <T extends Entry>({
                   <TeamHover id={row.team} className={BADGE}>
                     <TeamLogo team={row.team} className="block h-4 w-6" />
                   </TeamHover>
-                  <span
-                    className={row.driver === favourite ? FAVOURITE_CODE : ""}
-                  >
+                  <span className={chip(row.driver, favourite)}>
                     {row.name}
                   </span>
                 </button>
