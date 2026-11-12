@@ -211,7 +211,7 @@ const Weekend = ({
   return (
     <HoverCard card={card} className="h-full">
       <article
-        className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
+        className={`relative isolate flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
       >
         {onOpen && (
           <button
@@ -220,7 +220,7 @@ const Weekend = ({
             className={`peer absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5 ${calm ? "pointer-events-none" : ""}`}
           />
         )}
-        <Circuit track={track} round={round} />
+        <Circuit track={track} round={round} large={!!podium} />
         <div className="contents lg:flex lg:flex-col lg:gap-3">
           <CardHead
             label={

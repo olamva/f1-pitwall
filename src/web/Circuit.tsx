@@ -30,6 +30,7 @@ export const useTracks = (year: string): Tracks | undefined => {
 interface CircuitProps {
   track: Track | undefined;
   round: number | undefined;
+  large?: boolean;
 }
 
 const Shape = ({ track }: { track: Track }) => {
@@ -53,10 +54,10 @@ const Shape = ({ track }: { track: Track }) => {
   );
 };
 
-export const Circuit = ({ track, round }: CircuitProps) => (
+export const Circuit = ({ track, round, large }: CircuitProps) => (
   <span
     aria-hidden
-    className="pointer-events-none absolute top-3.5 right-4 flex h-[4.75rem] w-28 flex-col items-end gap-1.5 text-zinc-50"
+    className={`pointer-events-none absolute top-3.5 right-4 -z-10 flex flex-col items-end gap-1.5 text-zinc-50 ${large ? "h-[7.5rem] w-36" : "h-[4.75rem] w-28"}`}
   >
     {round && (
       <span className="font-f1 text-xl leading-none font-black text-zinc-700">

@@ -255,7 +255,7 @@ export const ScheduleWeekend = ({
   const next = featured ? all.find((s) => +s.at > Date.now()) : undefined;
   return (
     <article
-      className={`relative flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
+      className={`relative isolate flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
     >
       <Circuit track={track} round={round.round} />
       <CardHead
