@@ -1,5 +1,5 @@
 import type { RaceArchive, Stint, Stints } from "../shared/season.ts";
-import { FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
+import { FAVOURITE_CODE, FAVOURITE_ROW, useTeamRow } from "./favourite.ts";
 import { Hint } from "./Hint.tsx";
 import { TeamHover } from "./TeamCard.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
@@ -101,7 +101,11 @@ export const Strategy = ({ rows, stints, favourite }: StrategyProps) => {
               <TeamHover id={result.team} className="mr-1.5">
                 <TeamLogo team={result.team} className="block h-4 w-6" />
               </TeamHover>
-              {result.code}
+              <span
+                className={result.driver === favourite ? FAVOURITE_CODE : ""}
+              >
+                {result.code}
+              </span>
             </span>
             <Line stints={stints[result.number] ?? []} at={at} />
           </li>

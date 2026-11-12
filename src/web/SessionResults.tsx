@@ -152,7 +152,7 @@ const ResultsTable = <T extends Entry>({
                   type="button"
                   onClick={() => openDriver(row.driver)}
                   disabled={!row.driver}
-                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "light:before:from-[#e10600] light:before:via-[#b91c1c] light:before:to-[#7f1d1d] before:bg-gradient-to-r before:from-red-700/40 before:to-transparent" : teamRow(row.team)}`}
+                  className={`cursor-pointer text-left before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 after:absolute after:inset-0 hover:before:bg-zinc-800/50 disabled:cursor-default sm:before:-inset-x-4 ${row.driver === favourite ? "before:bg-gradient-to-r before:from-[#c81e1e] before:via-[#a51b1b] before:to-[#7f1d1d]" : teamRow(row.team)}`}
                 >
                   <TeamHover id={row.team} className={BADGE}>
                     <TeamLogo team={row.team} className="block h-4 w-6" />

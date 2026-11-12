@@ -1,6 +1,11 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { FAVOURITE_ROW, useFavourite, useTeamRow } from "../favourite.ts";
+import {
+  FAVOURITE_CODE,
+  FAVOURITE_ROW,
+  useFavourite,
+  useTeamRow,
+} from "../favourite.ts";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
@@ -324,10 +329,7 @@ const TowerRow = ({
 }: TowerRowProps) => {
   const pad = fit.wide ? "px-2" : "px-1";
   const gap = row.position === 1 && race && !relative ? "Leader" : row.gap;
-  const red =
-    tint === FAVOURITE_ROW
-      ? "featured-row light:-mx-1 light:rounded-sm light:bg-[#c81e1e] light:px-1"
-      : "";
+  const red = tint === FAVOURITE_ROW ? FAVOURITE_CODE : "";
   return (
     <tr
       ref={bind}
