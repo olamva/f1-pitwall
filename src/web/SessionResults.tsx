@@ -137,12 +137,9 @@ const ResultsTable = <T extends Entry>({
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody className="*:relative *:isolate *:border-t *:border-zinc-800">
         {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
-          <tr
-            key={`${row.driver}:${index}`}
-            className="relative isolate border-t border-zinc-800"
-          >
+          <tr key={`${row.driver}:${index}`}>
             <td className="py-2 font-semibold">
               {CODES[row.positionText] ?? row.positionText}
             </td>
