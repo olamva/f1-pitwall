@@ -1,5 +1,11 @@
 import * as signalR from "@microsoft/signalr";
-import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
 import { DATA_DIR } from "./data.ts";
@@ -162,7 +168,7 @@ export class Feed {
     if (!DATA_DIR || process.env.NODE_ENV !== "production") return this;
     const log = `${DATA_DIR}/live/${this.key ?? "shared"}.jsonl`;
     mkdirSync(`${DATA_DIR}/live`, { recursive: true });
-    if (existsSync(log))
+    if (existsSync(log) && Date.now() - statSync(log).mtimeMs < RETAIN_MS)
       for (const [t, topic, data] of read(log)) {
         this.handle(topic, data, t);
         this.flush();
