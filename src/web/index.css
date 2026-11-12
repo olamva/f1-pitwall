@@ -112,12 +112,11 @@
   --font-f1-wide: "Formula1Wide", var(--font-sans);
   --color-surface: light-dark(#fff, #18181b);
   --color-purple: light-dark(#9333ea, #a855f7);
-  --color-sector-normal: light-dark(oklch(86% 0.14 92), oklch(80% 0.13 90));
-  --color-sector-normal-text: light-dark(
-    oklch(47% 0.11 62),
-    oklch(90.5% 0.182 98.111)
-  );
-  --color-sector-personal: light-dark(oklch(72% 0.13 163), oklch(64% 0.12 163));
+  --color-tyre-soft: #da291c;
+  --color-tyre-medium: #ffd12e;
+  --color-tyre-hard: #f0f0ec;
+  --color-tyre-inter: #43b02a;
+  --color-tyre-wet: #0067ad;
   --color-gold: light-dark(#a8842c, #d4af37);
   --color-zinc-50: light-dark(oklch(14.1% 0.005 285.823), oklch(98.5% 0 none));
   --color-zinc-100: light-dark(
@@ -175,7 +174,7 @@
     oklch(27.9% 0.077 45.635)
   );
   --color-yellow-300: light-dark(
-    oklch(55.4% 0.135 66.442),
+    oklch(68.1% 0.162 75.834),
     oklch(90.5% 0.182 98.111)
   );
   --color-emerald-300: light-dark(
@@ -183,7 +182,7 @@
     oklch(84.5% 0.143 164.978)
   );
   --color-emerald-400: light-dark(
-    oklch(50.8% 0.118 165.612),
+    oklch(59.6% 0.145 163.225),
     oklch(76.5% 0.177 163.223)
   );
   --color-emerald-950: light-dark(
@@ -593,14 +592,6 @@ textarea {
   box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
 }
 
-.circuit-hole {
-  mask: radial-gradient(
-    2.25rem 1.5rem at calc(100% - 2.5rem) 1.75rem,
-    transparent 60%,
-    #000 100%
-  );
-}
-
 select.glass-control {
   appearance: none;
   padding-right: 2.25rem;
@@ -895,60 +886,8 @@ select.glass-control {
   }
 }
 
-.tab-bar {
-  @variant max-sm {
-    & > .glass-tabs::before {
-      background: light-dark(rgb(255 255 255 / 0.85), rgb(39 39 42 / 0.85));
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: -2.5rem -21px -21px;
-      z-index: -1;
-      background: linear-gradient(transparent, var(--color-zinc-950) 2.5rem);
-      pointer-events: none;
-    }
-
-    :root[data-tab="Countdown"]:has(.spotlight) &::before {
-      display: none;
-    }
-
-    :root[data-champion][data-top] & {
-      &::before {
-        background: linear-gradient(
-          transparent,
-          color-mix(in oklab, var(--champion) 18%, #09090b) 2.5rem
-        );
-      }
-
-      & > .glass-tabs::before {
-        border-color: rgb(255 255 255 / 0.3);
-        background: rgb(255 255 255 / 0.12);
-      }
-
-      .glass-edge:not(.glass-split) {
-        fill: rgb(255 255 255 / 0.12);
-        stroke: rgb(255 255 255 / 0.3);
-      }
-
-      .glass-lens {
-        color: #fff;
-      }
-
-      .glass-tab {
-        color: rgb(255 255 255 / 0.6);
-      }
-
-      .glass-highlight::after {
-        background: rgb(255 255 255 / 0.22);
-        box-shadow: none;
-      }
-    }
-  }
-}
-
-:root[data-champion] main .glass-tabs {
+:root[data-champion] main .glass-tabs,
+:root[data-champion][data-top] .tab-bar .glass-tabs {
   .glass-lens {
     color: #fff;
   }

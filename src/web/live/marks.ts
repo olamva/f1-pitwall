@@ -9,14 +9,7 @@ export const MARK: Record<Mark, string> = {
 
 export const BAR: Record<Mark, string> = {
   overall: "bg-purple",
-  personal: "bg-sector-personal",
-  normal: "bg-sector-normal",
+  personal: "bg-emerald-500",
+  normal: "bg-yellow-400",
   none: "bg-zinc-700",
-};
-
-export const CHIP: Record<Mark, string> = {
-  overall: "bg-purple text-white",
-  personal: "bg-sector-personal text-black",
-  normal: "bg-zinc-800 text-sector-normal-text ring-1 ring-zinc-700 ring-inset",
-  none: "bg-zinc-800 text-zinc-50 ring-1 ring-zinc-700 ring-inset",
 };

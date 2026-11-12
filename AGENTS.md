@@ -71,5 +71,6 @@ Get explicit visual approval for a noticeable change to layout, navigation, typo
 An isolated correction that keeps the existing design is minor and needs no approval. Ask when the classification is unclear.
 Capture screenshots with `pnpm shot`, and follow `.claude/skills/screenshots/SKILL.md`. Do not use the T3 preview tools for screenshots.
 Show the before and after screenshots and ask for approval after the change is complete.
+Put the before and after screenshots in one image with `pnpm shot:compare`. Also show an after image that marks each change with a box, an arrow and a label.
 Ship with `--hold` until the user approves. Then run `gh pr merge <pr-number> --auto --merge`.
 Treat a missing approval as a blocker. Ask again if a later change alters the approved appearance.

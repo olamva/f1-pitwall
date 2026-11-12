@@ -96,6 +96,18 @@ pnpm shot:publish <pr-number> ~/.t3/userdata/attachments/<branch>/*.png
 ## Visual review
 
 - Capture the changed UI with `--before origin/main`. Show the before and after images to the user.
+- Show each pair as one image, and mark each change on the after image:
+
+```sh
+pnpm shot:compare race-before-light.png race-after-light.png \
+  --note "440,510,390,90 Focus and Customize sit next to the clock" \
+  --note "118,1262,70,40 The favourite is a red chip"
+```
+
+- The command writes `race-compare.png` (before and after side by side) and `race-annotated.png` (the after image with a box, an arrow and a numbered label for each `--note`).
+- A `--note` box uses image pixels: `x,y,w,h`. Add `L` or `R` after `h` to put the label on that side, for example when two arrows meet. A `pnpm shot` image has 2 pixels for each CSS pixel. When the Read tool scales an image down, multiply by the factor that it prints.
+- Look at the annotated image before you show it. Each box must surround only the changed element.
+- Show the compare image, then the annotated image, for each screen.
 - Embed images only from `~/.t3/userdata/attachments`. T3 does not show images from `/tmp`.
 - To match a reference image, crop it at 6 to 8 times zoom. Put your result next to it at the same zoom before you claim a match.
 

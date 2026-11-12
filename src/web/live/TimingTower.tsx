@@ -10,7 +10,7 @@ import { Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { BestRow } from "./BestRow.tsx";
 import { Hint } from "../Hint.tsx";
 import { relativeTo, type Row, type SessionBests } from "./view.ts";
-import { BAR, CHIP, MARK } from "./marks.ts";
+import { BAR, MARK } from "./marks.ts";
 
 interface TimingTowerProps {
   rows: Row[];
@@ -156,11 +156,7 @@ const Sectors = ({ sectors, qualifying, wide }: SectorsProps) => (
           className={`flex flex-col gap-0.5 ${wide ? (qualifying ? "min-w-17" : "min-w-5") : "w-5 min-w-5"}`}
         >
           <span
-            className={
-              qualifying && wide
-                ? `h-3.5 text-center text-[11px] leading-3.5 font-semibold ${CHIP[s.mark]}`
-                : `${qualifying ? "h-3.5" : "h-2"} ${BAR[s.mark]}`
-            }
+            className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
           >
             {qualifying && wide && s.value}
           </span>

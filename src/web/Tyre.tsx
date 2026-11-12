@@ -1,9 +1,9 @@
 const TYRE: Record<string, string> = {
-  SOFT: "text-red-500 border-red-500",
-  MEDIUM: "text-yellow-300 border-yellow-300",
-  HARD: "text-zinc-100 border-zinc-100",
-  INTERMEDIATE: "text-emerald-400 border-emerald-400",
-  WET: "text-sky-400 border-sky-400",
+  SOFT: "text-tyre-soft border-tyre-soft",
+  MEDIUM: "text-tyre-medium border-tyre-medium",
+  HARD: "text-tyre-hard border-tyre-hard light:drop-shadow-[0_0_1px_rgb(0_0_0/0.6)]",
+  INTERMEDIATE: "text-tyre-inter border-tyre-inter",
+  WET: "text-tyre-wet border-tyre-wet",
 };
 
 export const tyreColor = (compound: string) =>
@@ -18,6 +18,6 @@ export const Compound = ({ compound, className = "" }: CompoundProps) => (
   <span
     className={`grid size-5 place-items-center rounded-full border-2 text-[10px] font-bold ${tyreColor(compound)} ${className}`}
   >
-    {compound[0]}
+    <span className="text-zinc-50">{compound[0]}</span>
   </span>
 );

@@ -60,6 +60,7 @@ interface StatusProps {
   part: string | null;
   banner: React.ReactNode;
   clock: string;
+  editing: boolean;
   onLap: (lap: number) => void;
   children: React.ReactNode;
 }
@@ -71,6 +72,7 @@ const Status = ({
   part,
   banner,
   clock,
+  editing,
   onLap,
   children,
 }: StatusProps) => (
@@ -94,9 +96,15 @@ const Status = ({
         {banner}
       </div>
     )}
-    <div className="ml-auto flex items-center gap-3">
-      <span className="tabular font-mono text-xl">{clock}</span>
-      <div className="flex items-center gap-2">{children}</div>
+    <div
+      className={`ml-auto flex items-center gap-3 ${editing ? "max-sm:contents" : ""}`}
+    >
+      <span className="tabular ml-auto font-mono text-xl">{clock}</span>
+      <div
+        className={`flex items-center gap-2 ${editing ? "max-sm:basis-full max-sm:justify-end" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   </div>
 );
@@ -243,6 +251,7 @@ export const Board = ({
         part={part}
         banner={banner}
         clock={remaining(state, utc)}
+        editing={editing}
         onLap={onLap}
       >
         <Hint
