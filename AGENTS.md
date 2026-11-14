@@ -41,7 +41,8 @@ Do not merge a stack of pull requests. Do not force-push, bypass branch protecti
 When T3 reports that the checks passed, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply`, then call `unwatch_pull_request`.
 The cleanup waits for auto-merge, verifies the merged PR, detaches the checkout, and deletes the local branches.
 Do not wait for deployment.
-Do not file a papercut after the merge, because the merged branch cannot bring it to `main`. Report that friction in the final response.
+File each papercut before your last `pnpm ship`. A later papercut cannot get to `main`, and it blocks the cleanup. Report that friction in the final response.
+If a task ends without a pull request, and `git status --porcelain` and `git log origin/main..HEAD` show nothing, run `git switch --detach` and then `git branch -d <branch>` in the task worktree.
 Report cleanup only when it failed or is blocked.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
 Create each temporary checkout with `git worktree add --detach` under `/tmp`. Remove it with `git worktree remove` after you check it for local files.
