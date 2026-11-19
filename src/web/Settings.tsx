@@ -57,14 +57,17 @@ const INSTALL_STEPS = [
 const TOKEN_STEPS = [
   [
     LogIn,
-    <a
-      href={LOGIN}
-      target="_blank"
-      rel="noreferrer"
-      className="font-semibold text-red-400 underline"
-    >
-      Log in to F1TV.
-    </a>,
+    <>
+      <a
+        href={LOGIN}
+        target="_blank"
+        rel="noreferrer"
+        className="font-semibold text-red-400 underline"
+      >
+        Log in to F1TV
+      </a>
+      .
+    </>,
   ],
   [
     SquareTerminal,
@@ -81,7 +84,7 @@ const TOKEN_STEPS = [
 
 const TOKEN_WARNINGS = {
   missing: "You have no F1TV token. The track map shows no cars.",
-  expired: "Your F1TV token is expired. Log in again and save a new token.",
+  expired: "Your F1TV token has expired. Log in again and save a new token.",
 };
 
 const tokenWarning = (s: TokenStatus) => {
@@ -379,7 +382,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
                     !status || tokenProblem(status)
                       ? "Paste the login-session cookie value"
                       : status.sessionExpiresAt
-                        ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
+                        ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString([])}`
                         : "Saved"
                   }
                   className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm placeholder:text-zinc-500"

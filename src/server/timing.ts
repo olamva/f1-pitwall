@@ -303,8 +303,13 @@ export function delays(session: Session, data: Json): Message[] {
       return [];
     return [
       {
-        title: `${info.Meeting?.Name} · ${info.Name}`,
-        body: "Start delayed.",
+        title:
+          [info.Meeting?.Name, info.Name].filter(Boolean).join(" · ") ||
+          "Session",
+        body:
+          /SUSPENDED/.test(text) && !/DELAY/.test(text)
+            ? "Start suspended."
+            : "Start delayed.",
         tag: `delay-${info.Key}-${Utc}`,
         ttl: 30 * 60,
         ...(start > scheduled && { start }),

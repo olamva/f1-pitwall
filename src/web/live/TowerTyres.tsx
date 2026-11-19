@@ -49,7 +49,7 @@ export const Stints = ({ stints, scale, wide }: StintsProps) => {
             style={{ flex: stint.laps }}
           >
             <Hint
-              label={`${stint.compound.charAt(0)}${stint.compound.slice(1).toLowerCase()}, ${stint.laps} laps`}
+              label={`${stint.compound.charAt(0)}${stint.compound.slice(1).toLowerCase()}, ${stint.laps} ${stint.laps === 1 ? "lap" : "laps"}`}
               className="h-full"
             />
           </span>

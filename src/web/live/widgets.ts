@@ -61,7 +61,7 @@ const LIST = {
   },
   driver: {
     title: "Driver focus",
-    about: "Live data of the selected driver.",
+    about: "Live data for the selected driver.",
     height: "content",
   },
   traps: {

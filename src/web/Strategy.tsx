@@ -6,7 +6,7 @@ import { TeamLogo } from "./TeamLogo.tsx";
 import { Compound, tyreColor } from "./Tyre.tsx";
 
 const describe = (stint: Stint) =>
-  `${stint.compound[0] + stint.compound.slice(1).toLowerCase()}, ${stint.new ? "new" : "used"} set: laps ${stint.from}–${stint.to}`;
+  `${stint.compound[0] + stint.compound.slice(1).toLowerCase()}, ${stint.new ? "new" : "used"} set: ${stint.from === stint.to ? `lap ${stint.from}` : `laps ${stint.from}–${stint.to}`}`;
 
 interface LineProps {
   stints: Stint[];
@@ -15,6 +15,7 @@ interface LineProps {
 
 const Line = ({ stints, at }: LineProps) => {
   const last = stints.at(-1);
+  const lastLaps = last ? last.to - last.from + 1 : 0;
   return (
     <div className="relative mx-2.5 h-5">
       <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t-2 border-zinc-800" />
@@ -45,10 +46,10 @@ const Line = ({ stints, at }: LineProps) => {
           style={{ left: at(last.to) }}
         >
           <Hint
-            label={`${last.to - last.from + 1} laps on the last set`}
+            label={`${lastLaps} ${lastLaps === 1 ? "lap" : "laps"} on the last set`}
             className={`grid size-5 place-items-center rounded-full bg-current text-[10px] font-bold ${tyreColor(last.compound)}`}
           >
-            <span className="text-black">{last.to - last.from + 1}</span>
+            <span className="text-black">{lastLaps}</span>
           </Hint>
         </span>
       )}

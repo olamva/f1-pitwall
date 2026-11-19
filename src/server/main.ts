@@ -16,6 +16,7 @@ import {
   scrub,
   stateAt,
   stints,
+  UserError,
   type Replay,
 } from "./archive.ts";
 import { requireGoogle, sessions, user } from "./auth.ts";
@@ -130,8 +131,9 @@ app.get("/api/constructors/:id", async (c) => {
 app.get("/api/facts/:circuit/:year", async (c) => {
   const circuit = c.req.param("circuit");
   const year = Number(c.req.param("year"));
-  if (!/^[a-z0-9_]+$/.test(circuit) || !Number.isInteger(year))
+  if (!/^[a-z0-9_]+$/.test(circuit))
     return c.json({ error: "Invalid circuit." }, 400);
+  if (!Number.isInteger(year)) return c.json({ error: "Invalid season." }, 400);
   return c.json(await circuitFacts(circuit, year));
 });
 
@@ -337,7 +339,15 @@ app.get("*", serveStatic({ path: `${DIST}/index.html` }));
 
 app.onError((e, c) => {
   console.error(e);
-  return c.json({ error: e.message }, 500);
+  return c.json(
+    {
+      error:
+        e instanceof UserError
+          ? e.message
+          : "Something went wrong. Please try again.",
+    },
+    500,
+  );
 });
 
 process.on("SIGTERM", () => process.exit());

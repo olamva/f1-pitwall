@@ -71,7 +71,8 @@ const podium = <T extends Entry>(
     team: row.team,
   }));
 
-const points = (result: Result) => `${result.points} pts`;
+const points = (result: Result) =>
+  `${result.points} ${result.points === 1 ? "pt" : "pts"}`;
 
 const qualifyingUrl = (year: string, round: number, kind: Kind) =>
   `/api/qualifying/${year}/${round}/${kind === "qualifying" ? "race" : "sprint"}`;

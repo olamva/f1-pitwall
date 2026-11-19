@@ -232,7 +232,7 @@ export const LastYear = ({ round, year, kind }: LastYearProps) => {
         ) : (
           <p className="py-8 text-center text-xs text-zinc-400">
             {archive.data ? (
-              "No race here last year"
+              "No race here last year."
             ) : archive.error ? (
               "Results are not available."
             ) : (

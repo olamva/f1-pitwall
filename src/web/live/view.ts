@@ -358,7 +358,7 @@ const TRACK_STATUS: Record<string, { label: string; tone: string }> = {
   "4": { label: "Safety Car", tone: "bg-yellow-400 text-black" },
   "5": { label: "Red Flag", tone: "bg-red-600 text-white" },
   "6": { label: "VSC", tone: "bg-yellow-400 text-black" },
-  "7": { label: "VSC ending", tone: "bg-yellow-300 text-black" },
+  "7": { label: "VSC Ending", tone: "bg-yellow-300 text-black" },
 };
 
 export const trackStatus = (

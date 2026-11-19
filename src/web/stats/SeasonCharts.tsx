@@ -109,7 +109,7 @@ export const SeasonCharts = ({ tables, who, gains }: SeasonChartsProps) => {
             color: who.get(g.id)?.color ?? "#888",
             value: g.total,
           }))}
-          format={(v) => (v > 0 ? `+${v}` : String(v))}
+          format={(v) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : "0")}
         />
       </Panel>
     </div>

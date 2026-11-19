@@ -247,7 +247,7 @@ const LapCell = ({ time, tone, projected, pad, hide }: LapCellProps) => (
     <span className={hide}>
       {projected ? (
         <Hint
-          label="Predicted lap time, not a real time"
+          label="Projected lap time, not a recorded time"
           className={`-mr-1 inline-block rounded-sm border border-dashed border-current px-0.5 italic ${MARK[projected.mark]}`}
         >
           ~{projected.value}
@@ -352,10 +352,10 @@ const TowerRow = ({
             <span className={`font-semibold ${red}`}>{row.tla}</span>
           </Hint>
           {lapOwner && (
-            <Hint label="Fastest lap owner">
+            <Hint label="Fastest lap">
               <span
                 className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
-                aria-label="Fastest lap owner"
+                aria-label="Fastest lap"
               >
                 <Timer className="size-3" strokeWidth={2.5} />
               </span>

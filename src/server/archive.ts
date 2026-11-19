@@ -30,12 +30,14 @@ import {
 
 const CHECKPOINT_MS = 30_000;
 
+export class UserError extends Error {}
+
+const TOKEN_ERROR =
+  "The F1 archive needs a valid F1TV token. Save a new token in Settings.";
+
 const text = async (path: string): Promise<string> => {
   const res = await archive(path);
-  if (res.status === 401)
-    throw new Error(
-      "The F1 archive needs a valid F1TV token. Save a new token in Settings.",
-    );
+  if (res.status === 401) throw new UserError(TOKEN_ERROR);
   if (!res.ok) throw new Error(`archive ${res.status} ${path}`);
   return res.text();
 };
@@ -104,14 +106,16 @@ export async function sessionPath(
 ): Promise<string> {
   const { label, name, event: pick } = SESSIONS[kind];
   const event = pick((await get(`${year}/${round}.json`)).RaceTable.Races[0]);
-  if (!event) throw new Error(`${label} is not available for this round`);
+  if (!event) throw new UserError(`${label} is not available for this round.`);
   const start = Date.parse(`${event.date}T${event.time ?? "00:00:00Z"}`);
   const away = (s: SessionRef) => Math.abs(Date.parse(s.start) - start);
   const match = (await seasonSessions(year))
     .filter((s) => name.test(s.name) && s.path)
     .sort((a, b) => away(a) - away(b))[0];
   if (!match || away(match) > 24 * 60 * 60_000)
-    throw new Error(`${label} timing is not available yet`);
+    throw new UserError(
+      `${label} timing is not available${year < new Date().getUTCFullYear() ? "" : " yet"}.`,
+    );
   return match.path;
 }
 
@@ -302,6 +306,7 @@ export async function outlineFor(
 
 async function parse(path: string, topic: string): Promise<Event[]> {
   const res = await archive(`${path}${topic}.jsonStream`);
+  if (res.status === 401) throw new UserError(TOKEN_ERROR);
   if (!res.ok || !res.body) throw new Error(`archive ${res.status} ${path}`);
   const out: Event[] = [];
   for await (const line of createInterface({
@@ -345,7 +350,7 @@ async function load(path: string): Promise<Replay> {
 async function loadFastest(path: string): Promise<FastestLaps> {
   const info = await json(`${path}SessionInfo.json`);
   if (info.ArchiveStatus?.Status !== "Complete")
-    throw new Error("Lap telemetry is not available yet");
+    throw new UserError("Lap telemetry is not available yet.");
   const [list, ...streams] = await Promise.all([
     json(`${path}DriverList.json`),
     ...["TimingData", "Position.z", "CarData.z"].map((topic) =>
@@ -376,7 +381,7 @@ async function loadFastest(path: string): Promise<FastestLaps> {
         : [];
     })
     .sort((a, b) => lapSeconds(a.lap.time)! - lapSeconds(b.lap.time)!);
-  if (!drivers.length) throw new Error("Lap telemetry is not available");
+  if (!drivers.length) throw new UserError("Lap telemetry is not available.");
   return { outline: await outlineFor(info, () => session.outline()), drivers };
 }
 
@@ -421,7 +426,7 @@ const cache = new Map<string, Promise<Replay>>();
 
 export function replay(path: string): Promise<Replay> {
   if (!/^\d{4}\/[\p{L}\p{N}_\-.]+\/[\p{L}\p{N}_\-.]+\/$/u.test(path))
-    throw new Error("bad path");
+    throw new UserError("Invalid session path.");
   const r = cache.get(path) ?? load(path);
   cache.delete(path);
   cache.set(path, r);

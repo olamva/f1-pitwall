@@ -438,14 +438,14 @@ export const Dashboard = ({
           />
           {!columns.length && (
             <div className="col-span-full row-span-12 flex flex-col items-center gap-3 py-8 text-sm text-zinc-500">
-              No widgets selected
+              No widgets selected.
               <button
                 type="button"
                 onClick={() => setSaved(DEFAULT_LAYOUT[size])}
                 className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 font-semibold text-zinc-100"
               >
                 <RotateCcw aria-hidden="true" className="size-4" />
-                Reset to Default
+                Reset to default
               </button>
             </div>
           )}

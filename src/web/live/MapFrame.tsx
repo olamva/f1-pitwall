@@ -33,7 +33,7 @@ export const MapFrame = ({
         {full && banner}
         <button
           type="button"
-          aria-label={full ? "Exit full screen" : "Show the map in full screen"}
+          aria-label={full ? "Exit full screen" : "Enter full screen"}
           onClick={() => {
             if (document.fullscreenElement) return document.exitFullscreen();
             if (!full && document.fullscreenEnabled)

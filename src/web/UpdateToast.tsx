@@ -47,7 +47,7 @@ export const UpdateToast = () => {
         type="button"
       >
         {updating && <LoaderCircle className="size-4 animate-spin" />}
-        {updating ? "Updating..." : "Update"}
+        {updating ? "Updating…" : "Update"}
       </button>
     </div>
   );

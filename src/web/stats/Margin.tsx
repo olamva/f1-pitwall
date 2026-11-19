@@ -62,7 +62,9 @@ export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
               >
                 {Math.abs(by)}
               </span>
-              <span className="text-xs font-black">pts</span>
+              <span className="text-xs font-black">
+                {Math.abs(by) === 1 ? "pt" : "pts"}
+              </span>
             </p>
           </li>
         ))}

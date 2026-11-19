@@ -40,15 +40,25 @@ const expiry = (jwt: string | undefined): number | null => {
 export function extract(value: string): string {
   const v = value.trim().replace(/^login-session=/, "");
   if (/^[\w-]+\.[\w-]+\.[\w-]+$/.test(v)) return v;
-  const t = JSON.parse(decodeURIComponent(v))?.data?.subscriptionToken;
+  let parsed: any;
+  try {
+    parsed = JSON.parse(decodeURIComponent(v));
+  } catch {
+    throw new Error(
+      "Could not read that token. Paste the login-session cookie value.",
+    );
+  }
+  const t = parsed?.data?.subscriptionToken;
   if (typeof t !== "string")
-    throw new Error("No subscriptionToken in that value.");
+    throw new Error(
+      "Could not find a token in that value. Paste the login-session cookie value.",
+    );
   return t;
 }
 
 async function store(key: string, jwt: string) {
   const exp = expiry(jwt);
-  if (!exp || exp < Date.now()) throw new Error("That token has expired.");
+  if (!exp || exp < Date.now()) throw new Error("This token has expired.");
   tokens.set(key, jwt);
   const write = () => writeJson(FILE, Object.fromEntries(tokens));
   if (DATA_DIR) await (saving = saving.then(write, write));

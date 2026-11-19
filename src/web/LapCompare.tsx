@@ -150,7 +150,7 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
   if (!traceA || !traceB)
     return (shown.current = (
       <p className="text-sm text-zinc-500">
-        The telemetry of {(traceA ? b : a).tla} is not complete for this lap.
+        Telemetry for {(traceA ? b : a).tla} is incomplete for this lap.
       </p>
     ));
   const gap = lapSeconds(b.time)! - lapSeconds(a.time)!;
@@ -241,7 +241,7 @@ export const LapCompare = ({ outline, drivers }: LapCompareProps) => {
   if (!outline || !a || !b)
     return (
       <p className="text-sm text-zinc-500">
-        Two drivers need a timed lap with telemetry.
+        At least two drivers need a timed lap with telemetry.
       </p>
     );
   const who = new Map(

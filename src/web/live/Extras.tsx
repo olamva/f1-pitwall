@@ -319,7 +319,7 @@ export const DriverFocus = ({
             <dt className="font-sans text-xs text-zinc-500">Tyre</dt>
             <dd className="flex items-center gap-1.5">
               <Compound compound={stint.compound} />
-              {stint.age} laps
+              {stint.age} {stint.age === 1 ? "lap" : "laps"}
             </dd>
           </div>
         )}
