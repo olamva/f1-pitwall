@@ -40,16 +40,15 @@ export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
         {margins.map(({ id, by }) => (
           <li key={id} className="flex items-center gap-3 py-2.5">
             <Logo id={id} className="size-8 shrink-0" />
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 text-[10px] font-bold tracking-[0.15em] text-white/60 sm:text-xs">
+              <p className="mb-1">{by > 0 ? "Outscore" : "Trail"}</p>
               <p
-                className="truncate text-xl leading-none font-black sm:text-2xl"
+                className="truncate text-xl leading-none font-black tracking-normal sm:text-2xl"
                 style={{ color: tint(who.get(id)?.color) }}
               >
                 {name(id)}
               </p>
-              <p className="mt-1 text-[10px] font-bold tracking-[0.15em] text-white/60 sm:text-xs">
-                {by > 0 ? "Outscore by at least" : "Trail by at most"}
-              </p>
+              <p className="mt-1">by at {by > 0 ? "least" : "most"}</p>
             </div>
             <p className="flex items-baseline gap-1">
               <span
