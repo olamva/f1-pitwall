@@ -23,6 +23,11 @@ const tint = (color = "#888") => `color-mix(in srgb, ${color} 85%, white)`;
 export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
   const color = who.get(focus)?.color ?? "#888";
   const name = (id: string) => who.get(id)?.name ?? id;
+  const verb = (by: number) => (by > 0 ? "outscore" : "trail");
+  const shared =
+    new Set(margins.map(({ by }) => verb(by))).size === 1
+      ? verb(margins[0]!.by)
+      : "";
   return (
     <div
       className="font-f1 max-w-lg rounded-xl px-4 pt-3 pb-1 text-white uppercase scheme-dark"
@@ -33,7 +38,7 @@ export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
       <div className="flex items-center gap-2.5">
         <Logo id={focus} className="size-7 shrink-0 sm:size-8" />
         <p className="text-[10px] leading-snug font-bold tracking-[0.15em] text-balance text-white/70 sm:text-xs">
-          {name(focus)} secure {prize} at the {event} if they
+          {name(focus)} secure {prize} at the {event} if they {shared}
         </p>
       </div>
       <ul className="mt-2 divide-y divide-white/10">
@@ -41,7 +46,7 @@ export const Margin = ({ margins, focus, who, prize, event }: MarginProps) => {
           <li key={id} className="flex items-center gap-3 py-2.5">
             <Logo id={id} className="size-8 shrink-0" />
             <div className="min-w-0 flex-1 text-[10px] font-bold tracking-[0.15em] text-white/60 sm:text-xs">
-              <p className="mb-1">{by > 0 ? "Outscore" : "Trail"}</p>
+              {!shared && <p className="mb-1">{verb(by)}</p>}
               <p
                 className="truncate text-xl leading-none font-black tracking-normal sm:text-2xl"
                 style={{ color: tint(who.get(id)?.color) }}
