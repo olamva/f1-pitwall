@@ -114,7 +114,9 @@ export const App = () => {
           ref={logo}
           onClick={() => go("Countdown")}
           className="relative top-1 z-10 flex cursor-pointer items-center gap-3 rounded-md sm:gap-3.5"
-          aria-label="Go to live session"
+          aria-label={
+            info.data?.live ? "Go to live session" : "Go to countdown"
+          }
           type="button"
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />

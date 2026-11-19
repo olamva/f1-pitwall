@@ -1,5 +1,5 @@
 import type { Pace } from "../shared/season.ts";
-import { sessionPath } from "./archive.ts";
+import { sessionPath, UserError } from "./archive.ts";
 import { DATA_DIR, readJson, writeJson } from "./data.ts";
 import { get } from "./jolpica.ts";
 import { archive } from "./origin.ts";
@@ -12,6 +12,10 @@ const cache = new Map<string, Promise<Pace>>();
 
 const archiveText = async (path: string, topic: string) => {
   const res = await archive(`${path}${topic}.jsonStream`);
+  if (res.status === 401)
+    throw new UserError(
+      "The F1 archive needs a valid F1TV token. Save a new token in Settings.",
+    );
   if (!res.ok) throw new Error(`archive ${res.status} ${topic}`);
   return res.text();
 };
@@ -79,7 +83,9 @@ async function load(
       ? await racePace(year, round)
       : await loadSprint(year, round);
   if (!Object.values(result).some((laps) => laps.length > 5))
-    throw new Error("Pace data is not available yet");
+    throw new UserError(
+      `Pace data is not available${year < new Date().getUTCFullYear() ? "" : " yet"}.`,
+    );
   if (DATA_DIR)
     await writeJson(path, result).catch((error) =>
       console.error("pace store write:", error),

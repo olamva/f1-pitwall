@@ -129,7 +129,7 @@ const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
                   label={
                     c === null
                       ? "Same finish position"
-                      : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${n} points`
+                      : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${n < 0 ? `−${-n}` : n} ${Math.abs(n) === 1 ? "point" : "points"}`
                   }
                   text={c === null ? undefined : `${legend[c]}.`}
                   className={`tabular flex h-7 items-center justify-center rounded ${c === null ? "" : STYLE[c]}`}
@@ -278,6 +278,15 @@ const Pickers = ({
     </div>
   );
 
+const EARLIEST_NOTE: Record<Championship, string> = {
+  drivers:
+    "The earliest decider assumes that the driver wins every event and that no rival scores.",
+  constructors:
+    "The earliest decider assumes that the team takes a 1–2 in every event and that no rival scores.",
+};
+
+const eventCount = (n: number) => `${n} ${n === 1 ? "event" : "events"}`;
+
 export const TitleFight = ({
   champ,
   season,
@@ -338,12 +347,11 @@ export const TitleFight = ({
             <h2 className="font-f1 mb-1 flex items-center gap-1 text-xs tracking-wider text-zinc-400 uppercase">
               {place ? `Who can still finish ${place}` : "Who can still win"}
               <InfoPopover label="How the earliest decider works">
-                The earliest decider assumes that the driver wins every event
-                and that no rival scores.
+                {EARLIEST_NOTE[champ]}
               </InfoPopover>
             </h2>
             <p className="mb-2 text-sm text-zinc-500">
-              {gain} points remain across {events.length} events.
+              {gain} points remain across {eventCount(events.length)}.
             </p>
             <Lineup
               champ={champ}

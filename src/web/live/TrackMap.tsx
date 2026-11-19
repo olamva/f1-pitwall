@@ -436,7 +436,7 @@ export const TrackMap = ({
           </div>
           {!outline && (
             <LoaderCircle
-              aria-label="Loading the track outline"
+              aria-label="Loading track map"
               className="absolute inset-0 m-auto size-8 animate-spin text-red-500"
             />
           )}

@@ -94,6 +94,9 @@ const useBackdrop = (ref: RefObject<HTMLElement | null>, color: string) => {
   }, [ref, active, color]);
 };
 
+const count = (n: number, unit: string) =>
+  `${n} ${n === 1 ? unit : `${unit}s`}`;
+
 export const Champion = ({
   champ,
   season,
@@ -137,7 +140,7 @@ export const Champion = ({
     >
       <Backdrop
         name={surname}
-        line={`${season.year} ${title} · ${surname} · ${h.wins} wins · ${first.points} points`}
+        line={`${season.year} ${title} · ${surname} · ${count(h.wins, "win")} · ${count(first.points, "point")}`}
       />
       <Poster champ={champ} id={first.id} />
       <p className="font-f1 text-xs font-bold tracking-[0.3em] text-[#ebd08a] uppercase sm:text-sm">

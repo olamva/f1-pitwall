@@ -361,7 +361,7 @@ export async function circuitFacts(
     ),
   );
   const back = wins
-    .filter((race) => grid(race) > 0)
+    .filter((race) => grid(race) > 1)
     .toSorted((a, b) => grid(b) - grid(a))[0];
   const fastest = laps
     .filter(lap)
@@ -372,7 +372,7 @@ export async function circuitFacts(
     ...fact(most("poles", poles), "qualifying"),
     ...fact(
       wins.length > 0 &&
-        `Pole sitter won ${wins.filter((race) => grid(race) === 1).length} of ${wins.length} races here`,
+        `Pole sitter won ${wins.filter((race) => grid(race) === 1).length} of ${wins.length} ${wins.length === 1 ? "race" : "races"} here`,
       "qualifying",
       "race",
     ),

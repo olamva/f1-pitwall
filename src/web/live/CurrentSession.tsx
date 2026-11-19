@@ -77,7 +77,8 @@ const DelayWait = ({ due, delay }: DelayWaitProps) => {
         <span aria-hidden="true" className="glass-seek-track" />
       </div>
       <p>
-        Connected. Live timing starts after your delay, in {clip(left / 1000)}.
+        Connected. Live timing starts in {clip(left / 1000)} to match your TV
+        delay.
       </p>
     </div>
   );
@@ -207,7 +208,7 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
   const note = positions
     ? null
     : token === "expired"
-      ? "Your F1TV token is expired. Save a new token to see the cars."
+      ? "Your F1TV token has expired. Save a new token to see the cars."
       : "Add an F1TV token to see the cars.";
   const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};

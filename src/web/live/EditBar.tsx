@@ -101,7 +101,7 @@ const WidgetSheet = ({
           className="glass-gear flex h-11 cursor-pointer items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
         >
           <RotateCcw aria-hidden="true" className="size-4" />
-          Reset to Default
+          Reset to default
         </button>
       }
     >
@@ -133,7 +133,7 @@ const WidgetSheet = ({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-400">All widgets are added.</p>
+        <p className="text-sm text-zinc-400">All widgets have been added.</p>
       )}
       <div className="grid grid-cols-2 gap-2 pt-4 sm:flex sm:justify-end">
         <button
@@ -150,20 +150,21 @@ const WidgetSheet = ({
           ) : (
             <Copy aria-hidden="true" className="size-4" />
           )}
-          {copied ? "Copied" : "Copy Layout"}
+          {copied ? "Copied" : "Copy layout"}
         </button>
         <button
           type="button"
           onClick={() => {
-            const text = prompt("Paste a layout.");
+            const text = prompt("Paste a layout");
             if (text === null) return;
-            if (!pasteLayouts(text)) return alert("This is not a layout.");
+            if (!pasteLayouts(text))
+              return alert("That is not a valid layout.");
             dismiss(sheet.current!);
           }}
           className="glass-gear flex h-11 cursor-pointer items-center justify-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap"
         >
           <ClipboardPaste aria-hidden="true" className="size-4" />
-          Paste Layout
+          Paste layout
         </button>
       </div>
     </Sheet>
@@ -253,13 +254,10 @@ export const EditBar = ({
         </button>
       </Hint>
       {hideOff !== undefined && (
-        <Hint
-          label="Hide widgets that do not show in this session"
-          className="shrink-0"
-        >
+        <Hint label="Hide unavailable widgets" className="shrink-0">
           <button
             type="button"
-            aria-label="Hide widgets that do not show in this session"
+            aria-label="Hide unavailable widgets"
             aria-pressed={hideOff}
             onClick={() => onHideOff(!hideOff)}
             className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center"
@@ -337,7 +335,7 @@ export const EditBar = ({
             >
               <LayoutDashboard aria-hidden="true" className="size-5" />
               <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
-                Customize
+                Customise
               </span>
             </button>
           </Hint>

@@ -61,4 +61,4 @@ export const user = (c: Context): string | null => {
 };
 
 export const requireGoogle: MiddlewareHandler = async (c, next) =>
-  user(c) ? next() : c.json({ error: "Sign in with Google to use this." }, 401);
+  user(c) ? next() : c.json({ error: "Sign in with Google to continue." }, 401);

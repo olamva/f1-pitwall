@@ -189,7 +189,7 @@ const Stage = ({
     );
   return (
     <div className="flex h-64 max-w-lg items-center justify-center rounded-xl bg-zinc-800/50 text-sm text-zinc-400 sm:h-80">
-      No battle within 1 s
+      No battle within 1 s.
     </div>
   );
 };
