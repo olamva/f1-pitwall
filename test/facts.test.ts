@@ -59,7 +59,7 @@ test("circuit facts leave out the current season and laps without a time", async
       sessions: ["qualifying", "race"],
     },
     {
-      text: "Furthest back to win here: Lewis Hamilton from P3 (2020)",
+      text: "Farthest back to win here: Lewis Hamilton from P3 (2020)",
       sessions: ["race"],
     },
     {

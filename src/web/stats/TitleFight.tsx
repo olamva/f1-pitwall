@@ -49,7 +49,7 @@ const earliestText = (e: Earliest, events: Upcoming[], won: string): string =>
     : e.state === "eliminated"
       ? "Out of contention"
       : e.state === "last-race-only"
-        ? "Only on a tie-break"
+        ? "Only on a tiebreaker"
         : `${events[e.index]!.name} (round ${events[e.index]!.round})`;
 
 interface MatrixProps {
@@ -71,9 +71,9 @@ const STYLE: Record<NonNullable<Cell>, string> = {
 };
 
 const list = (items: string[]) =>
-  items.length > 1
-    ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`
-    : (items[0] ?? "");
+  items.length > 2
+    ? `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`
+    : items.join(" and ");
 
 const Matrix = ({ table, events, focus, rival, who, prize }: MatrixProps) => {
   const m = useMemo(

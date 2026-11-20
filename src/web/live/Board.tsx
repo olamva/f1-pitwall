@@ -269,7 +269,7 @@ export const Board = ({
           label={
             focus
               ? "Show the full page"
-              : "Show only timing, lap count and flags"
+              : "Show only timing, lap count, and flags"
           }
         >
           <button

@@ -325,7 +325,7 @@ export const EditBar = ({
           controls
         ) : (
           <Hint
-            label="Move, resize, add and remove widgets"
+            label="Move, resize, add, and remove widgets"
             className="my-1 shrink-0"
           >
             <button
@@ -335,7 +335,7 @@ export const EditBar = ({
             >
               <LayoutDashboard aria-hidden="true" className="size-5" />
               <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">
-                Customise
+                Customize
               </span>
             </button>
           </Hint>

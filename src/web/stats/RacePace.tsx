@@ -104,8 +104,8 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
             info={
               <>
                 <p>
-                  Lap 1, in-laps, out-laps and laps slower than 107% of the best
-                  median are left out.
+                  Lap 1, in-laps, out-laps, and laps slower than 107% of the
+                  best median are left out.
                 </p>
                 <p>{NOTES[v]}</p>
               </>
