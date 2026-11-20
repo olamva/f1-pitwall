@@ -52,7 +52,7 @@ export const ScrubCard = ({ url, t, at, start, starts }: ScrubCardProps) => {
         )}
       </div>
       <p className="text-[11px] text-zinc-400">
-        {starts.length ? `${time} into the session` : "Into the session"}
+        {starts.length ? `${time} into the race` : "Into the session"}
       </p>
       {show ? (
         <ol className="mt-1">
