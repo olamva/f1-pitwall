@@ -387,7 +387,7 @@ export async function circuitFacts(
     ),
     ...fact(
       back &&
-        `Furthest back to win here: ${driver(back)} from P${grid(back)} (${back.season})`,
+        `Farthest back to win here: ${driver(back)} from P${grid(back)} (${back.season})`,
       "race",
     ),
     ...fact(

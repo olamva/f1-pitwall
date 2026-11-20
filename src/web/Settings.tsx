@@ -239,7 +239,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
           </Row>
           <Toggle
             title="Spoiler mode"
-            note="Ask before showing new qualifying, sprint and race results"
+            note="Ask before showing new qualifying, sprint, and race results"
             checked={spoilers}
             onChange={(checked) => {
               setSpoilers(checked);
@@ -247,10 +247,10 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
             }}
           />
         </Group>
-        <Group title="Favourites">
+        <Group title="Favorites">
           <Row title="Driver">
             <select
-              aria-label="Favourite driver"
+              aria-label="Favorite driver"
               value={favourite?.id ?? ""}
               onChange={(e) =>
                 setFavourite(
@@ -269,7 +269,7 @@ export const Settings = ({ drivers, teams }: SettingsProps) => {
           </Row>
           <Row title="Team">
             <select
-              aria-label="Favourite team"
+              aria-label="Favorite team"
               value={team ?? ""}
               onChange={(e) => setFavouriteTeam(e.target.value || null)}
               className={SELECT}
