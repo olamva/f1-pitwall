@@ -188,7 +188,7 @@ const Handle = ({ id, shown, onPress, onAuto }: HandleProps) =>
         }}
         className="absolute inset-0 cursor-nwse-resize touch-none"
       >
-        <span className="light:border-zinc-400 absolute right-1 bottom-5 size-7 rounded-br-[0.75rem] border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
+        <span className="light:border-zinc-400 absolute right-1 bottom-5 size-7 rounded-br-xl border-r-[5px] border-b-[5px] border-zinc-500 drop-shadow" />
       </span>
     </Hint>
   );

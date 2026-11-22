@@ -14,7 +14,7 @@ const Logo = ({ id, className }: { id: string; className: string }) => (
   <img
     src={logoSrc(id)}
     alt=""
-    className={`object-contain drop-shadow-[0_1px_3px_rgb(0_0_0_/_0.6)] ${className}`}
+    className={`object-contain drop-shadow-[0_1px_3px_rgb(0_0_0/0.6)] ${className}`}
   />
 );
 

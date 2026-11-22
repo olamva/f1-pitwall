@@ -218,7 +218,7 @@ export const ReplayBar = ({
               <span
                 key={b.from}
                 aria-hidden="true"
-                className={`absolute top-[28px] h-1 rounded-full ${TONES[b.kind]}`}
+                className={`absolute top-7 h-1 rounded-full ${TONES[b.kind]}`}
                 style={{
                   left: `calc(14px + (100% - 28px) * ${b.left})`,
                   width: `max(4px, calc((100% - 28px) * ${b.width}))`,

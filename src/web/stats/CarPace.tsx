@@ -95,7 +95,7 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
         {ticks.map((gap) => (
           <div
             key={gap}
-            className="absolute inset-y-0 transition-[left,opacity] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none starting:opacity-0"
+            className="absolute inset-y-0 transition-[left,opacity] duration-1100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none starting:opacity-0"
             style={{ left: x(gap) }}
           >
             <span
@@ -157,7 +157,7 @@ export const CarPace = ({ teams, format }: CarPaceProps) => {
                   id={t.id}
                   pose="right"
                   alt={t.label}
-                  className="group-data-[pending=true]:animate-rumble w-32 max-w-none drop-shadow-[0_4px_6px_rgb(0_0_0_/_0.35)]"
+                  className="group-data-[pending=true]:animate-rumble w-32 max-w-none drop-shadow-[0_4px_6px_rgb(0_0_0/0.35)]"
                   fallback={
                     <span
                       role="img"

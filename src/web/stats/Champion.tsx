@@ -194,14 +194,14 @@ const Poster = ({ champ, id }: PosterProps) => {
         <img
           src={logo}
           alt=""
-          className="pointer-events-none relative -z-10 -mb-28 h-80 w-full mask-b-from-40% object-contain opacity-80 sm:absolute sm:top-6 sm:right-0 sm:m-0 sm:h-72 sm:w-1/2 sm:max-w-xl sm:mask-none sm:opacity-100 sm:drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)]"
+          className="pointer-events-none relative -z-10 -mb-28 h-80 w-full mask-b-from-40% object-contain opacity-80 sm:absolute sm:top-6 sm:right-0 sm:m-0 sm:h-72 sm:w-1/2 sm:max-w-xl sm:mask-none sm:opacity-100 sm:drop-shadow-[0_8px_24px_rgb(0_0_0/0.5)]"
         />
       )
     );
   return (
     champ === "drivers" &&
     d?.art && (
-      <div className="pointer-events-none relative -z-10 -mb-24 h-[28rem] w-full sm:absolute sm:-top-12 sm:right-0 sm:m-0 sm:h-[39rem] sm:w-1/2 sm:max-w-xl sm:mask-l-from-85% sm:pt-12">
+      <div className="pointer-events-none relative -z-10 -mb-24 h-112 w-full sm:absolute sm:-top-12 sm:right-0 sm:m-0 sm:h-156 sm:w-1/2 sm:max-w-xl sm:mask-l-from-85% sm:pt-12">
         <div className="relative h-full">
           <TeamNumber
             id={d.id}
