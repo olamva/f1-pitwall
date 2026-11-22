@@ -92,7 +92,7 @@ export const PaceSeek = ({
           <span
             key={`${e.round}${e.kind}`}
             aria-hidden="true"
-            className={`absolute top-[29px] w-px -translate-x-1/2 ${e.kind === "sprint" ? "h-1 bg-amber-300/70" : "h-1.5 bg-zinc-600"}`}
+            className={`absolute top-7.25 w-px -translate-x-1/2 ${e.kind === "sprint" ? "h-1 bg-amber-300/70" : "h-1.5 bg-zinc-600"}`}
             style={{ left: at(i / max) }}
           />
         ))}

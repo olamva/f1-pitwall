@@ -248,7 +248,7 @@ export const EditBar = ({
             setOpen(true);
             sheet.current!.showModal();
           }}
-          className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center"
+          className="glass-gear grid size-10.5 cursor-pointer place-items-center"
         >
           <Plus aria-hidden="true" className="size-5" />
         </button>
@@ -260,7 +260,7 @@ export const EditBar = ({
             aria-label="Hide unavailable widgets"
             aria-pressed={hideOff}
             onClick={() => onHideOff(!hideOff)}
-            className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center"
+            className="glass-gear grid size-10.5 cursor-pointer place-items-center"
           >
             {hideOff ? (
               <EyeOff aria-hidden="true" className="size-5" />
@@ -297,7 +297,7 @@ export const EditBar = ({
           aria-label="Discard changes"
           onClick={onDiscard}
           disabled={!onDiscard}
-          className="glass-gear grid size-[2.625rem] cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
+          className="glass-gear grid size-10.5 cursor-pointer place-items-center disabled:cursor-default disabled:opacity-40"
         >
           <Undo2 aria-hidden="true" className="size-5" />
         </button>
@@ -307,7 +307,7 @@ export const EditBar = ({
           type="button"
           aria-label="Done"
           onClick={onDone}
-          className="grid size-[2.625rem] cursor-pointer place-items-center rounded-full bg-red-600 text-white"
+          className="grid size-10.5 cursor-pointer place-items-center rounded-full bg-red-600 text-white"
         >
           <Check aria-hidden="true" className="size-5" />
         </button>
@@ -331,7 +331,7 @@ export const EditBar = ({
             <button
               type="button"
               onClick={onEdit}
-              className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-[2.625rem] max-sm:px-0"
+              className="glass-gear flex h-10.5 cursor-pointer items-center justify-center gap-2 px-4 text-sm whitespace-nowrap max-sm:w-10.5 max-sm:px-0"
             >
               <LayoutDashboard aria-hidden="true" className="size-5" />
               <span className="[text-box:trim-both_cap_alphabetic] max-sm:sr-only">

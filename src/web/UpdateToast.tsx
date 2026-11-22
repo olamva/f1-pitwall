@@ -37,7 +37,7 @@ export const UpdateToast = () => {
   return (
     <div
       role="status"
-      className="motion-safe:animate-toast-in fixed inset-x-[21px] bottom-[calc(21px+62px+12px)] z-20 mx-auto flex items-center justify-between gap-3 rounded-full border border-amber-400/30 bg-amber-950/80 py-2 pr-2 pl-5 text-sm text-amber-100 shadow-lg shadow-amber-950/40 backdrop-blur-xl sm:bottom-6 sm:max-w-sm"
+      className="motion-safe:animate-toast-in fixed inset-x-5.25 bottom-[calc(21px+62px+12px)] z-20 mx-auto flex items-center justify-between gap-3 rounded-full border border-amber-400/30 bg-amber-950/80 py-2 pr-2 pl-5 text-sm text-amber-100 shadow-lg shadow-amber-950/40 backdrop-blur-xl sm:bottom-6 sm:max-w-sm"
     >
       <span>A new version is available.</span>
       <button

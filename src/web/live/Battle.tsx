@@ -112,7 +112,7 @@ export const Battle = ({
       <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
         Battles
       </h2>
-      <div className="-mx-3 h-[50px] [scrollbar-width:none] overflow-x-auto overflow-y-hidden px-3 py-1">
+      <div className="-mx-3 h-12.5 scrollbar-none overflow-x-auto overflow-y-hidden px-3 py-1">
         <div className="w-max">
           {chips.length > 1 && (
             <Tabs

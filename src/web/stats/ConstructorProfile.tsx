@@ -92,7 +92,7 @@ export const ConstructorProfile = ({
             <Car
               id={id}
               pose="right"
-              className="relative mx-auto mt-4 w-full max-w-xl drop-shadow-[0_12px_20px_rgb(0_0_0_/_0.45)]"
+              className="relative mx-auto mt-4 w-full max-w-xl drop-shadow-[0_12px_20px_rgb(0_0_0/0.45)]"
             />
             <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-6">
               {(

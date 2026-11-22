@@ -94,7 +94,7 @@ const Figures = ({ side, gone, right, seam, cars }: PanelProps) => {
       id={id}
       pose={right ? "right" : "left"}
       transform={BODY}
-      className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${extra}`}
+      className={`absolute h-[160%] max-w-none drop-shadow-[0_8px_24px_rgb(0_0_0/0.5)] ${back ? "top-[9%] brightness-75" : "top-[5%]"} ${right ? (back ? "right-[24%]" : "right-[3%]") : back ? "left-[24%]" : "left-[3%]"} ${extra}`}
     />
   );
   return (
@@ -109,7 +109,7 @@ const Figures = ({ side, gone, right, seam, cars }: PanelProps) => {
               key={s.id}
               id={s.id}
               pose={right ? "left" : "right"}
-              className={`absolute top-[14%] w-full max-w-none opacity-80 ${right ? "-right-[42%]" : "-left-[42%]"} ${m}`}
+              className={`absolute top-[14%] w-full max-w-none opacity-80 ${right ? "right-[-42%]" : "left-[-42%]"} ${m}`}
             />
           ))}
         {cast.map(({ team: [, mate], m }) => mate && figure(mate, true, m))}
@@ -162,7 +162,7 @@ const Plate = ({ side, right, motion = "", onDone }: PlateProps) => {
           <img
             src={logo}
             alt=""
-            className="size-6 object-contain drop-shadow-[0_1px_3px_rgb(0_0_0_/_0.6)] sm:size-7"
+            className="size-6 object-contain drop-shadow-[0_1px_3px_rgb(0_0_0/0.6)] sm:size-7"
           />
         )}
         <p
@@ -240,7 +240,7 @@ export const Versus = ({
       </div>
       <div
         key={alert ? "alert" : "calm"}
-        className={`font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center px-3 py-1 shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] transition-[left] duration-500 ${alert ? "overtake bg-[#e10600] text-white" : "bg-white text-zinc-950"}`}
+        className={`font-f1 absolute top-[42%] z-10 flex -translate-1/2 -skew-x-12 flex-col items-center px-3 py-1 shadow-[0_6px_20px_rgb(0_0_0/0.5)] transition-[left] duration-500 ${alert ? "overtake bg-[#e10600] text-white" : "bg-white text-zinc-950"}`}
         style={{ left: `${seam}%` }}
       >
         {!alert && (
@@ -311,7 +311,7 @@ export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
             id={s.id}
             pose="front"
             transform={BODY}
-            className="absolute top-[8%] h-[150%] max-w-none -translate-x-1/2 drop-shadow-[0_8px_24px_rgb(0_0_0_/_0.5)] transition-[left] duration-500"
+            className="absolute top-[8%] h-[150%] max-w-none -translate-x-1/2 drop-shadow-[0_8px_24px_rgb(0_0_0/0.5)] transition-[left] duration-500"
             style={{ left: mid(i) }}
           />
         </div>
@@ -340,7 +340,7 @@ export const Slices = ({ sides, gaps, pass, more }: SlicesProps) => {
       {gaps.map((g, i) => (
         <div
           key={i === pass ? "pass" : i}
-          className={`font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 px-2 py-1 leading-none font-black shadow-[0_6px_20px_rgb(0_0_0_/_0.5)] ${i === pass ? "overtake bg-[#e10600] text-xs text-white sm:text-base" : "bg-white text-lg text-zinc-950 sm:text-2xl"}`}
+          className={`font-f1 tabular absolute top-[42%] z-10 -translate-1/2 -skew-x-12 px-2 py-1 leading-none font-black shadow-[0_6px_20px_rgb(0_0_0/0.5)] ${i === pass ? "overtake bg-[#e10600] text-xs text-white sm:text-base" : "bg-white text-lg text-zinc-950 sm:text-2xl"}`}
           style={{ left: `${(i + 1) * w}%` }}
         >
           {i === pass ? "OVERTAKE" : g}

@@ -52,7 +52,7 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
                 {i === 0 && (
                   <Trophy
                     aria-hidden
-                    className="text-gold mb-1 size-5 drop-shadow-[0_0_6px_rgb(212_175_55_/_0.6)]"
+                    className="text-gold mb-1 size-5 drop-shadow-[0_0_6px_rgb(212_175_55/0.6)]"
                   />
                 )}
                 <span

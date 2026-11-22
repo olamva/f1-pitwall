@@ -21,7 +21,7 @@ export type Box = {
 const ROW = 24;
 const STAGGER = 14;
 const MORPH =
-  "duration-[650ms] ease-[cubic-bezier(0.34,1.32,0.64,1)] motion-reduce:transition-none";
+  "duration-650 ease-[cubic-bezier(0.34,1.32,0.64,1)] motion-reduce:transition-none";
 
 const reshuffle = (el: HTMLElement, from: Shift | null) => {
   if (!from?.y) return;
@@ -143,7 +143,7 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               }}
             />
             <span
-              className={`${MORPH} absolute top-1/2 h-[18px] w-0.5 -translate-1/2 bg-zinc-50 transition-[left]`}
+              className={`${MORPH} absolute top-1/2 h-4.5 w-0.5 -translate-1/2 bg-zinc-50 transition-[left]`}
               style={{ left: pct(s.median) }}
             />
           </div>

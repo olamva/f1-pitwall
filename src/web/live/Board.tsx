@@ -92,7 +92,7 @@ const Status = ({
     )}
     {part}
     {banner && (
-      <div className="order-last grow basis-full sm:order-none sm:basis-60">
+      <div className="order-last grow basis-full sm:order-0 sm:basis-60">
         {banner}
       </div>
     )}
@@ -144,7 +144,7 @@ const Heading = ({ info, part, focus }: HeadingProps) => {
   }, []);
   return (
     <h1
-      className={`font-f1 max-w-max min-w-0 grow-[1000] basis-0 overflow-hidden text-xl font-bold whitespace-pre ${focus ? "max-md:hidden" : "max-md:max-w-none max-md:basis-full max-md:whitespace-normal"}`}
+      className={`font-f1 max-w-max min-w-0 grow-1000 basis-0 overflow-hidden text-xl font-bold whitespace-pre ${focus ? "max-md:hidden" : "max-md:max-w-none max-md:basis-full max-md:whitespace-normal"}`}
     >
       <Flag country={info?.Meeting?.Country?.Name} />
       <span ref={ref}>
@@ -279,7 +279,7 @@ export const Board = ({
               flushSync(() => setFocus(!focus));
               scrollTo(0, 0);
             }}
-            className="glass-gear flex h-[2.625rem] cursor-pointer items-center justify-center gap-2 px-4 text-sm max-sm:w-[2.625rem] max-sm:px-0"
+            className="glass-gear flex h-10.5 cursor-pointer items-center justify-center gap-2 px-4 text-sm max-sm:w-10.5 max-sm:px-0"
           >
             {focus ? (
               <Minimize aria-hidden="true" className="size-5" />

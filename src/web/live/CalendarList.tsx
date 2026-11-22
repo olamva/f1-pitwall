@@ -211,7 +211,7 @@ const Weekend = ({
   return (
     <HoverCard card={card} className="h-full">
       <article
-        className={`relative isolate flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-gradient-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
+        className={`relative isolate flex h-full flex-col gap-3 rounded-xl ${featured ? `to-surface featured bg-linear-to-r from-red-700/40 p-5 ${FEATURED_GRID}` : "bg-surface p-4"}`}
       >
         {onOpen && (
           <button
