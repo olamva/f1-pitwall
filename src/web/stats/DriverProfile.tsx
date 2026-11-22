@@ -24,36 +24,47 @@ export const SHORT: Record<string, string> = {
 
 interface PlaceProps {
   result: Classified | undefined;
-  start: number | undefined;
+  quali: number | undefined;
+  pitLane: boolean;
   sprint: boolean;
 }
 
-const Place = ({ result, start, sprint }: PlaceProps) => (
-  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-    <span className="text-zinc-100 uppercase">
-      {sprint ? "Sprint" : "Race"}
-    </span>
-    <span className="flex items-center text-xs">
-      {start && (
-        <>
-          <span
-            className={start > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
-            style={{ color: ink(METALS[start - 1]) }}
-          >
-            {start}
+const Place = ({ result, quali, pitLane, sprint }: PlaceProps) => {
+  const start = pitLane ? "PLS" : result?.grid || quali;
+  const place = typeof start === "number" ? start : 0;
+  const penalty = quali && place > quali ? place - quali : 0;
+  return (
+    <span className="font-f1 flex w-full flex-wrap items-center justify-between gap-x-0.5 text-[10px] font-bold">
+      <span className="text-zinc-100 uppercase">
+        {sprint ? "Sprint" : "Race"}
+      </span>
+      <span className="ml-auto flex items-center text-xs">
+        {penalty > 0 && (
+          <span className="mr-px rounded bg-[#e10600] px-0.5 text-[9px] tracking-tighter text-white">
+            +{penalty}
           </span>
-          <ArrowRight aria-hidden className="size-3 text-zinc-100" />
-        </>
-      )}
-      <span
-        className={result?.points ? "" : "text-zinc-500"}
-        style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
-      >
-        {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+        )}
+        {start && (
+          <>
+            <span
+              className={place > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
+              style={{ color: ink(METALS[place - 1]) }}
+            >
+              {start}
+            </span>
+            <ArrowRight aria-hidden className="size-3 text-zinc-100" />
+          </>
+        )}
+        <span
+          className={result?.points ? "" : "text-zinc-500"}
+          style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
+        >
+          {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+        </span>
       </span>
     </span>
-  </span>
-);
+  );
+};
 
 interface SeasonResultsProps {
   id: string;
@@ -76,11 +87,12 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
               {
                 name,
                 result: rows.find((r) => r.driver === id),
-                start:
-                  rows.find((r) => r.driver === id)?.grid ||
-                  qualifying
-                    .find((s) => s.round === round.round)
-                    ?.results.find((r) => r.driver === id)?.position,
+                pitLane:
+                  rows.find((r) => r.driver === id)?.grid === 0 &&
+                  rows.some((r) => r.grid),
+                quali: qualifying
+                  .find((s) => s.round === round.round)
+                  ?.results.find((r) => r.driver === id)?.position,
               },
             ]
           : [];
@@ -109,7 +121,8 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
                 <Place
                   key={s.name}
                   result={s.result}
-                  start={s.start}
+                  quali={s.quali}
+                  pitLane={s.pitLane}
                   sprint={s.name === "Sprint"}
                 />
               ))}
