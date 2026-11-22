@@ -24,23 +24,23 @@ export const SHORT: Record<string, string> = {
 
 interface PlaceProps {
   result: Classified | undefined;
-  quali: number | undefined;
+  start: number | undefined;
   sprint: boolean;
 }
 
-const Place = ({ result, quali, sprint }: PlaceProps) => (
+const Place = ({ result, start, sprint }: PlaceProps) => (
   <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
     <span className="text-zinc-100 uppercase">
       {sprint ? "Sprint" : "Race"}
     </span>
     <span className="flex items-center text-xs">
-      {quali && (
+      {start && (
         <>
           <span
-            className={quali > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
-            style={{ color: ink(METALS[quali - 1]) }}
+            className={start > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
+            style={{ color: ink(METALS[start - 1]) }}
           >
-            {quali}
+            {start}
           </span>
           <ArrowRight aria-hidden className="size-3 text-zinc-100" />
         </>
@@ -76,9 +76,11 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
               {
                 name,
                 result: rows.find((r) => r.driver === id),
-                quali: qualifying
-                  .find((s) => s.round === round.round)
-                  ?.results.find((r) => r.driver === id)?.position,
+                start:
+                  rows.find((r) => r.driver === id)?.grid ||
+                  qualifying
+                    .find((s) => s.round === round.round)
+                    ?.results.find((r) => r.driver === id)?.position,
               },
             ]
           : [];
@@ -107,7 +109,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
                 <Place
                   key={s.name}
                   result={s.result}
-                  quali={s.quali}
+                  start={s.start}
                   sprint={s.name === "Sprint"}
                 />
               ))}
