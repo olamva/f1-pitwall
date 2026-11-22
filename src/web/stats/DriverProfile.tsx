@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Trophy } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { Hint } from "../Hint.tsx";
 import type {
   Classified,
@@ -24,36 +24,36 @@ export const SHORT: Record<string, string> = {
 
 interface PlaceProps {
   result: Classified | undefined;
-  start: number | undefined;
+  quali: number | undefined;
+  pitLane: boolean;
   sprint: boolean;
 }
 
-const Place = ({ result, start, sprint }: PlaceProps) => (
-  <span className="font-f1 flex w-full items-center justify-between gap-1 text-[10px] font-bold">
-    <span className="text-zinc-100 uppercase">
-      {sprint ? "Sprint" : "Race"}
-    </span>
-    <span className="flex items-center text-xs">
-      {start && (
-        <>
-          <span
-            className={start > (sprint ? 8 : 10) ? "text-zinc-500" : ""}
-            style={{ color: ink(METALS[start - 1]) }}
-          >
-            {start}
-          </span>
-          <ArrowRight aria-hidden className="size-3 text-zinc-100" />
-        </>
-      )}
+const Place = ({ result, quali, pitLane, sprint }: PlaceProps) => {
+  const grid = pitLane ? "PLS" : result?.grid || quali;
+  return (
+    <>
+      <span className="text-left text-[10px] text-zinc-100 uppercase">
+        {sprint ? "Spr" : "Race"}
+      </span>
+      <span
+        className={quali ? "" : "text-zinc-500"}
+        style={{ color: ink(METALS[(quali ?? 0) - 1]) }}
+      >
+        {quali ?? "–"}
+      </span>
+      <span className={grid === quali ? "text-zinc-500" : ""}>
+        {grid ?? "–"}
+      </span>
       <span
         className={result?.points ? "" : "text-zinc-500"}
         style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
       >
         {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
       </span>
-    </span>
-  </span>
-);
+    </>
+  );
+};
 
 interface SeasonResultsProps {
   id: string;
@@ -76,11 +76,12 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
               {
                 name,
                 result: rows.find((r) => r.driver === id),
-                start:
-                  rows.find((r) => r.driver === id)?.grid ||
-                  qualifying
-                    .find((s) => s.round === round.round)
-                    ?.results.find((r) => r.driver === id)?.position,
+                pitLane:
+                  rows.find((r) => r.driver === id)?.grid === 0 &&
+                  rows.some((r) => r.grid),
+                quali: qualifying
+                  .find((s) => s.round === round.round)
+                  ?.results.find((r) => r.driver === id)?.position,
               },
             ]
           : [];
@@ -94,7 +95,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-1">
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
           <li key={round.round} className="rounded-md bg-zinc-800/60">
             <Hint
@@ -105,14 +106,23 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
               className="flex h-full flex-col items-center gap-1 px-1 py-1.5 *:mr-0"
             >
               <Flag country={round.country} />
-              {sessions.map((s) => (
-                <Place
-                  key={s.name}
-                  result={s.result}
-                  start={s.start}
-                  sprint={s.name === "Sprint"}
-                />
-              ))}
+              <span className="font-f1 grid w-full grid-cols-[1fr_1.125rem_1.125rem_1.75rem] items-baseline gap-x-1.5 text-center text-[11px] font-bold">
+                <span />
+                {["Q", "G", "R"].map((label) => (
+                  <span key={label} className="text-[9px] text-zinc-500">
+                    {label}
+                  </span>
+                ))}
+                {sessions.map((s) => (
+                  <Place
+                    key={s.name}
+                    result={s.result}
+                    quali={s.quali}
+                    pitLane={s.pitLane}
+                    sprint={s.name === "Sprint"}
+                  />
+                ))}
+              </span>
             </Hint>
           </li>
         ))}
