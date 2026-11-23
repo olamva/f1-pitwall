@@ -6,11 +6,17 @@ const file = (user: string) =>
 
 let saving = Promise.resolve();
 
-export const read = async (user: string): Promise<object> =>
+export const read = async (user: string): Promise<Record<string, any>> =>
   (await readJson(file(user))) ?? {};
 
-export const update = (user: string, patch: object) => {
-  const write = async () =>
-    writeJson(file(user), { ...(await read(user)), ...patch });
+export const update = (user: string, patch: Record<string, any>) => {
+  const write = async () => {
+    const saved = await read(user);
+    return writeJson(file(user), {
+      ...saved,
+      ...patch,
+      ...(patch.seen && { seen: { ...saved.seen, ...patch.seen } }),
+    });
+  };
   return (saving = saving.then(write, write));
 };

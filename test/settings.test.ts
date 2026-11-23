@@ -23,6 +23,21 @@ test("a change from one device keeps the other settings of that user only", asyn
   assert.deepEqual(await settings.read("new@example.com"), {});
 });
 
+test("a spoiler choice from one device keeps the choices from other devices", async () => {
+  await settings.update("fan@example.com", {
+    seen: { "2026/1/race": "shown" },
+  });
+  await settings.update("fan@example.com", {
+    seen: { "2026/2/qualifying": "hidden" },
+  });
+  await settings.update("fan@example.com", {
+    seen: { "2026/1/race": "hidden" },
+  });
+  assert.deepEqual(await settings.read("fan@example.com"), {
+    seen: { "2026/1/race": "hidden", "2026/2/qualifying": "hidden" },
+  });
+});
+
 test("the server accepts only the synced settings with valid values", () => {
   for (const patch of [
     {},
@@ -31,6 +46,7 @@ test("the server accepts only the synced settings with valid values", () => {
     { favourite: { id: "max_verstappen", code: "VER" } },
     { team: "red_bull" },
     { team: null },
+    { seen: { "2026/24/race": "shown", "2025/3/sprintQualifying": "hidden" } },
   ])
     assert.equal(validSettings(patch), true, JSON.stringify(patch));
   for (const patch of [
@@ -44,6 +60,10 @@ test("the server accepts only the synced settings with valid values", () => {
     { favourite: { id: "norris", code: "NOR", name: "Lando" } },
     { team: "Red Bull" },
     { team: 1 },
+    { seen: null },
+    { seen: { "2026/1/fp1": "shown" } },
+    { seen: { "2026/1/race": "revealed" } },
+    { seen: JSON.parse('{"__proto__": "shown"}') },
     JSON.parse('{"__proto__": {"delay": 1}}'),
   ])
     assert.equal(validSettings(patch), false, JSON.stringify(patch));

@@ -40,6 +40,16 @@ const checks: Record<string, (v: any) => boolean> = {
   scrubAhead: (v) => typeof v === "boolean",
   projectedLap: (v) => typeof v === "boolean",
   team: (v) => v === null || (typeof v === "string" && /^[a-z0-9_]+$/.test(v)),
+  seen: (v) =>
+    v?.constructor === Object &&
+    Object.keys(v).length <= 1000 &&
+    Object.entries(v).every(
+      ([id, state]) =>
+        /^\d{4}\/\d{1,2}\/(sprintQualifying|sprint|qualifying|race)$/.test(
+          id,
+        ) &&
+        (state === "shown" || state === "hidden"),
+    ),
 };
 
 export const SYNCED = Object.keys(checks);
