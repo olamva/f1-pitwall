@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Round, Season } from "../shared/season.ts";
+import { save, subscribe, write } from "./synced.ts";
 
 export const KINDS = ["sprintQualifying", "sprint", "qualifying", "race"];
 const EARLY = 30 * 60_000;
@@ -7,28 +8,16 @@ const EARLY = 30 * 60_000;
 export type Seen = Record<string, "shown" | "hidden">;
 export type Session = { id: string; round: Round; kind: string; at: number };
 
-const listeners = new Set<() => void>();
+export const setSpoilerMode = (on: boolean) => write({ spoilers: on ? 1 : 0 });
 
-const subscribe = (change: () => void) => {
-  listeners.add(change);
-  return () => void listeners.delete(change);
-};
-
-const save = (key: string, value: string) => {
-  localStorage.setItem(key, value);
-  listeners.forEach((change) => change());
-};
-
-export const setSpoilerMode = (on: boolean) => save("spoilers", on ? "1" : "0");
-
-export const setSeen = (sessions: Session[], state: Seen[string]) =>
+export const setSeen = (sessions: Session[], state: Seen[string]) => {
+  const patch = Object.fromEntries(sessions.map((s) => [s.id, state]));
   save(
     "seen",
-    JSON.stringify({
-      ...JSON.parse(localStorage.getItem("seen") ?? "{}"),
-      ...Object.fromEntries(sessions.map((s) => [s.id, state])),
-    }),
+    { ...JSON.parse(localStorage.getItem("seen") ?? "{}"), ...patch },
+    patch,
   );
+};
 
 export const useSeen = (): Seen | null => {
   const on = useSyncExternalStore(

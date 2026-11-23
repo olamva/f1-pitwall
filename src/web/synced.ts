@@ -9,7 +9,7 @@ export const subscribe = (change: () => void) => {
   return () => void listeners.delete(change);
 };
 
-const write = (settings: Record<string, unknown>) => {
+export const write = (settings: Record<string, unknown>) => {
   for (const [key, value] of Object.entries(settings))
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, JSON.stringify(value));
@@ -30,10 +30,10 @@ const enqueue = (task: () => Promise<unknown>) => {
   );
 };
 
-export const save = (key: string, value: unknown) => {
+export const save = (key: string, value: unknown, patch = value) => {
   edits++;
   write({ [key]: value });
-  enqueue(() => send({ [key]: value }));
+  enqueue(() => send({ [key]: patch }));
 };
 
 export const pull = () =>
